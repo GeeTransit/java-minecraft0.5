@@ -1,6 +1,8 @@
 @setlocal enableDelayedExpansion
 @if not defined DEBUG (@echo off)
 @if defined DEBUG%~n0 (@echo !DEBUG%~n0!)
+if defined DEBUG%~n0OUTPUT (set "OUTPUT=") else (set "OUTPUT=1>nul")
+if defined DEBUG%~n0ERROR (set "ERROR=") else (set "ERROR=2>nul")
 
 :vars
 set "OPTIONS=-h --help -? -r -c -i:1 -a:1"
@@ -40,24 +42,29 @@ for /f "usebackq tokens=*" %%V in (`call "%~dp0iniget" "%INIFILE%" "%AREA%"`) do
 for /f "usebackq tokens=*" %%N in (`call "%~dp0empty" %REQKEYS%`) do (echo missing %INIFILE%[%AREA%].%%N & exit /b 1)
 
 :action
-if defined PRINT%~n0ERROR (set "CHECK=") else (set "CHECK=2>nul")
-set SOURCESLIST=%TEMPORARY%\sources.txt
+set FILES=%TEMPORARY%\files.txt
 for %%A in (%ACTION%) do (call :%%A || (echo error:action:%%A:!ERRORLEVEL! & exit /b !ERRORLEVEL!))
 goto :EOF
 
 :create
 @rem create temporary file with java files
 @rem empty file # https://stackoverflow.com/a/1702790
-%CHECK% mkdir %TEMPORARY%
->%SOURCESLIST% <nul (set /p "_=")
-for /f "usebackq tokens=*" %%F in (`dir /s /b %SOURCE%\*.java`) do (>>%SOURCESLIST% echo/%%F)
+%ERROR% mkdir %TEMPORARY%
+>%FILES% <nul (set /p "_=")
+for /f "usebackq tokens=*" %%F in (`dir /s /b %SOURCE%\*.java`) do (>>%FILES% echo/%%F)
+@rem create variable with all folders inside %LIBRARY%
+@rem idea # https://stackoverflow.com/a/10221436
+set "FROM=%CD%"
+set "INCLUDE= "
+for /r %LIBRARY% %%L in (.) do (pushd %%L & set "HERE=!CD:*%FROM%\=!" & set "INCLUDE=!LIBRARIES!!HERE!;!HERE!\*;" & popd)
+%OUTPUT% echo/%INCLUDE%
 @rem compile the java files
-%CHECK% mkdir %COMPILE%
-javac -cp %LIBRARY%\* -d %COMPILE% -sourcepath %SOURCE% @%SOURCESLIST%
+%ERROR% mkdir %COMPILE%
+javac -cp "%INCLUDE%" -d %COMPILE% -sourcepath %SOURCE% @%FILES%
 exit /b %ERRORLEVEL%
 
 :remove
-%CHECK% rmdir /s /q %COMPILE%
-%CHECK% del /f %SOURCESLIST%
-%CHECK% rmdir /q %TEMPORARY%
+%ERROR% rmdir /s /q %COMPILE%
+%ERROR% del /f %SOURCESLIST%
+%ERROR% rmdir /q %TEMPORARY%
 exit /b 0
