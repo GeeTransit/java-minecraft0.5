@@ -62,7 +62,8 @@ goto :EOF
 @rem package the class files
 %ERROR% mkdir %PACKAGE%
 set ARGS=
-if exist %LIBRARY% (set ARGS=%ARGS%%LIBRARY% )
+if defined SKIPLIBRARY (if [%SKIPLIBRARY%] == [0] (
+  if exist %LIBRARY% (set ARGS=%ARGS%%LIBRARY% ) ))
 if exist %RESOURCE% (set ARGS=%ARGS%%RESOURCE% )
 %OUTPUT% jar cvfm %JARFILE% %MANIFEST% %ARGS% -C %COMPILE% . || exit /b !ERRORLEVEL!
 @rem create batch running file
