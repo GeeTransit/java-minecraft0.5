@@ -8,7 +8,7 @@ import com.jdotsoft.jarloader.JarClassLoader;
 
 public class Launcher {
 	// change this string to your main class.
-	public static final String invoke = "Main";
+	public static final String invoke = "geetransit.minecraft05.Main";
 	public static void main(String[] args) throws Throwable {
 		new JarClassLoader().invokeMain(invoke, args);
 	}
