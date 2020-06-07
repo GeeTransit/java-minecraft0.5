@@ -1,8 +1,8 @@
 @setlocal enableDelayedExpansion
 @if not defined DEBUG (@echo off)
 @if defined DEBUG%~n0 (@echo !DEBUG%~n0!)
-if defined DEBUG%~n0OUTPUT (set "OUTPUT=") else (set "OUTPUT=1>nul")
-if defined DEBUG%~n0ERROR (set "ERROR=") else (set "ERROR=2>nul")
+if defined DEBUG%~n0OUTPUT (set "OUTPUT= ") else (set "OUTPUT=1>nul")
+if defined DEBUG%~n0ERROR (set "ERROR= ") else (set "ERROR=2>nul")
 
 :vars
 set "OPTIONS=-h --help -? -r -c -i:1 -a:1"
@@ -55,12 +55,14 @@ for /f "usebackq tokens=*" %%F in (`dir /s /b %SOURCE%\*.java`) do (>>%FILES% ec
 @rem create variable with all folders inside %LIBRARY%
 @rem idea # https://stackoverflow.com/a/10221436
 set "FROM=%CD%"
-set "INCLUDE= "
-for /r %LIBRARY% %%L in (.) do (pushd %%L & set "HERE=!CD:*%FROM%\=!" & set "INCLUDE=!LIBRARIES!!HERE!;!HERE!\*;" & popd)
-%OUTPUT% echo/%INCLUDE%
+if not defined INCLUDELIBRARY (
+	set "INCLUDELIBRARY= "
+	for /r %LIBRARY% %%L in (.) do (pushd %%L & set "HERE=!CD:*%FROM%\=!" & set "INCLUDELIBRARY=!INCLUDELIBRARY!!HERE!\;!HERE!\*;" & popd)
+	set INCLUDELIBRARY="!INCLUDELIBRARY!")
+%OUTPUT% echo/%INCLUDELIBRARY%
 @rem compile the java files
 %ERROR% mkdir %COMPILE%
-javac -cp "%INCLUDE%" -d %COMPILE% -sourcepath %SOURCE% @%FILES%
+javac -cp %INCLUDELIBRARY% -d %COMPILE% -sourcepath %SOURCE% @%FILES%
 exit /b %ERRORLEVEL%
 
 :remove
