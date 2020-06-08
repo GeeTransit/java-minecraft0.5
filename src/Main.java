@@ -1,6 +1,6 @@
 /*
 George Zhang
-2020-06-07
+2020-06-08
 Main entry class.
 */
 
@@ -19,13 +19,17 @@ public class Main {
 
 	// The window handle
 	private long window;
+	private Object lock;
 
-	private boolean vSync;
 	private String title;
 	private int width;
 	private int height;
-	private boolean resized;
+	private boolean vSync;
 	private Timer timer;
+	
+	private boolean updateVSync = false;
+	private boolean updateSize = false;
+	private boolean destroyed = false;
 	
 	private int direction;
 	private float color;
@@ -39,6 +43,7 @@ public class Main {
 		this.height = height;
 		this.vSync = vSync;
 		this.timer = new Timer();
+		this.lock = new Object();
 	}
 
 	public void run() {
@@ -46,11 +51,17 @@ public class Main {
 
 		try {
 			this.init();
-			this.loop();
-
-			// Release window and window callbacks
+			new Thread(this::renderLoop).start();
+			this.eventLoop();
+			
+			synchronized (this.lock) {
+				this.destroyed = true;
+				// Release window (safely)
+				glfwDestroyWindow(this.window);
+			}
+			
+			// Release window callbacks
 			glfwFreeCallbacks(this.window);
-			glfwDestroyWindow(this.window);
 		
 		} finally {
 			// Terminate GLFW and release the GLFWerrorfun
@@ -82,9 +93,11 @@ public class Main {
 
         // Setup resize callback
         glfwSetFramebufferSizeCallback(this.window, (window, width, height) -> {
-            this.width = width;
-            this.height = height;
-            this.resized = true;
+			if (width > 0 && height > 0) {
+				this.width = width;
+				this.height = height;
+				this.updateSize = true;
+			}
         });
 
 		// Setup a key callback. It will be called every time a key is pressed, repeated or released.
@@ -94,6 +107,7 @@ public class Main {
 			}
 			if (key == GLFW_KEY_V && action == GLFW_RELEASE) {
 				this.vSync = !this.vSync;
+				this.updateVSync = true;
 			}
 		});
 
@@ -106,14 +120,22 @@ public class Main {
 			(vidmode.height() - this.height) / 2
 		);
 
-		// Make the OpenGL context current
-		glfwMakeContextCurrent(this.window);
-		
-		// Setup vSync
-		this.updateVSync();
-
 		// Make the window visible
 		glfwShowWindow(this.window);
+		
+	}
+	
+	private void eventLoop() {
+		while (!glfwWindowShouldClose(window)) {
+			// This will block until an event occurs.
+			// (Helps reduce CPU usage.)
+			glfwWaitEvents();
+		}
+	}
+
+	private void renderLoop() {
+		// This adds the OpenGL context into this function.
+        glfwMakeContextCurrent(this.window);
 		
 		// This line is critical for LWJGL's interoperation with GLFW's
 		// OpenGL context, or any context that is managed externally.
@@ -125,21 +147,19 @@ public class Main {
 		// Set the clear color
 		glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
 		
+		// Initialize timer's start.
 		this.timer.init();
-	}
-
-	private void loop() {
+		
+		// Actual render loop:
 		float elapsedTime;
 		float accumulator = 0f;
 		float interval = 1f / TARGET_UPS;
 		
-		boolean running = true;
-		while (running && !glfwWindowShouldClose(window)) {
+		while (!this.destroyed) {
 			elapsedTime = this.timer.getElapsedTime();
 			accumulator += elapsedTime;
 			
 			this.input();
-			this.updateVSync();
 			
 			// updates > render
 			while (accumulator >= interval) {
@@ -167,10 +187,6 @@ public class Main {
 	}
 	
 	private void input() {
-		// Poll for window events. The key callback above will only be
-		// invoked during this call.
-		glfwPollEvents();
-		
 		this.direction = 0;
 		if (glfwGetKey(this.window, GLFW_KEY_UP) == GLFW_PRESS) {
 			this.direction++;
@@ -190,20 +206,25 @@ public class Main {
 	}
 	
 	private void render() {
-		if (this.resized) {
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
+		
+		if (this.updateVSync) {
+			glfwSwapInterval(this.vSync ? 1 : 0);
+			this.updateVSync = false;
+		}
+		
+		if (this.updateSize) {
 			glViewport(0, 0, this.width, this.height);
-			this.resized = false;
+			this.updateSize = false;
 		}
 		
 		glClearColor(this.color, this.color, this.color, 0.0f);
 		
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
-
-		glfwSwapBuffers(this.window); // swap the color buffers
-	}
-	
-	private void updateVSync() {
-		glfwSwapInterval(this.vSync ? 1 : 0);
+		// This can fail if not sync'd. (Can only swap when window exists)
+		synchronized (this.lock) {
+			if (!this.destroyed)
+				glfwSwapBuffers(this.window); // swap the color buffers
+		}
 	}
 
 	public static void main(String[] args) {
