@@ -8,11 +8,11 @@ package geetransit.minecraft05;
 
 public interface ILogic {
 	
-	void init(Engine engine);
+	void init(Window window);
 	
-	void input(Engine engine);
+	void input(Window window);
 	
 	void update(float interval);
 	
-	void render(Engine engine);
+	void render(Window window);
 }

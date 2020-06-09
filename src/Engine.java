@@ -16,42 +16,21 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 public class Engine implements Runnable {
-	private long window;
-	private Object lock;
-	
-	private boolean vSync;
-	private String title;
-	private int width;
-	private int height;
-	private Timer timer;
-	
+	private Window window;
 	private ILogic logic;
+	private Timer timer;
 	
 	private boolean updateVSync = false;
 	private boolean updateSize = false;
 	private boolean destroyed = false;
 	
-	private int targetFps;
-	private int targetUps;
-	
 	public Engine(
-		String title,
-		int width,
-		int height, 
-		boolean vSync,
-		int targetFps,
-		int targetUps,
+		Window window,
 		ILogic logic
 	) {
-		this.title = title;
-		this.width = width;
-		this.height = height;
-		this.vSync = vSync;
-		this.targetFps = targetFps;
-		this.targetUps = targetUps;
+		this.window = window;
 		this.logic = logic;
 		this.timer = new Timer();
-		this.lock = new Object();
 	}
 	
 	@Override
@@ -59,125 +38,64 @@ public class Engine implements Runnable {
 		System.out.println("Hello LWJGL " + Version.getVersion() + "!");
 
 		try {
-			this.init();
+			this.create();
 			new Thread(this::render).start();
-			this.eventLoop();
-			
-			synchronized (this.lock) {
-				this.destroyed = true;
-				// Release window (safely)
-				glfwDestroyWindow(this.window);
-			}
-			
-			// Release window callbacks
-			glfwFreeCallbacks(this.window);
+			this.event();
 			
 		} finally {
-			// Terminate GLFW and release the GLFWerrorfun
-			glfwTerminate();
-			glfwSetErrorCallback(null).free();
+			this.window.terminate();
 		}
 	}
 	
-	protected void init() {
-		// Setup an error callback. The default implementation
-		// will print the error message in System.err.
-		GLFWErrorCallback.createPrint(System.err).set();
-
-		// Initialize GLFW. Most GLFW functions will not work before doing this.
-		if (!glfwInit()) {
-			throw new IllegalStateException("Unable to initialize GLFW");
-		}
-
-		// Configure our window
-		glfwDefaultWindowHints(); // optional, the current window hints are already the default
-		glfwWindowHint(GLFW_VISIBLE, GL_FALSE); // the window will stay hidden after creation
-		glfwWindowHint(GLFW_RESIZABLE, GL_TRUE); // the window will be resizable
-
-		// Create the window
-		this.window = glfwCreateWindow(this.width, this.height, this.title, NULL, NULL);
-		if (this.window == NULL) {
-			throw new RuntimeException("Failed to create the GLFW window");
-		}
-
-        // Setup resize callback
-        glfwSetFramebufferSizeCallback(this.window, (window, width, height) -> {
-			if (width > 0 && height > 0) {
-				this.width = width;
-				this.height = height;
-				this.setUpdateSize(true);
-			}
-        });
-
-		// Get the resolution of the primary monitor
-		GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-		// Center our window
-		glfwSetWindowPos(
-			this.window,
-			(vidmode.width() - this.width) / 2,
-			(vidmode.height() - this.height) / 2
-		);
-
-		// Make the window visible
-		glfwShowWindow(this.window);
-		
+	// Create window.
+	private void create() {
+		this.window.create();
 	}
 	
-	private void eventLoop() {
-		while (!glfwWindowShouldClose(this.window)) {
-			// This will block until an event occurs.
-			// (Helps reduce CPU usage.)
-			glfwWaitEvents();
-		}
+	// Event loop and destruction of window.
+	private void event() {
+		this.window.event();
+		this.window.destroy();
 	}
 	
+	// Render initialization and loop (in separate thread).
 	private void render() {
-		// This adds the OpenGL context into this function.
-		glfwMakeContextCurrent(this.window);
-		
-		// This line is critical for LWJGL's interoperation with GLFW's
-		// OpenGL context, or any context that is managed externally.
-		// LWJGL detects the context that is current in the current thread,
-		// creates the ContextCapabilities instance and makes the OpenGL
-		// bindings available for use.
-		GL.createCapabilities();
-		
-		this.logic.init(this);
+		this.window.init();
+		this.logic.init(this.window);
 		this.timer.init();
 		
 		this.renderLoop();
 	}
-
+	
+	// Render loop.
 	private void renderLoop() {
-		// Actual render loop:
 		float elapsedTime;
 		float accumulator = 0f;
-		float interval = 1f / this.targetUps;
 		
-		while (!this.destroyed) {
+		while (!this.window.isDestroyed()) {
 			elapsedTime = this.timer.getElapsedTime();
 			accumulator += elapsedTime;
 			
-			this.logic.input(this);
+			this.logic.input(this.window);
 			
-			// updates > render
+			float interval = 1f / this.window.getTargetUps();
 			while (accumulator >= interval) {
 				this.logic.update(interval);
 				accumulator -= interval;
 			}
 			
-			this.logic.render(this);
-			
-			if (!this.vSync) {
+			this.logic.render(this.window);
+			if (!this.window.isVSync()) {
 				this.sync();
 			}
 		}
 	}
 	
+	// Sync with target FPS (from window).
 	private void sync() {
-		float loopSlot = 1f / this.targetFps;
+		float loopSlot = 1f / this.window.getTargetFps();
 		double endTime = this.timer.getLastLoopTime() + loopSlot;
-		while (this.timer.getTime() < endTime && !this.shouldUpdateSize()) {
+		while (this.timer.getTime() < endTime && !this.window.shouldUpdateSize()) {
 			try {
 				Thread.sleep(1);
 			} catch (InterruptedException e) {
@@ -185,37 +103,5 @@ public class Engine implements Runnable {
 		}
 	}
 	
-	public void checkUpdateSize() {
-		if (this.shouldUpdateSize()) {
-			glViewport(0, 0, this.getWidth(), this.getHeight());
-			this.setUpdateSize(false);
-		}
-	}
-	
-	public void checkUpdateVSync() {
-		if (this.shouldUpdateVSync()) {
-			glfwSwapInterval(this.isVSync() ? 1 : 0);
-			this.setUpdateVSync(false);
-		}
-	}
-	
-	public long getWindow() { return this.window; }
-	public boolean isDestroyed() { return this.destroyed; }
-	public Object getLock() { return this.lock; }
-	
-	public int getTargetFps() { return this.targetFps; }
-	public void setTargetFps(int targetFps) { this.targetFps = targetFps; }
-	
-	public int getTargetUps() { return this.targetUps; }
-	public void setTargetUps(int targetFps) { this.targetUps = targetUps; }
-	
-	public int getWidth() { return this.width; }
-	public int getHeight() { return this.height; }
-	public boolean shouldUpdateSize() { return this.updateSize; }
-	public void setUpdateSize(boolean updateSize) { this.updateSize = updateSize; }
-	
-	public boolean isVSync() { return this.vSync; }
-	public void setVSync(boolean vSync) { this.vSync = vSync; }
-	public boolean shouldUpdateVSync() { return this.updateVSync; }
-	public void setUpdateVSync(boolean updateVSync) { this.updateVSync = updateVSync; }
+	public Window getWindow() { return this.window; }
 }
