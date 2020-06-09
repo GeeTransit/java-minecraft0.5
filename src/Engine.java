@@ -60,8 +60,7 @@ public class Engine implements Runnable {
 
 		try {
 			this.init();
-			this.logic.init(this);
-			new Thread(this::renderLoop).start();
+			new Thread(this::render).start();
 			this.eventLoop();
 			
 			synchronized (this.lock) {
@@ -73,9 +72,6 @@ public class Engine implements Runnable {
 			// Release window callbacks
 			glfwFreeCallbacks(this.window);
 			
-		} catch (Throwable e) {
-			e.printStackTrace();
-		
 		} finally {
 			// Terminate GLFW and release the GLFWerrorfun
 			glfwTerminate();
@@ -109,7 +105,7 @@ public class Engine implements Runnable {
 			if (width > 0 && height > 0) {
 				this.width = width;
 				this.height = height;
-				this.updateSize = true;
+				this.setUpdateSize(true);
 			}
         });
 
@@ -134,55 +130,54 @@ public class Engine implements Runnable {
 			glfwWaitEvents();
 		}
 	}
+	
+	private void render() {
+		// This adds the OpenGL context into this function.
+		glfwMakeContextCurrent(this.window);
+		
+		// This line is critical for LWJGL's interoperation with GLFW's
+		// OpenGL context, or any context that is managed externally.
+		// LWJGL detects the context that is current in the current thread,
+		// creates the ContextCapabilities instance and makes the OpenGL
+		// bindings available for use.
+		GL.createCapabilities();
+		
+		this.logic.init(this);
+		this.timer.init();
+		
+		this.renderLoop();
+	}
 
 	private void renderLoop() {
-		try {
-			// This adds the OpenGL context into this function.
-			glfwMakeContextCurrent(this.window);
+		// Actual render loop:
+		float elapsedTime;
+		float accumulator = 0f;
+		float interval = 1f / this.targetUps;
+		
+		while (!this.destroyed) {
+			elapsedTime = this.timer.getElapsedTime();
+			accumulator += elapsedTime;
 			
-			// This line is critical for LWJGL's interoperation with GLFW's
-			// OpenGL context, or any context that is managed externally.
-			// LWJGL detects the context that is current in the current thread,
-			// creates the ContextCapabilities instance and makes the OpenGL
-			// bindings available for use.
-			GL.createCapabilities();
+			this.logic.input(this);
 			
-			// Initialize timer's start.
-			this.timer.init();
-			
-			// Actual render loop:
-			float elapsedTime;
-			float accumulator = 0f;
-			float interval = 1f / this.targetUps;
-			
-			while (!this.destroyed) {
-				elapsedTime = this.timer.getElapsedTime();
-				accumulator += elapsedTime;
-				
-				this.logic.input(this);
-				
-				// updates > render
-				while (accumulator >= interval) {
-					this.logic.update(interval);
-					accumulator -= interval;
-				}
-				
-				this.render();
-				
-				if (!this.vSync) {
-					this.sync();
-				}
+			// updates > render
+			while (accumulator >= interval) {
+				this.logic.update(interval);
+				accumulator -= interval;
 			}
 			
-		} catch (Throwable e) {
-			e.printStackTrace();
+			this.logic.render(this);
+			
+			if (!this.vSync) {
+				this.sync();
+			}
 		}
 	}
 	
-	private void sync () {
+	private void sync() {
 		float loopSlot = 1f / this.targetFps;
 		double endTime = this.timer.getLastLoopTime() + loopSlot;
-		while (this.timer.getTime() < endTime) {
+		while (this.timer.getTime() < endTime && !this.shouldUpdateSize()) {
 			try {
 				Thread.sleep(1);
 			} catch (InterruptedException e) {
@@ -190,32 +185,37 @@ public class Engine implements Runnable {
 		}
 	}
 	
-	private void render() {
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
-		
-		if (this.updateVSync) {
-			glfwSwapInterval(this.vSync ? 1 : 0);
-			this.updateVSync = false;
+	public void checkUpdateSize() {
+		if (this.shouldUpdateSize()) {
+			glViewport(0, 0, this.getWidth(), this.getHeight());
+			this.setUpdateSize(false);
 		}
-		
-		if (this.updateSize) {
-			glViewport(0, 0, this.width, this.height);
-			this.updateSize = false;
-		}
-		
-		this.logic.render(this);
-		
-		// This can fail if not sync'd. (Can only swap when window exists)
-		synchronized (this.lock) {
-			if (!this.destroyed) {
-				glfwSwapBuffers(this.window); // swap the color buffers
-			}
+	}
+	
+	public void checkUpdateVSync() {
+		if (this.shouldUpdateVSync()) {
+			glfwSwapInterval(this.isVSync() ? 1 : 0);
+			this.setUpdateVSync(false);
 		}
 	}
 	
 	public long getWindow() { return this.window; }
+	public boolean isDestroyed() { return this.destroyed; }
+	public Object getLock() { return this.lock; }
 	
-	public boolean getVSync() { return this.vSync; }
+	public int getTargetFps() { return this.targetFps; }
+	public void setTargetFps(int targetFps) { this.targetFps = targetFps; }
+	
+	public int getTargetUps() { return this.targetUps; }
+	public void setTargetUps(int targetFps) { this.targetUps = targetUps; }
+	
+	public int getWidth() { return this.width; }
+	public int getHeight() { return this.height; }
+	public boolean shouldUpdateSize() { return this.updateSize; }
+	public void setUpdateSize(boolean updateSize) { this.updateSize = updateSize; }
+	
+	public boolean isVSync() { return this.vSync; }
 	public void setVSync(boolean vSync) { this.vSync = vSync; }
-	public void setUpdateVSync() { this.updateVSync = true; }
+	public boolean shouldUpdateVSync() { return this.updateVSync; }
+	public void setUpdateVSync(boolean updateVSync) { this.updateVSync = updateVSync; }
 }

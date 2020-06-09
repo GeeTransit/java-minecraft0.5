@@ -8,7 +8,7 @@ package geetransit.minecraft05;
 
 public interface ILogic {
 	
-	void init(Engine engine) throws Exception;
+	void init(Engine engine);
 	
 	void input(Engine engine);
 	

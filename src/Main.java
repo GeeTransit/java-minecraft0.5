@@ -32,13 +32,18 @@ public class Main implements ILogic {
 				glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
 			}
 			if (key == GLFW_KEY_V && action == GLFW_RELEASE) {
-				engine.setVSync(!engine.getVSync());
-				engine.setUpdateVSync();
+				engine.setVSync(!engine.isVSync());
+				engine.setUpdateVSync(true);
+			}
+			if (key == GLFW_KEY_LEFT && action == GLFW_RELEASE) {
+				engine.setTargetFps(Math.max(1, engine.getTargetFps() - 1));
+			}
+			if (key == GLFW_KEY_RIGHT && action == GLFW_RELEASE) {
+				engine.setTargetFps(engine.getTargetFps() + 1);
 			}
 		});
-
-		// Set the clear color
-		// glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
+		
+		glClearColor(this.color, this.color, this.color, 0.0f);
 	}
 	
 	public void input(Engine engine) {
@@ -61,7 +66,20 @@ public class Main implements ILogic {
 	}
 	
 	public void render(Engine engine) {
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
+		
+		// Check for resize / vSync change
+		engine.checkUpdateVSync();
+		engine.checkUpdateSize();
+		
 		glClearColor(this.color, this.color, this.color, 0.0f);
+		
+		// This can fail if not sync'd. (Can only swap when window exists)
+		synchronized (engine.getLock()) {
+			if (!engine.isDestroyed()) {
+				glfwSwapBuffers(engine.getWindow()); // swap the color buffers
+			}
+		}
 	}
 
 	public static void main(String[] args) {
