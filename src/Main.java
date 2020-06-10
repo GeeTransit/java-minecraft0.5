@@ -77,6 +77,9 @@ public class Main implements ILogic {
 		// Swap buffers
 		window.update();
 	}
+	
+	public void cleanup() {
+	}
 
 	public static void main(String[] args) {
 		try {

@@ -43,7 +43,7 @@ public class Engine implements Runnable {
 			this.event();
 			
 		} finally {
-			this.window.terminate();
+			this.cleanup();
 		}
 	}
 	
@@ -58,50 +58,19 @@ public class Engine implements Runnable {
 		this.window.destroy();
 	}
 	
+	// Cleanup of everything (called after destruction of window).
+	private void cleanup() {
+		this.logic.cleanup();
+	}
+	
 	// Render initialization and loop (in separate thread).
 	private void render() {
 		this.window.init();
 		this.logic.init(this.window);
 		this.timer.init();
-		
-		this.renderLoop();
-	}
-	
-	// Render loop.
-	private void renderLoop() {
-		float elapsedTime;
-		float accumulator = 0f;
-		
-		while (!this.window.isDestroyed()) {
-			elapsedTime = this.timer.getElapsedTime();
-			accumulator += elapsedTime;
-			
-			this.logic.input(this.window);
-			
-			float interval = 1f / this.window.getTargetUps();
-			while (accumulator >= interval) {
-				this.logic.update(interval);
-				accumulator -= interval;
-			}
-			
-			this.logic.render(this.window);
-			if (!this.window.isVSync()) {
-				this.sync();
-			}
-		}
-	}
-	
-	// Sync with target FPS (from window).
-	private void sync() {
-		float loopSlot = 1f / this.window.getTargetFps();
-		double endTime = this.timer.getLastLoopTime() + loopSlot;
-		while (this.timer.getTime() < endTime && !this.window.shouldUpdateSize()) {
-			try {
-				Thread.sleep(1);
-			} catch (InterruptedException e) {
-			}
-		}
+		this.window.render(this.logic, this.timer);
 	}
 	
 	public Window getWindow() { return this.window; }
+	public ILogic getLogic() { return this.logic; }
 }

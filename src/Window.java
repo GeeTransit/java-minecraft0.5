@@ -127,6 +127,42 @@ public class Window {
 		GL.createCapabilities();
 	}
 	
+	// Render loop.
+	public void render(ILogic logic, Timer timer) {
+		float elapsedTime;
+		float accumulator = 0f;
+		
+		while (!this.isDestroyed()) {
+			elapsedTime = timer.getElapsedTime();
+			accumulator += elapsedTime;
+			
+			logic.input(this);
+			
+			float interval = 1f / this.getTargetUps();
+			while (accumulator >= interval) {
+				logic.update(interval);
+				accumulator -= interval;
+			}
+			
+			logic.render(this);
+			if (!this.isVSync()) {
+				this.sync(timer);
+			}
+		}
+	}
+	
+	// Sync with target FPS.
+	private void sync(Timer timer) {
+		float loopSlot = 1f / this.getTargetFps();
+		double endTime = timer.getLastLoopTime() + loopSlot;
+		while (timer.getTime() < endTime && !this.shouldUpdateSize()) {
+			try {
+				Thread.sleep(1);
+			} catch (InterruptedException e) {
+			}
+		}
+	}
+	
 	public void update() {
 		// This can fail if not sync'd. (Can only swap when window exists)
 		synchronized (this.lock) {
