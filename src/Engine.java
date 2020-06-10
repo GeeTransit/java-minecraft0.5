@@ -4,7 +4,7 @@ George Zhang
 Engine class.
 */
 
-package geetransit.minecraft05;
+package geetransit.minecraft05.engine;
 
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
@@ -18,7 +18,6 @@ import static org.lwjgl.system.MemoryUtil.*;
 public class Engine implements Runnable {
 	private Window window;
 	private ILogic logic;
-	private Timer timer;
 	
 	private boolean updateVSync = false;
 	private boolean updateSize = false;
@@ -30,7 +29,6 @@ public class Engine implements Runnable {
 	) {
 		this.window = window;
 		this.logic = logic;
-		this.timer = new Timer();
 	}
 	
 	@Override
@@ -67,8 +65,7 @@ public class Engine implements Runnable {
 	private void render() {
 		this.window.init();
 		this.logic.init(this.window);
-		this.timer.init();
-		this.window.render(this.logic, this.timer);
+		this.window.render(this.logic);
 	}
 	
 	public Window getWindow() { return this.window; }

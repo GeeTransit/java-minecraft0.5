@@ -4,7 +4,7 @@ George Zhang
 Game logic interface.
 */
 
-package geetransit.minecraft05;
+package geetransit.minecraft05.engine;
 
 public interface ILogic {
 	

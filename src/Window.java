@@ -4,7 +4,7 @@ George Zhang
 Window class.
 */
 
-package geetransit.minecraft05;
+package geetransit.minecraft05.engine;
 
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
@@ -16,6 +16,7 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 public class Window {
 	private long handle;
+	private Timer timer;
 	private Object lock;
 	
 	private String title;
@@ -26,8 +27,12 @@ public class Window {
 	private int targetFps;
 	private int targetUps;
 	
-	private boolean updateVSync = false;
-	private boolean updateSize = false;
+	private int nextWidth;
+	private int nextHeight;
+	private boolean nextVSync;
+	
+	private boolean updateVSync = true;
+	private boolean updateSize = true;
 	private boolean destroyed = false;
 	
 	public Window(
@@ -44,6 +49,12 @@ public class Window {
 		this.vSync = vSync;
 		this.targetFps = targetFps;
 		this.targetUps = targetUps;
+		
+		this.nextWidth = nextWidth;
+		this.nextHeight = nextHeight;
+		this.nextVSync = vSync;
+		
+		this.timer = new Timer();
 		this.lock = new Object();
 	}
 	
@@ -71,9 +82,7 @@ public class Window {
         // Setup resize callback
         glfwSetFramebufferSizeCallback(this.handle, (window, width, height) -> {
 			if (width > 0 && height > 0) {
-				this.width = width;
-				this.height = height;
-				this.setUpdateSize(true);
+				this.setUpdateSize(width, height);
 			}
         });
 
@@ -125,15 +134,18 @@ public class Window {
 		// creates the ContextCapabilities instance and makes the OpenGL
 		// bindings available for use.
 		GL.createCapabilities();
+		
+		// Start timer.
+		this.timer.init();
 	}
 	
 	// Render loop.
-	public void render(ILogic logic, Timer timer) {
+	public void render(ILogic logic) {
 		float elapsedTime;
 		float accumulator = 0f;
 		
 		while (!this.isDestroyed()) {
-			elapsedTime = timer.getElapsedTime();
+			elapsedTime = this.timer.getElapsedTime();
 			accumulator += elapsedTime;
 			
 			logic.input(this);
@@ -146,15 +158,15 @@ public class Window {
 			
 			logic.render(this);
 			if (!this.isVSync()) {
-				this.sync(timer);
+				this.sync();
 			}
 		}
 	}
 	
 	// Sync with target FPS.
-	private void sync(Timer timer) {
+	private void sync() {
 		float loopSlot = 1f / this.getTargetFps();
-		double endTime = timer.getLastLoopTime() + loopSlot;
+		double endTime = this.timer.getLastLoopTime() + loopSlot;
 		while (timer.getTime() < endTime && !this.shouldUpdateSize()) {
 			try {
 				Thread.sleep(1);
@@ -174,15 +186,18 @@ public class Window {
 	
 	public void checkUpdateSize() {
 		if (this.shouldUpdateSize()) {
+			this.width = this.nextWidth;
+			this.height = this.nextHeight;
 			glViewport(0, 0, this.getWidth(), this.getHeight());
-			this.setUpdateSize(false);
+			this.updateSize = false;
 		}
 	}
 	
 	public void checkUpdateVSync() {
 		if (this.shouldUpdateVSync()) {
+			this.vSync = this.nextVSync;
 			glfwSwapInterval(this.isVSync() ? 1 : 0);
-			this.setUpdateVSync(false);
+			this.updateVSync = false;
 		}
 	}
 	
@@ -199,10 +214,16 @@ public class Window {
 	public int getWidth() { return this.width; }
 	public int getHeight() { return this.height; }
 	public boolean shouldUpdateSize() { return this.updateSize; }
-	public void setUpdateSize(boolean updateSize) { this.updateSize = updateSize; }
+	public void setUpdateSize(int nextWidth, int nextHeight) { 
+		this.nextWidth = nextWidth;
+		this.nextHeight = nextHeight;
+		this.updateSize = true;
+	}
 	
 	public boolean isVSync() { return this.vSync; }
-	public void setVSync(boolean vSync) { this.vSync = vSync; }
 	public boolean shouldUpdateVSync() { return this.updateVSync; }
-	public void setUpdateVSync(boolean updateVSync) { this.updateVSync = updateVSync; }
+	public void setUpdateVSync(boolean nextVSync) { 
+		this.nextVSync = nextVSync;
+		this.updateVSync = true;
+	}
 }

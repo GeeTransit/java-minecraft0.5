@@ -1,11 +1,11 @@
 /*
 ahbejarano
-2020-06-07
+2020-06-10
 Timer utility class.
 Source # https://github.com/lwjglgamedev/lwjglbook/blob/master/chapter02/src/main/java/org/lwjglb/engine/Timer.java
 */
 
-package geetransit.minecraft05;
+package geetransit.minecraft05.engine;
 
 public class Timer {
 

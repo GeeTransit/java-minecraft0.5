@@ -1,0 +1,94 @@
+/*
+George Zhang
+2020-06-10
+Game logic implementation.
+*/
+
+package geetransit.minecraft05;
+
+import org.lwjgl.glfw.*;
+import org.lwjgl.opengl.*;
+import org.lwjgl.Version;
+
+import geetransit.minecraft05.engine.*;
+
+import static org.lwjgl.glfw.Callbacks.*;
+import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.system.MemoryUtil.*;
+
+public class Game implements ILogic {
+	
+	private int direction;
+	private float color;
+
+	public Game() {
+		this.direction = 0;
+		this.color = 0.5f;
+	}
+	
+	@Override
+	public void init(Window window) {
+		// Setup a key callback. It will be called every time a key is pressed, repeated or released.
+		glfwSetKeyCallback(window.getHandle(), (handle, key, scancode, action, mods) -> {
+			if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
+				glfwSetWindowShouldClose(handle, true); // We will detect this in the rendering loop
+			}
+			if (key == GLFW_KEY_V && action == GLFW_RELEASE) {
+				window.setUpdateVSync(!window.isVSync());
+			}
+			if (key == GLFW_KEY_LEFT && action == GLFW_RELEASE) {
+				window.setTargetFps(Math.max(1, window.getTargetFps() - 1));
+			}
+			if (key == GLFW_KEY_RIGHT && action == GLFW_RELEASE) {
+				window.setTargetFps(window.getTargetFps() + 1);
+			}
+		});
+		
+		glClearColor(this.color, this.color, this.color, 0.0f);
+	}
+	
+	@Override
+	public void input(Window window) {
+		this.direction = 0;
+		if (glfwGetKey(window.getHandle(), GLFW_KEY_UP) == GLFW_PRESS) {
+			this.direction++;
+		}
+		if (glfwGetKey(window.getHandle(), GLFW_KEY_DOWN) == GLFW_PRESS) {
+			this.direction--;
+		}
+	}
+	
+	@Override
+	public void update(float interval) {
+		this.color += this.direction * 0.01f;
+		if (color > 1) {
+			this.color = 1.0f;
+		} else if (color < 0) {
+			this.color = 0.0f;
+		}
+	}
+	
+	@Override
+	public void render(Window window) {
+		// Check for resize / vSync change (not sure if ordering matters)
+		window.checkUpdateSize();
+		window.checkUpdateVSync();
+		
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
+		
+		// Different colour based on vSync or not (colourful = vSync on)
+		if (window.isVSync()) {
+			glClearColor(1-this.color, this.color/2+0.5f, this.color, 0.0f);
+		} else {
+			glClearColor(this.color, this.color, this.color, 0.0f);
+		}
+		
+		// Swap buffers
+		window.update();
+	}
+	
+	@Override
+	public void cleanup() {
+	}
+}
