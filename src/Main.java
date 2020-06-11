@@ -1,6 +1,5 @@
 /*
 George Zhang
-2020-06-10
 Main entry class.
 */
 
