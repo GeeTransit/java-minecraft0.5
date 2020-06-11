@@ -7,6 +7,7 @@ Main entry class.
 package geetransit.minecraft05;
 
 import geetransit.minecraft05.engine.*;
+import geetransit.minecraft05.game.*;
 
 public class Main {
 

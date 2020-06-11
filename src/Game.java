@@ -4,7 +4,7 @@ George Zhang
 Game logic implementation.
 */
 
-package geetransit.minecraft05;
+package geetransit.minecraft05.game;
 
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
