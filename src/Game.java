@@ -28,7 +28,7 @@ public class Game implements ILogic {
 	}
 	
 	@Override
-	public void init(Window window) {
+	public void init(Window window) throws Exception {
 		// Setup a key callback. It will be called every time a key is pressed, repeated or released.
 		glfwSetKeyCallback(window.getHandle(), (handle, key, scancode, action, mods) -> {
 			if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {

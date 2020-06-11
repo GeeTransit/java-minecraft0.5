@@ -63,9 +63,13 @@ public class Engine implements Runnable {
 	
 	// Render initialization and loop (in separate thread).
 	private void render() {
-		this.window.init();
-		this.logic.init(this.window);
-		this.window.render(this.logic);
+		try {
+			this.window.init();
+			this.logic.init(this.window);
+			this.window.render(this.logic);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public Window getWindow() { return this.window; }
