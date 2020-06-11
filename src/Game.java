@@ -21,6 +21,7 @@ public class Game implements ILogic {
 	private int direction;
 	private float color;
 	private Renderer renderer;
+	private Mesh mesh;
 
 	public Game() {
 		this.direction = 0;
@@ -53,6 +54,17 @@ public class Game implements ILogic {
 		
 		// Link shaders. (located in res/)
 		this.renderer.init();
+		
+		// Create rectangle mesh
+		float[] positions = new float[]{
+			-0.5f,  0.5f, 0.0f,
+			-0.5f, -0.5f, 0.0f,
+			 0.5f,  0.5f, 0.0f,
+			 0.5f,  0.5f, 0.0f,
+			-0.5f, -0.5f, 0.0f,
+			 0.5f, -0.5f, 0.0f,
+		};
+		this.mesh = new Mesh(positions);
 	}
 	
 	@Override
@@ -91,7 +103,7 @@ public class Game implements ILogic {
 			glClearColor(this.color, this.color, this.color, 0.0f);
 		}
 		
-		this.renderer.render(window);
+		this.renderer.render(window, this.mesh);
 		
 		// Swap buffers
 		window.update();
@@ -100,5 +112,6 @@ public class Game implements ILogic {
 	@Override
 	public void cleanup() {
 		this.renderer.cleanup();
+		this.mesh.cleanup();
 	}
 }

@@ -48,7 +48,7 @@ public class Mesh {
 	public int getVaoId() { return this.vaoId; }
 	public int getVertexCount() { return this.vertexCount; }
 
-	public void cleanUp() {
+	public void cleanup() {
 		glDisableVertexAttribArray(0);
 
 		// Delete the VBO

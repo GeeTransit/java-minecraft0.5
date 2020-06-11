@@ -47,52 +47,14 @@ public class Renderer {
 		this.shaderProgram.createVertexShader(Utils.loadResource("/res/vertex.vs"));
 		this.shaderProgram.createFragmentShader(Utils.loadResource("/res/fragment.fs"));
 		this.shaderProgram.link();
-		
-		float[] vertices = new float[]{
-			 0.0f,  0.5f, 0.0f,
-			-0.5f, -0.5f, 0.0f,
-			 0.5f, -0.5f, 0.0f
-		};
-		
-		FloatBuffer verticesBuffer = null;
-		try {
-			verticesBuffer = MemoryUtil.memAllocFloat(vertices.length);
-			verticesBuffer.put(vertices).flip();
-
-			// Create the VAO and bind to it
-			this.vaoId = glGenVertexArrays();
-			glBindVertexArray(this.vaoId);
-
-			// Create the VBO and bint to it
-			this.vboId = glGenBuffers();
-			glBindBuffer(GL_ARRAY_BUFFER, this.vboId);
-			glBufferData(GL_ARRAY_BUFFER, verticesBuffer, GL_STATIC_DRAW);
-			// Enable location 0
-			glEnableVertexAttribArray(0);
-			// Define structure of the data
-			glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
-
-			// Unbind the VBO
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-			// Unbind the VAO
-			glBindVertexArray(0);
-		
-		} finally {
-			if (verticesBuffer != null) {
-				MemoryUtil.memFree(verticesBuffer);
-			}
-		}
 	}
 
-	public void render(Window window) {
+	public void render(Window window, Mesh mesh) {
 		this.shaderProgram.bind();
 
-		// Bind to the VAO
-		glBindVertexArray(this.vaoId);
-
-		// Draw the vertices
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		// Draw mesh
+		glBindVertexArray(mesh.getVaoId());
+		glDrawArrays(GL_TRIANGLES, 0, mesh.getVertexCount());
 
 		// Restore state
 		glBindVertexArray(0);
@@ -105,15 +67,5 @@ public class Renderer {
 			this.shaderProgram.cleanup();
 			this.shaderProgram = null;
 		}
-
-		glDisableVertexAttribArray(0);
-
-		// Delete the VBO
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glDeleteBuffers(this.vboId);
-
-		// Delete the VAO
-		glBindVertexArray(0);
-		glDeleteVertexArrays(this.vaoId);
 	}
 }
