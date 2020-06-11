@@ -11,37 +11,46 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 public class Mesh {
 	private final int vaoId;
-	private final int posVboId;
-	private final int idxVboId;
 	private final int vertexCount;
+	private final int positionVboId;
+	private final int colourVboId;
+	private final int indexVboId;
 
-	public Mesh(float[] positions, int[] indices) {
+	public Mesh(float[] positions, float[] colours, int[] indices) {
 		FloatBuffer positionBuffer = null;
-		IntBuffer indicesBuffer = null;
+		FloatBuffer colourBuffer = null;
+		IntBuffer indexBuffer = null;
 		try {
-			positionBuffer = memAllocFloat(positions.length);
-			positionBuffer.put(positions).flip();
 			this.vertexCount = indices.length;
 
-			// Create the VAO / VBO and bind to it
+			// Create the VAO
 			this.vaoId = glGenVertexArrays();
 			glBindVertexArray(this.vaoId);
 			
-			this.posVboId = glGenBuffers();
-			glBindBuffer(GL_ARRAY_BUFFER, this.posVboId);
+			// Position VBO
+			this.positionVboId = glGenBuffers();
+			positionBuffer = memAllocFloat(positions.length);
+			positionBuffer.put(positions).flip();
+			glBindBuffer(GL_ARRAY_BUFFER, this.positionVboId);
 			glBufferData(GL_ARRAY_BUFFER, positionBuffer, GL_STATIC_DRAW);
-			
-			this.idxVboId = glGenBuffers();
-			indicesBuffer = memAllocInt(indices.length);
-			indicesBuffer.put(indices).flip();
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.idxVboId);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW);
-			
-			// Enable location 0 (attribute)
 			glEnableVertexAttribArray(0);
-			
-			// Define structure of the data
 			glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
+			
+			// Colour VBO
+			this.colourVboId = glGenBuffers();
+			colourBuffer = memAllocFloat(colours.length);
+			colourBuffer.put(colours).flip();
+			glBindBuffer(GL_ARRAY_BUFFER, this.colourVboId);
+			glBufferData(GL_ARRAY_BUFFER, colourBuffer, GL_STATIC_DRAW);
+			glEnableVertexAttribArray(1);
+			glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, 0);
+			
+			// Index VBO
+			this.indexVboId = glGenBuffers();
+			indexBuffer = memAllocInt(indices.length);
+			indexBuffer.put(indices).flip();
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.indexVboId);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexBuffer, GL_STATIC_DRAW);
 
 			// Unbind the VBO / VAB
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -51,8 +60,11 @@ public class Mesh {
 			if (positionBuffer != null) {
 				memFree(positionBuffer);
 			}
-			if (indicesBuffer != null) {
-				memFree(indicesBuffer);
+			if (colourBuffer != null) {
+				memFree(colourBuffer);
+			}
+			if (indexBuffer != null) {
+				memFree(indexBuffer);
 			}
 		}
 	}
@@ -65,8 +77,9 @@ public class Mesh {
 
 		// Delete the VBO
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glDeleteBuffers(this.posVboId);
-		glDeleteBuffers(this.idxVboId);
+		glDeleteBuffers(this.positionVboId);
+		glDeleteBuffers(this.colourVboId);
+		glDeleteBuffers(this.indexVboId);
 
 		// Delete the VAO
 		glBindVertexArray(0);

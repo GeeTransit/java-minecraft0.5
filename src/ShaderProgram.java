@@ -40,7 +40,6 @@ public class ShaderProgram {
 		if (glGetShaderi(shaderId, GL_COMPILE_STATUS) == 0) {
 			throw new Exception("Error compiling Shader code: " + glGetShaderInfoLog(shaderId, 1024));
 		}
-
 		glAttachShader(programId, shaderId);
 
 		return shaderId;
@@ -58,7 +57,11 @@ public class ShaderProgram {
 		if (this.fragmentShaderId != 0) {
 			glDetachShader(this.programId, this.fragmentShaderId);
 		}
-
+		
+		// definition in res/vertex.vs
+		// equivalent of `layout (location = #) ...`
+		glBindAttribLocation(this.programId, 0, "position");
+		glBindAttribLocation(this.programId, 1, "colour");
 		glValidateProgram(this.programId);
 		if (glGetProgrami(this.programId, GL_VALIDATE_STATUS) == 0) {
 			System.err.println("Warning validating Shader code: " + glGetProgramInfoLog(this.programId, 1024));
