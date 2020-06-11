@@ -4,7 +4,7 @@ ahbejarano
 Shader program.
 */
 
-package geetransit.minecraft05;
+package geetransit.minecraft05.engine;
 
 import static org.lwjgl.opengl.GL20.*;
 
