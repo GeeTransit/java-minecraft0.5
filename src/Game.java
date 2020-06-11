@@ -59,12 +59,13 @@ public class Game implements ILogic {
 		float[] positions = new float[]{
 			-0.5f,  0.5f, 0.0f,
 			-0.5f, -0.5f, 0.0f,
-			 0.5f,  0.5f, 0.0f,
-			 0.5f,  0.5f, 0.0f,
-			-0.5f, -0.5f, 0.0f,
 			 0.5f, -0.5f, 0.0f,
+			 0.5f,  0.5f, 0.0f,
 		};
-		this.mesh = new Mesh(positions);
+		int[] indices = new int[]{
+			0, 1, 3, 3, 1, 2,
+		};
+		this.mesh = new Mesh(positions, indices);
 	}
 	
 	@Override

@@ -5,28 +5,37 @@ Mesh class.
 
 package geetransit.minecraft05.engine;
 
-import java.nio.FloatBuffer;
-import org.lwjgl.system.MemoryUtil;
+import java.nio.*;
 import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.system.MemoryUtil.*;
 
 public class Mesh {
 	private final int vaoId;
-	private final int vboId;
+	private final int posVboId;
+	private final int idxVboId;
 	private final int vertexCount;
 
-	public Mesh(float[] vertices) {
-		FloatBuffer verticesBuffer = null;
+	public Mesh(float[] positions, int[] indices) {
+		FloatBuffer positionBuffer = null;
+		IntBuffer indicesBuffer = null;
 		try {
-			verticesBuffer = MemoryUtil.memAllocFloat(vertices.length);
-			verticesBuffer.put(vertices).flip();
-			this.vertexCount = vertices.length / 3;
+			positionBuffer = memAllocFloat(positions.length);
+			positionBuffer.put(positions).flip();
+			this.vertexCount = indices.length;
 
 			// Create the VAO / VBO and bind to it
 			this.vaoId = glGenVertexArrays();
 			glBindVertexArray(this.vaoId);
-			this.vboId = glGenBuffers();
-			glBindBuffer(GL_ARRAY_BUFFER, this.vboId);
-			glBufferData(GL_ARRAY_BUFFER, verticesBuffer, GL_STATIC_DRAW);
+			
+			this.posVboId = glGenBuffers();
+			glBindBuffer(GL_ARRAY_BUFFER, this.posVboId);
+			glBufferData(GL_ARRAY_BUFFER, positionBuffer, GL_STATIC_DRAW);
+			
+			this.idxVboId = glGenBuffers();
+			indicesBuffer = memAllocInt(indices.length);
+			indicesBuffer.put(indices).flip();
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.idxVboId);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW);
 			
 			// Enable location 0 (attribute)
 			glEnableVertexAttribArray(0);
@@ -39,8 +48,11 @@ public class Mesh {
 			glBindVertexArray(0);
 		
 		} finally {
-			if (verticesBuffer != null) {
-				MemoryUtil.memFree(verticesBuffer);
+			if (positionBuffer != null) {
+				memFree(positionBuffer);
+			}
+			if (indicesBuffer != null) {
+				memFree(indicesBuffer);
 			}
 		}
 	}
@@ -53,10 +65,11 @@ public class Mesh {
 
 		// Delete the VBO
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glDeleteBuffers(vboId);
+		glDeleteBuffers(this.posVboId);
+		glDeleteBuffers(this.idxVboId);
 
 		// Delete the VAO
 		glBindVertexArray(0);
-		glDeleteVertexArrays(vaoId);
+		glDeleteVertexArrays(this.vaoId);
 	}
 }
