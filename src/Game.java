@@ -20,14 +20,19 @@ public class Game implements ILogic {
 	
 	private int direction;
 	private float color;
+	private Renderer renderer;
 
 	public Game() {
 		this.direction = 0;
 		this.color = 0.5f;
+		this.renderer = new Renderer();
 	}
 	
 	@Override
 	public void init(Window window) throws Exception {
+		System.out.println("LWJGL version: " + Version.getVersion());
+		System.out.println("OpenGL version: " + GL11.glGetString(GL11.GL_VERSION));
+		
 		// Setup a key callback. It will be called every time a key is pressed, repeated or released.
 		glfwSetKeyCallback(window.getHandle(), (handle, key, scancode, action, mods) -> {
 			if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
@@ -45,6 +50,9 @@ public class Game implements ILogic {
 		});
 		
 		glClearColor(this.color, this.color, this.color, 0.0f);
+		
+		// Link shaders. (located in res/)
+		this.renderer.init();
 	}
 	
 	@Override
@@ -83,11 +91,14 @@ public class Game implements ILogic {
 			glClearColor(this.color, this.color, this.color, 0.0f);
 		}
 		
+		this.renderer.render(window);
+		
 		// Swap buffers
 		window.update();
 	}
 	
 	@Override
 	public void cleanup() {
+		this.renderer.cleanup();
 	}
 }

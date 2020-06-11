@@ -32,42 +32,33 @@ public class Engine implements Runnable {
 	
 	@Override
 	public void run() {
-		System.out.println("Hello LWJGL " + Version.getVersion() + "!");
-
-		try {
-			this.create();
-			new Thread(this::render).start();
-			this.event();
-			
-		} finally {
-			this.cleanup();
-		}
+		this.create();
+		new Thread(this::render).start();
+		this.event();
 	}
 	
 	// Create window.
-	private void create() {
+	protected void create() {
 		this.window.create();
 	}
 	
 	// Event loop and destruction of window.
-	private void event() {
+	protected void event() {
 		this.window.event();
 		this.window.destroy();
 	}
 	
-	// Cleanup of everything (called after destruction of window).
-	private void cleanup() {
-		this.logic.cleanup();
-	}
-	
 	// Render initialization and loop (in separate thread).
-	private void render() {
+	protected void render() {
 		try {
 			this.window.init();
 			this.logic.init(this.window);
 			this.window.render(this.logic);
 		} catch (Exception e) {
 			e.printStackTrace();
+			System.exit(1);
+		} finally {
+			this.logic.cleanup();
 		}
 	}
 	
