@@ -38,22 +38,18 @@ public class Game implements ILogic {
 		System.out.println("OpenGL version: " + GL11.glGetString(GL11.GL_VERSION));
 		
 		// Setup a key callback. It will be called every time a key is pressed, repeated or released.
-		glfwSetKeyCallback(window.getHandle(), (handle, key, scancode, action, mods) -> {
-			if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-				glfwSetWindowShouldClose(handle, true); // We will detect this in the rendering loop
-			}
-			if (key == GLFW_KEY_V && action == GLFW_RELEASE) {
-				window.setUpdateVSync(!window.isVSync());
-			}
-			if (key == GLFW_KEY_LEFT && action == GLFW_RELEASE) {
+		window.setKeyCallback((handle, key, scancode, action, mods) -> {
+			if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE)
+				window.setShouldClose(true);  // We will detect this in the rendering loop
+			if (key == GLFW_KEY_V && action == GLFW_RELEASE)
+				window.setNextVSync(!window.isVSync());
+			if (key == GLFW_KEY_LEFT && action == GLFW_RELEASE)
 				window.setTargetFps(Math.max(1, window.getTargetFps() - 1));
-			}
-			if (key == GLFW_KEY_RIGHT && action == GLFW_RELEASE) {
+			if (key == GLFW_KEY_RIGHT && action == GLFW_RELEASE)
 				window.setTargetFps(window.getTargetFps() + 1);
-			}
 		});
 		
-		glClearColor(this.color, this.color, this.color, 0.0f);
+		window.clearColor(this.color, this.color, this.color, 0.0f);
 		
 		// Link shaders. (located in res/)
 		this.renderer.init();
@@ -99,9 +95,8 @@ public class Game implements ILogic {
 		
 		Vector3f movement = new Vector3f();
 		this.movement.mul(-0.05f, movement);
-		for (Item item : this.items) {
+		for (Item item : this.items)
 			item.position.add(movement);
-		}
 	}
 	
 	@Override
@@ -110,14 +105,14 @@ public class Game implements ILogic {
 		window.checkUpdateSize();
 		window.checkUpdateVSync();
 		
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
+		// clear the framebuffer
+		window.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
 		// Different colour based on vSync or not (colourful = vSync on)
-		if (window.isVSync()) {
-			glClearColor(1-this.color, this.color/2+0.5f, this.color, 0.0f);
-		} else {
-			glClearColor(this.color, this.color, this.color, 0.0f);
-		}
+		if (window.isVSync())
+			window.clearColor(1-this.color, this.color/2+0.5f, this.color, 0.0f);
+		else
+			window.clearColor(this.color, this.color, this.color, 0.0f);
 		
 		this.renderer.render(window, this.items);
 		

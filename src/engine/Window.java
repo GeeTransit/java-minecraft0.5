@@ -80,9 +80,8 @@ public class Window {
 
         // Setup resize callback
         glfwSetFramebufferSizeCallback(this.handle, (window, width, height) -> {
-			if (width > 0 && height > 0) {
-				this.setUpdateSize(width, height);
-			}
+			if (width > 0 && height > 0)
+				this.setNextSize(width, height);
         });
 
 		// Get the resolution of the primary monitor
@@ -177,35 +176,43 @@ public class Window {
 	public void update() {
 		// This can fail if not sync'd. (Can only swap when window exists)
 		synchronized (this.lock) {
-			if (!this.destroyed) {
+			if (!this.destroyed)
 				glfwSwapBuffers(this.handle); // swap the color buffers
-			}
 		}
 	}
 	
 	public boolean checkUpdateSize() {
-		if (this.shouldUpdateSize()) {
-			this.width = this.nextWidth;
-			this.height = this.nextHeight;
-			glViewport(0, 0, this.getWidth(), this.getHeight());
-			this.updateSize = false;
-			return true;
-		} else {
+		if (!this.shouldUpdateSize())
 			return false;
-		}
+		this.width = this.nextWidth;
+		this.height = this.nextHeight;
+		glViewport(0, 0, this.getWidth(), this.getHeight());
+		this.updateSize = false;
+		return true;
 	}
 	
 	public boolean checkUpdateVSync() {
-		if (this.shouldUpdateVSync()) {
-			this.vSync = this.nextVSync;
-			glfwSwapInterval(this.isVSync() ? 1 : 0);
-			this.updateVSync = false;
-			return true;
-		} else {
+		if (!this.shouldUpdateVSync())
 			return false;
-		}
+		this.vSync = this.nextVSync;
+		glfwSwapInterval(this.isVSync() ? 1 : 0);
+		this.updateVSync = false;
+		return true;
 	}
 	
+	public void setShouldClose(boolean shouldClose) {
+		glfwSetWindowShouldClose(this.getHandle(), true);
+	}
+	public void clear(int bits) {
+		glClear(bits);
+	}
+	public void clearColor(float r, float g, float b, float a) {
+		glClearColor(r, g, b, a);
+	}
+	
+	public GLFWKeyCallback setKeyCallback(GLFWKeyCallbackI keyCallback) {
+		return glfwSetKeyCallback(this.getHandle(), keyCallback);
+	}
 	public int getKey(int key) {
 		return glfwGetKey(this.getHandle(), key);
 	}
@@ -226,7 +233,7 @@ public class Window {
 	public int getWidth() { return this.width; }
 	public int getHeight() { return this.height; }
 	public boolean shouldUpdateSize() { return this.updateSize; }
-	public void setUpdateSize(int nextWidth, int nextHeight) { 
+	public void setNextSize(int nextWidth, int nextHeight) { 
 		this.nextWidth = nextWidth;
 		this.nextHeight = nextHeight;
 		this.updateSize = true;
@@ -234,7 +241,7 @@ public class Window {
 	
 	public boolean isVSync() { return this.vSync; }
 	public boolean shouldUpdateVSync() { return this.updateVSync; }
-	public void setUpdateVSync(boolean nextVSync) { 
+	public void setNextVSync(boolean nextVSync) { 
 		this.nextVSync = nextVSync;
 		this.updateVSync = true;
 	}
