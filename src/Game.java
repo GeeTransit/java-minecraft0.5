@@ -21,7 +21,7 @@ public class Game implements ILogic {
 	private int direction;
 	private float color;
 	private Renderer renderer;
-	private Mesh mesh;
+	private Mesh[] meshes;
 
 	public Game() {
 		this.direction = 0;
@@ -56,22 +56,20 @@ public class Game implements ILogic {
 		this.renderer.init();
 		
 		// Create rectangle mesh
-		float[] positions = new float[]{
+		float[] positions = {
 			-0.5f,  0.5f, -1.0f,
 			-0.5f, -0.5f, -1.0f,
 			 0.5f, -0.5f, -1.0f,
 			 0.5f,  0.5f, -1.0f,
 		};
-		float[] colours = new float[]{
+		float[] colours = {
 			0.5f, 0.0f, 0.0f,
 			0.0f, 0.5f, 0.0f,
 			0.0f, 0.0f, 0.5f,
-			0.0f, 0.5f, 0.5f,
+			0.0f, 1.0f, 1.0f,
 		};
-		int[] indices = new int[]{
-			0, 1, 3, 3, 1, 2,
-		};
-		this.mesh = new Mesh(positions, colours, indices);
+		int[] indices = {0, 1, 3, 3, 1, 2};
+		this.meshes = new Mesh[]{new Mesh(positions, colours, indices)};
 	}
 	
 	@Override
@@ -98,12 +96,8 @@ public class Game implements ILogic {
 	@Override
 	public void render(Window window) {
 		// Check for resize / vSync change (not sure if ordering matters)
-		boolean updatedSize = window.checkUpdateSize();
+		window.checkUpdateSize();
 		window.checkUpdateVSync();
-		
-		if (updatedSize) {
-			this.renderer.resize(window);
-		}
 		
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
 		
@@ -114,7 +108,7 @@ public class Game implements ILogic {
 			glClearColor(this.color, this.color, this.color, 0.0f);
 		}
 		
-		this.renderer.render(window, this.mesh);
+		this.renderer.render(window, this.meshes);
 		
 		// Swap buffers
 		window.update();
@@ -123,6 +117,7 @@ public class Game implements ILogic {
 	@Override
 	public void cleanup() {
 		this.renderer.cleanup();
-		this.mesh.cleanup();
+		for (Mesh mesh : this.meshes)
+			mesh.cleanup();
 	}
 }

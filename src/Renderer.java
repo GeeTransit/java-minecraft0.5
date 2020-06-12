@@ -37,17 +37,15 @@ public class Renderer {
 		this.projectionMatrix.setPerspective(this.fov, aspectRatio, Z_NEAR, Z_FAR);
 	}
 
-	public void render(Window window, Mesh mesh) {
+	public void render(Window window, Mesh[] meshes) {
 		this.shader.bind();
+		this.resize(window);
 		this.shader.setUniform("projectionMatrix", this.projectionMatrix);
 
-		// Draw mesh
-		glBindVertexArray(mesh.getVaoId());
-		glDrawArrays(GL_TRIANGLES, 0, mesh.getVertexCount());
-		glDrawElements(GL_TRIANGLES, mesh.getVertexCount(), GL_UNSIGNED_INT, 0);
-
-		// Restore state
-		glBindVertexArray(0);
+		// Draw meshes
+		for (Mesh mesh : meshes) {
+			mesh.render();
+		}
 
 		this.shader.unbind();
 	}

@@ -71,6 +71,14 @@ public class Mesh {
 
 	public int getVaoId() { return this.vaoId; }
 	public int getVertexCount() { return this.vertexCount; }
+	
+	public void render() {
+		glBindVertexArray(this.vaoId);
+		glDrawElements(GL_TRIANGLES, this.vertexCount, GL_UNSIGNED_INT, 0);
+
+		// Restore state
+		glBindVertexArray(0);
+	}
 
 	public void cleanup() {
 		glDisableVertexAttribArray(0);
