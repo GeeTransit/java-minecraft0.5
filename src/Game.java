@@ -5,6 +5,7 @@ Game logic implementation.
 
 package geetransit.minecraft05.game;
 
+import org.joml.Vector3f;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.Version;
@@ -20,12 +21,14 @@ public class Game implements ILogic {
 	
 	private int direction;
 	private float color;
+	private Vector3f movement;
 	private Renderer renderer;
 	private Item[] items;
 
 	public Game() {
 		this.direction = 0;
 		this.color = 0.5f;
+		this.movement = new Vector3f();
 		this.renderer = new Renderer();
 	}
 	
@@ -75,21 +78,29 @@ public class Game implements ILogic {
 	@Override
 	public void input(Window window) {
 		this.direction = 0;
-		if (glfwGetKey(window.getHandle(), GLFW_KEY_UP) == GLFW_PRESS) {
-			this.direction++;
-		}
-		if (glfwGetKey(window.getHandle(), GLFW_KEY_DOWN) == GLFW_PRESS) {
-			this.direction--;
-		}
+		if (window.isKeyDown(GLFW_KEY_UP)) this.direction++;
+		if (window.isKeyDown(GLFW_KEY_DOWN)) this.direction--;
+		
+		this.movement.zero();
+		if (window.isKeyDown(GLFW_KEY_W)) this.movement.z--;
+		if (window.isKeyDown(GLFW_KEY_A)) this.movement.x--;
+		if (window.isKeyDown(GLFW_KEY_S)) this.movement.z++;
+		if (window.isKeyDown(GLFW_KEY_D)) this.movement.x++;
+		if (window.isKeyDown(GLFW_KEY_SPACE)) this.movement.y++;
+		if (window.isKeyDown(GLFW_KEY_LEFT_SHIFT)) this.movement.y--;
+		if (window.isKeyDown(GLFW_KEY_LEFT_CONTROL)) this.movement.z *= 2;
 	}
 	
 	@Override
 	public void update(float interval) {
 		this.color += this.direction * 0.01f;
-		if (color > 1) {
-			this.color = 1.0f;
-		} else if (color < 0) {
-			this.color = 0.0f;
+		if (color > 1) this.color = 1.0f;
+		if (color < 0) this.color = 0.0f;
+		
+		Vector3f movement = new Vector3f();
+		this.movement.mul(-0.05f, movement);
+		for (Item item : this.items) {
+			item.position.add(movement);
 		}
 	}
 	
@@ -118,6 +129,6 @@ public class Game implements ILogic {
 	public void cleanup() {
 		this.renderer.cleanup();
 		for (Item item : this.items)
-			item.getMesh().cleanup();
+			item.mesh.cleanup();
 	}
 }

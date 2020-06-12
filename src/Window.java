@@ -206,6 +206,13 @@ public class Window {
 		}
 	}
 	
+	public int getKey(int key) {
+		return glfwGetKey(this.getHandle(), key);
+	}
+	public boolean isKeyDown(int key) {
+		return (this.getKey(key) == GLFW_PRESS);
+	}
+	
 	public long getHandle() { return this.handle; }
 	public boolean isDestroyed() { return this.destroyed; }
 	public Object getLock() { return this.lock; }

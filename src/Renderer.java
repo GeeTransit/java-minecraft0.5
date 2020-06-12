@@ -48,12 +48,12 @@ public class Renderer {
 		// Draw meshes
 		for (Item item : items) {
 			Matrix4f worldMatrix = this.transformation.getWorldMatrix(
-                item.getPosition(),
-                item.getRotation(),
-                item.getScale()
+                item.position,
+                item.rotation,
+                item.scale
 			);
 			this.shader.setUniform("worldMatrix", worldMatrix);
-			item.getMesh().render();
+			item.mesh.render();
 		}
 
 		this.shader.unbind();
