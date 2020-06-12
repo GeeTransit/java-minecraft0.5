@@ -82,7 +82,7 @@ public class Shader {
 		// definition in res/vertex.vs
 		// equivalent of `layout (location = #) ...`
 		glBindAttribLocation(this.programId, 0, "position");
-		glBindAttribLocation(this.programId, 1, "colour");
+		glBindAttribLocation(this.programId, 1, "color");
 		glValidateProgram(this.programId);
 		if (glGetProgrami(this.programId, GL_VALIDATE_STATUS) == 0) {
 			System.err.println("Warning validating Shader code: " + glGetProgramInfoLog(this.programId, 1024));

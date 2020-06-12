@@ -61,14 +61,14 @@ public class Game implements ILogic {
 			 0.5f, -0.5f, -1.0f,
 			 0.5f,  0.5f, -1.0f,
 		};
-		float[] colours = {
+		float[] colors = {
 			0.5f, 0.0f, 0.0f,
 			0.0f, 0.5f, 0.0f,
 			0.0f, 0.0f, 0.5f,
 			0.0f, 1.0f, 1.0f,
 		};
 		int[] indices = {0, 1, 3, 3, 1, 2};
-		this.items = new Item[]{new Item(new Mesh(positions, colours, indices))};
+		this.items = new Item[]{new Item(new Mesh(positions, colors, indices))};
 	}
 	
 	@Override
@@ -108,7 +108,7 @@ public class Game implements ILogic {
 		// clear the framebuffer
 		window.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
-		// Different colour based on vSync or not (colourful = vSync on)
+		// Different color based on vSync or not (colorful = vSync on)
 		if (window.isVSync())
 			window.clearColor(1-this.color, this.color/2+0.5f, this.color, 0.0f);
 		else
