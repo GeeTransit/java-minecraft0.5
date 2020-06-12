@@ -21,7 +21,7 @@ public class Game implements ILogic {
 	private int direction;
 	private float color;
 	private Renderer renderer;
-	private Mesh[] meshes;
+	private Item[] items;
 
 	public Game() {
 		this.direction = 0;
@@ -69,7 +69,7 @@ public class Game implements ILogic {
 			0.0f, 1.0f, 1.0f,
 		};
 		int[] indices = {0, 1, 3, 3, 1, 2};
-		this.meshes = new Mesh[]{new Mesh(positions, colours, indices)};
+		this.items = new Item[]{new Item(new Mesh(positions, colours, indices))};
 	}
 	
 	@Override
@@ -108,7 +108,7 @@ public class Game implements ILogic {
 			glClearColor(this.color, this.color, this.color, 0.0f);
 		}
 		
-		this.renderer.render(window, this.meshes);
+		this.renderer.render(window, this.items);
 		
 		// Swap buffers
 		window.update();
@@ -117,7 +117,7 @@ public class Game implements ILogic {
 	@Override
 	public void cleanup() {
 		this.renderer.cleanup();
-		for (Mesh mesh : this.meshes)
-			mesh.cleanup();
+		for (Item item : this.items)
+			item.getMesh().cleanup();
 	}
 }
