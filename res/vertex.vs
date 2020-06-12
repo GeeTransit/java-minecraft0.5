@@ -7,8 +7,10 @@ in vec3 colour;  // layout(location = 1)
 out vec4 outPosition;
 out vec3 exColour;
 
+uniform mat4 projectionMatrix;
+
 void main()
 {
-	gl_Position = vec4(position, 1.0);
+	gl_Position = projectionMatrix * vec4(position, 1.0);
 	exColour = colour;
 }

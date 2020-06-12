@@ -6,6 +6,9 @@ Renderer class.
 package geetransit.minecraft05.game;
 
 import geetransit.minecraft05.engine.*;
+
+import org.joml.*;
+import org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.opengl.GL30.*;
 
 public class Renderer {
@@ -13,17 +16,33 @@ public class Renderer {
 	private int vaoId;
 	private ShaderProgram shaderProgram;
 	
-	public Renderer() {}
+	private float fov;
+	private static final float Z_NEAR = 0.00f;
+	private static final float Z_FAR = 1000f;
+	private Matrix4f projectionMatrix;
 	
-	public void init() throws Exception {
+	public Renderer() {
+		this.fov = (float) java.lang.Math.toRadians(60.0f);
+		this.projectionMatrix = new Matrix4f();
+	}
+	
+	public void init(Window window) throws Exception {
 		this.shaderProgram = new ShaderProgram();
 		this.shaderProgram.createVertexShader(Utils.loadResource("/res/vertex.vs"));
 		this.shaderProgram.createFragmentShader(Utils.loadResource("/res/fragment.fs"));
 		this.shaderProgram.link();
+		this.shaderProgram.createUniform("projectionMatrix");
+		this.resize(window);
+	}
+	
+	public void resize(Window window) {
+		float aspectRatio = (float) window.getWidth() / window.getHeight();
+		this.projectionMatrix.setPerspective(this.fov, aspectRatio, Z_NEAR, Z_FAR);
 	}
 
 	public void render(Window window, Mesh mesh) {
 		this.shaderProgram.bind();
+		this.shaderProgram.setUniform("projectionMatrix", this.projectionMatrix);
 
 		// Draw mesh
 		glBindVertexArray(mesh.getVaoId());

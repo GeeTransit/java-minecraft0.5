@@ -5,6 +5,9 @@ Shader program.
 
 package geetransit.minecraft05.engine;
 
+import java.util.*;
+import org.joml.*;
+import org.lwjgl.system.*;
 import static org.lwjgl.opengl.GL20.*;
 
 public class ShaderProgram {
@@ -12,11 +15,29 @@ public class ShaderProgram {
 
 	private int vertexShaderId;
 	private int fragmentShaderId;
+	
+	private final Map<String, Integer> uniforms;
 
 	public ShaderProgram() throws Exception {
 		this.programId = glCreateProgram();
 		if (this.programId == 0) {
 			throw new Exception("Could not create Shader");
+		}
+		this.uniforms = new HashMap<>();
+	}
+	
+	public void createUniform(String name) throws Exception {
+		int location = glGetUniformLocation(this.programId, name);
+		if (location < 0) {
+			throw new Exception("Could not find uniform:" + name);
+		}
+		uniforms.put(name, location);
+	}
+	
+	public void setUniform(String name, Matrix4f value) {
+		// Dump the matrix into a float buffer
+		try (MemoryStack stack = MemoryStack.stackPush()) {
+			glUniformMatrix4fv(uniforms.get(name), false, value.get(stack.mallocFloat(16)));
 		}
 	}
 

@@ -183,20 +183,26 @@ public class Window {
 		}
 	}
 	
-	public void checkUpdateSize() {
+	public boolean checkUpdateSize() {
 		if (this.shouldUpdateSize()) {
 			this.width = this.nextWidth;
 			this.height = this.nextHeight;
 			glViewport(0, 0, this.getWidth(), this.getHeight());
 			this.updateSize = false;
+			return true;
+		} else {
+			return false;
 		}
 	}
 	
-	public void checkUpdateVSync() {
+	public boolean checkUpdateVSync() {
 		if (this.shouldUpdateVSync()) {
 			this.vSync = this.nextVSync;
 			glfwSwapInterval(this.isVSync() ? 1 : 0);
 			this.updateVSync = false;
+			return true;
+		} else {
+			return false;
 		}
 	}
 	
