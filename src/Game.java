@@ -53,7 +53,7 @@ public class Game implements ILogic {
 		glClearColor(this.color, this.color, this.color, 0.0f);
 		
 		// Link shaders. (located in res/)
-		this.renderer.init(window);
+		this.renderer.init();
 		
 		// Create rectangle mesh
 		float[] positions = new float[]{
@@ -98,10 +98,10 @@ public class Game implements ILogic {
 	@Override
 	public void render(Window window) {
 		// Check for resize / vSync change (not sure if ordering matters)
-		boolean resized = window.checkUpdateSize();
+		boolean updatedSize = window.checkUpdateSize();
 		window.checkUpdateVSync();
 		
-		if (resized) {
+		if (updatedSize) {
 			this.renderer.resize(window);
 		}
 		

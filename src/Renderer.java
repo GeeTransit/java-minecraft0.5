@@ -7,32 +7,29 @@ package geetransit.minecraft05.game;
 
 import geetransit.minecraft05.engine.*;
 
-import org.joml.*;
+import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.opengl.GL30.*;
 
 public class Renderer {
-	private int vboId;
-	private int vaoId;
-	private ShaderProgram shaderProgram;
+	private Shader shader;
 	
 	private float fov;
-	private static final float Z_NEAR = 0.00f;
+	private static final float Z_NEAR = 0.01f;
 	private static final float Z_FAR = 1000f;
 	private Matrix4f projectionMatrix;
 	
 	public Renderer() {
-		this.fov = (float) java.lang.Math.toRadians(60.0f);
+		this.fov = (float) Math.toRadians(60.0f);
 		this.projectionMatrix = new Matrix4f();
 	}
 	
-	public void init(Window window) throws Exception {
-		this.shaderProgram = new ShaderProgram();
-		this.shaderProgram.createVertexShader(Utils.loadResource("/res/vertex.vs"));
-		this.shaderProgram.createFragmentShader(Utils.loadResource("/res/fragment.fs"));
-		this.shaderProgram.link();
-		this.shaderProgram.createUniform("projectionMatrix");
-		this.resize(window);
+	public void init() throws Exception {
+		this.shader = new Shader();
+		this.shader.createVertexShader(Utils.loadResource("/res/vertex.vs"));
+		this.shader.createFragmentShader(Utils.loadResource("/res/fragment.fs"));
+		this.shader.link();
+		this.shader.createUniform("projectionMatrix");
 	}
 	
 	public void resize(Window window) {
@@ -41,8 +38,8 @@ public class Renderer {
 	}
 
 	public void render(Window window, Mesh mesh) {
-		this.shaderProgram.bind();
-		this.shaderProgram.setUniform("projectionMatrix", this.projectionMatrix);
+		this.shader.bind();
+		this.shader.setUniform("projectionMatrix", this.projectionMatrix);
 
 		// Draw mesh
 		glBindVertexArray(mesh.getVaoId());
@@ -52,13 +49,13 @@ public class Renderer {
 		// Restore state
 		glBindVertexArray(0);
 
-		this.shaderProgram.unbind();
+		this.shader.unbind();
 	}
 
 	public void cleanup() {
-		if (this.shaderProgram != null) {
-			this.shaderProgram.cleanup();
-			this.shaderProgram = null;
+		if (this.shader != null) {
+			this.shader.cleanup();
+			this.shader = null;
 		}
 	}
 }

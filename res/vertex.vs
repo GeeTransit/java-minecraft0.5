@@ -1,6 +1,6 @@
 #version 130
 
-// bind in ShaderProgram.link
+// bind in Shader.link
 in vec3 position;  // layout(location = 0)
 in vec3 colour;  // layout(location = 1)
 

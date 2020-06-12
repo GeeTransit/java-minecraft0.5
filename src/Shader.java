@@ -1,6 +1,6 @@
 /*
 ahbejarano
-Shader program.
+Shader wrapper class.
 */
 
 package geetransit.minecraft05.engine;
@@ -10,7 +10,7 @@ import org.joml.*;
 import org.lwjgl.system.*;
 import static org.lwjgl.opengl.GL20.*;
 
-public class ShaderProgram {
+public class Shader {
 	private final int programId;
 
 	private int vertexShaderId;
@@ -18,7 +18,7 @@ public class ShaderProgram {
 	
 	private final Map<String, Integer> uniforms;
 
-	public ShaderProgram() throws Exception {
+	public Shader() throws Exception {
 		this.programId = glCreateProgram();
 		if (this.programId == 0) {
 			throw new Exception("Could not create Shader");
