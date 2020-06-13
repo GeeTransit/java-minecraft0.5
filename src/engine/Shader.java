@@ -40,6 +40,9 @@ public class Shader {
 			glUniformMatrix4fv(uniforms.get(name), false, value.get(stack.mallocFloat(16)));
 		}
 	}
+	public void setUniform(String name, int value) {
+		glUniform1i(uniforms.get(name), value);
+	}
 
 	public void createVertexShader(String shaderCode) throws Exception {
 		this.vertexShaderId = createShader(shaderCode, GL_VERTEX_SHADER);
@@ -82,7 +85,7 @@ public class Shader {
 		// definition in res/vertex.vs
 		// equivalent of `layout (location = #) ...`
 		glBindAttribLocation(this.programId, 0, "position");
-		glBindAttribLocation(this.programId, 1, "color");
+		glBindAttribLocation(this.programId, 1, "coords");
 		glValidateProgram(this.programId);
 		if (glGetProgrami(this.programId, GL_VALIDATE_STATUS) == 0) {
 			System.err.println("Warning validating Shader code: " + glGetProgramInfoLog(this.programId, 1024));

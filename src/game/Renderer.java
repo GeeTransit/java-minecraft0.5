@@ -32,6 +32,7 @@ public class Renderer {
 		
 		this.shader.createUniform("projectionMatrix");
 		this.shader.createUniform("worldMatrix");
+		this.shader.createUniform("texture_sampler");
 	}
 
 	public void render(Window window, Item[] items) {
@@ -44,6 +45,7 @@ public class Renderer {
 			Z_FAR
 		);
 		this.shader.setUniform("projectionMatrix", projectionMatrix);
+		this.shader.setUniform("texture_sampler", 0);
 
 		// Draw meshes
 		for (Item item : items) {
