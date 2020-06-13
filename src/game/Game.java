@@ -73,113 +73,18 @@ public class Game implements ILogic {
 		this.renderer.init();
 		
 		// Create the cube mesh
-		float[] positions = {
-			// V0
-			-0.5f, 0.5f, 0.5f,
-			// V1
-			-0.5f, -0.5f, 0.5f,
-			// V2
-			0.5f, -0.5f, 0.5f,
-			// V3
-			0.5f, 0.5f, 0.5f,
-			// V4
-			-0.5f, 0.5f, -0.5f,
-			// V5
-			0.5f, 0.5f, -0.5f,
-			// V6
-			-0.5f, -0.5f, -0.5f,
-			// V7
-			0.5f, -0.5f, -0.5f,
-			
-			// For text coords in top face
-			// V8: V4 repeated
-			-0.5f, 0.5f, -0.5f,
-			// V9: V5 repeated
-			0.5f, 0.5f, -0.5f,
-			// V10: V0 repeated
-			-0.5f, 0.5f, 0.5f,
-			// V11: V3 repeated
-			0.5f, 0.5f, 0.5f,
-
-			// For text coords in right face
-			// V12: V3 repeated
-			0.5f, 0.5f, 0.5f,
-			// V13: V2 repeated
-			0.5f, -0.5f, 0.5f,
-
-			// For text coords in left face
-			// V14: V0 repeated
-			-0.5f, 0.5f, 0.5f,
-			// V15: V1 repeated
-			-0.5f, -0.5f, 0.5f,
-
-			// For text coords in bottom face
-			// V16: V6 repeated
-			-0.5f, -0.5f, -0.5f,
-			// V17: V7 repeated
-			0.5f, -0.5f, -0.5f,
-			// V18: V1 repeated
-			-0.5f, -0.5f, 0.5f,
-			// V19: V2 repeated
-			0.5f, -0.5f, 0.5f,
-		};
-		int[] indices = {
-			// Front face
-			0, 1, 3, 3, 1, 2,
-			// Top Face
-			8, 10, 11, 9, 8, 11,
-			// Right face
-			12, 13, 7, 5, 12, 7,
-			// Left face
-			14, 15, 6, 4, 14, 6,
-			// Bottom face
-			16, 18, 19, 17, 16, 19,
-			// Back face
-			4, 6, 7, 5, 4, 7,
-		};
-		float[] coords = {
-			0.0f, 0.0f,
-			0.0f, 0.5f,
-			0.5f, 0.5f,
-			0.5f, 0.0f,
-			
-			0.0f, 0.0f,
-			0.5f, 0.0f,
-			0.0f, 0.5f,
-			0.5f, 0.5f,
-			
-			// For text coords in top face
-			0.0f, 0.5f,
-			0.5f, 0.5f,
-			0.0f, 1.0f,
-			0.5f, 1.0f,
-
-			// For text coords in right face
-			0.0f, 0.0f,
-			0.0f, 0.5f,
-
-			// For text coords in left face
-			0.5f, 0.0f,
-			0.5f, 0.5f,
-
-			// For text coords in bottom face
-			0.5f, 0.0f,
-			1.0f, 0.0f,
-			0.5f, 0.5f,
-			1.0f, 0.5f,
-		};
-		Texture texture = new Texture("/res/grassblock.png");
-		Mesh mesh = new Mesh(positions, indices, coords, texture);
+		Mesh mesh = ObjLoader.loadMesh("/res/cube.obj");
+		mesh.setTexture(new Texture("/res/grassblock.png"));
 		
-		this.items.add(new Item(mesh).setPosition(-1, -1, -1));
-		this.items.add(new Item(mesh).setPosition( 0, -1, -1));
-		this.items.add(new Item(mesh).setPosition(+1,  0, -1));
-		this.items.add(new Item(mesh).setPosition(-1, -1,  0));
-		this.items.add(new Item(mesh).setPosition( 0,  0,  0));
-		this.items.add(new Item(mesh).setPosition(+1, +1,  0));
-		this.items.add(new Item(mesh).setPosition(-1,  0, +1));
-		this.items.add(new Item(mesh).setPosition( 0, +1, +1));
-		this.items.add(new Item(mesh).setPosition(+1, +1, +1));
+		this.items.add(new Item(mesh).setScale(0.5f).setPosition(-1, -1, -1));
+		this.items.add(new Item(mesh).setScale(0.5f).setPosition( 0, -1, -1));
+		this.items.add(new Item(mesh).setScale(0.5f).setPosition(+1,  0, -1));
+		this.items.add(new Item(mesh).setScale(0.5f).setPosition(-1, -1,  0));
+		this.items.add(new Item(mesh).setScale(0.5f).setPosition( 0,  0,  0));
+		this.items.add(new Item(mesh).setScale(0.5f).setPosition(+1, +1,  0));
+		this.items.add(new Item(mesh).setScale(0.5f).setPosition(-1,  0, +1));
+		this.items.add(new Item(mesh).setScale(0.5f).setPosition( 0, +1, +1));
+		this.items.add(new Item(mesh).setScale(0.5f).setPosition(+1, +1, +1));
 		
 		// Use correct depth checking
 		glEnable(GL_DEPTH_TEST);
@@ -198,13 +103,17 @@ public class Game implements ILogic {
 		if (window.isKeyDown(GLFW_KEY_DOWN)) this.direction--;
 		
 		this.movement.zero();
+		boolean sprinting = (!window.isKeyDown(GLFW_KEY_LEFT_SHIFT) && window.isKeyDown(GLFW_KEY_LEFT_CONTROL));
 		if (window.isKeyDown(GLFW_KEY_W)) this.movement.z--;
 		if (window.isKeyDown(GLFW_KEY_S)) this.movement.z++;
 		if (window.isKeyDown(GLFW_KEY_A)) this.movement.x--;
 		if (window.isKeyDown(GLFW_KEY_D)) this.movement.x++;
 		if (window.isKeyDown(GLFW_KEY_LEFT_SHIFT)) this.movement.y--;
 		if (window.isKeyDown(GLFW_KEY_SPACE)) this.movement.y++;
-		if (window.isKeyDown(GLFW_KEY_LEFT_CONTROL) && this.movement.z < 0) this.movement.z *= 2;
+		if (sprinting && this.movement.z < 0) this.movement.z *= 2;
+		
+		if (this.movement.length() > 1f) this.movement.div(this.movement.length());
+		if (sprinting) this.movement.mul(1.5f);
 	}
 	
 	@Override

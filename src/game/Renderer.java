@@ -34,7 +34,10 @@ public class Renderer {
 		
 		this.shader.createUniform("projectionMatrix");
 		this.shader.createUniform("modelViewMatrix");
+		
 		this.shader.createUniform("texture_sampler");
+		this.shader.createUniform("color");
+		this.shader.createUniform("useTexture");
 	}
 
 	public void render(Window window, Camera camera, List<Item> items) {
@@ -58,6 +61,8 @@ public class Renderer {
 		for (Item item : items) {
 			Matrix4f modelViewMatrix = this.transformation.getModelViewMatrix(item, viewMatrix);
 			this.shader.setUniform("modelViewMatrix", modelViewMatrix);
+			this.shader.setUniform("color", item.mesh.getColor());
+			this.shader.setUniform("useTexture", item.mesh.isTexture() ? 1 : 0);
 			item.mesh.render();
 		}
 
