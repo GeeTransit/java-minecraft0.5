@@ -2,7 +2,8 @@
 
 Double click `run.bat` to start the game.
 
-Github repository # https://github.com/GeeTransit/java-minecraft0.5
+Source # https://github.com/GeeTransit/java-minecraft0.5
+Book # https://ahbejarano.gitbook.io/lwjglgamedev
 
 ## Instructions
 
