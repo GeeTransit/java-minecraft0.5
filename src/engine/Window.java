@@ -24,6 +24,7 @@ public class Window {
 	private int width;
 	private int height;
 	private boolean fullscreen;
+	private boolean borderless;
 	
 	private boolean vSync;
 	private int targetFps;
@@ -76,6 +77,7 @@ public class Window {
 		glfwDefaultWindowHints(); // optional, the current window hints are already the default
 		glfwWindowHint(GLFW_VISIBLE, GL_FALSE); // the window will stay hidden after creation
 		glfwWindowHint(GLFW_RESIZABLE, GL_TRUE); // the window will be resizable
+		glfwWindowHint(GLFW_FOCUSED, GL_TRUE); // get focus when shown
 
 		// Get the resolution of the primary monitor
 		this.monitor = glfwGetPrimaryMonitor();
@@ -96,13 +98,16 @@ public class Window {
 		this.xPos = this.getCenteredXPos();
 		this.yPos = this.getCenteredYPos();
 		this.updateWindowMonitor();
-		
-		// Make the window visible
-		glfwShowWindow(this.handle);
 	}
 	
 	public void event() {
+		// Make the window visible
+		glfwShowWindow(this.handle);
+		
 		while (!glfwWindowShouldClose(this.handle)) {
+			// Only force focus when in borderless fullscreen
+			if (this.isBorderless())
+				glfwFocusWindow(this.handle);
 			// This will block until an event occurs.
 			// (Helps reduce CPU usage.)
 			glfwWaitEvents();
@@ -228,7 +233,7 @@ public class Window {
 	}
 	
 	protected void updateWindowMonitor() {
-		glfwSetWindowAttrib(this.getHandle(), GLFW_DECORATED, this.isFullscreen() ? 0 : 1);
+		this.setAttrib(GLFW_DECORATED, this.isFullscreen() ? 0 : 1);
 		glfwSetWindowMonitor(
 			this.getHandle(), this.getCurrentMonitor(), this.getXPos(), this.getYPos(),
 			this.getWidth(), this.getHeight(), GLFW_DONT_CARE
@@ -251,6 +256,9 @@ public class Window {
 	public GLFWKeyCallback setKeyCallback(GLFWKeyCallbackI keyCallback) {
 		return glfwSetKeyCallback(this.getHandle(), keyCallback);
 	}
+	public void setAttrib(int attrib, int value) {
+		glfwSetWindowAttrib(this.getHandle(), attrib, value);
+	}
 	public int getKey(int key) {
 		return glfwGetKey(this.getHandle(), key);
 	}
@@ -264,8 +272,12 @@ public class Window {
 	
 	// hold down shift when pressing F to use real fullscreen
 	protected long getCurrentMonitor() {
-		if (this.isFullscreen() && this.isKeyDown(GLFW_KEY_LEFT_SHIFT))
-			return this.monitor;
+		this.borderless = false;
+		if (this.isFullscreen())
+			if (this.isKeyDown(GLFW_KEY_LEFT_SHIFT))
+				return this.monitor;
+			else
+				this.borderless = true;
 		return NULL;
 	}
 	
@@ -292,6 +304,7 @@ public class Window {
 	public int getCenteredYPos() { return this.isFullscreen() ? 0 : (this.getScreenHeight() - this.getWindowHeight()) / 2; }
 	
 	public boolean isFullscreen() { return this.fullscreen; }
+	public boolean isBorderless() { return this.borderless; }
 	public boolean shouldUpdateSize() { return this.updateSize; }
 	public void setNextSize(int nextWidth, int nextHeight) { 
 		this.nextWidth = nextWidth;
