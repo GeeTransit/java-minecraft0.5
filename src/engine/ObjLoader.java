@@ -12,7 +12,7 @@ import org.joml.Vector2f;
 
 public class ObjLoader {
 	public static Mesh loadMesh(String file) throws Exception {
-		Stream<String> lines = Utils.loadLinesStream(file.substring(1));
+		Stream<String> lines = Utils.loadLinesStream(file);
 		
 		List<Vector3f> vertices = new ArrayList<>();
 		List<Vector2f> textures = new ArrayList<>();

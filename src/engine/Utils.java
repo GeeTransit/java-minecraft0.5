@@ -40,6 +40,9 @@ public class Utils {
 	}
 
 	public static Stream<String> loadLinesStream(String file) throws Exception {
-		return Files.lines(Paths.get(file));
+		// source # https://stackoverflow.com/a/30336423
+		InputStream in = loadInputStream(file);
+		InputStreamReader isr = new InputStreamReader(in, StandardCharsets.UTF_8.name());
+		return new BufferedReader(isr).lines();
 	}
 }
