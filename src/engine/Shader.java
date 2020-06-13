@@ -43,6 +43,9 @@ public class Shader {
 	public void setUniform(String name, int value) {
 		glUniform1i(uniforms.get(name), value);
 	}
+	public void setUniform(String name, Vector3f value) {
+		glUniform3f(uniforms.get(name), value.x, value.y, value.z);
+	}
 
 	public void createVertexShader(String shaderCode) throws Exception {
 		this.vertexShaderId = createShader(shaderCode, GL_VERTEX_SHADER);

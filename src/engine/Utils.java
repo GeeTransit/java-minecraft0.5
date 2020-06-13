@@ -5,22 +5,23 @@ Utility methods.
 
 package geetransit.minecraft05.engine;
 
-import java.io.InputStream;
-import java.io.ByteArrayOutputStream;
-import java.util.Scanner;
+import java.io.*;
+import java.util.*;
+import java.util.stream.*;
 
-import java.nio.ByteBuffer;
+import java.nio.*;
+import java.nio.file.*;
 import java.nio.charset.StandardCharsets;
 
 public class Utils {
 	
-	public static InputStream loadStream(String file) throws Exception {
+	public static InputStream loadInputStream(String file) throws Exception {
 		return Utils.class.getResourceAsStream(file);
 	}
 	
 	// source # https://stackoverflow.com/a/17861016
 	public static byte[] loadByteArray(String file) throws Exception {
-		InputStream in = loadStream(file);
+		InputStream in = loadInputStream(file);
 		ByteArrayOutputStream out = new ByteArrayOutputStream(); 
 		byte[] buffer = new byte[0xFFFF];
 		int len;
@@ -31,11 +32,14 @@ public class Utils {
 
 	public static String loadResource(String file) throws Exception {
 		try (
-			InputStream in = loadStream(file);
+			InputStream in = loadInputStream(file);
 			Scanner scanner = new Scanner(in, StandardCharsets.UTF_8.name());
 		) {
 			return scanner.useDelimiter("\\A").next();
 		}
 	}
 
+	public static Stream<String> loadLinesStream(String file) throws Exception {
+		return Files.lines(Paths.get(file));
+	}
 }
