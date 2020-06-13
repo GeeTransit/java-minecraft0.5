@@ -12,10 +12,11 @@ public class Main {
 
 	public static void main(String[] args) {
 		try {
+			boolean fullscreen = false;
 			boolean vSync = true;
 			int targetFps = 5;
 			int targetUps = 30;
-			Window window = new Window("Hello World!", 300, 300, vSync, targetFps, targetUps);
+			Window window = new Window("Hello World!", 300, 300, fullscreen, vSync, targetFps, targetUps);
 			ILogic logic = new Game();
 			Engine engine = new Engine(window, logic);
 			engine.run();

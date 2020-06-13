@@ -21,6 +21,7 @@ public class Window {
 	private String title;
 	private int width;
 	private int height;
+	private boolean fullscreen;
 	
 	private boolean vSync;
 	private int targetFps;
@@ -28,16 +29,22 @@ public class Window {
 	
 	private int nextWidth;
 	private int nextHeight;
+	private boolean nextFullscreen;
 	private boolean nextVSync;
 	
-	private boolean updateVSync = true;
-	private boolean updateSize = true;
+	private boolean updateVSync = false;
+	private boolean updateSize = false;
 	private boolean destroyed = false;
+	
+	private long monitor;
+	private GLFWVidMode vidmode;
+	private GLFWFramebufferSizeCallbackI resizeCallback;
 	
 	public Window(
 		String title,
 		int width,
-		int height, 
+		int height,
+		boolean fullscreen,
 		boolean vSync,
 		int targetFps,
 		int targetUps
@@ -45,13 +52,11 @@ public class Window {
 		this.title = title;
 		this.width = width;
 		this.height = height;
+		this.fullscreen = fullscreen;
+		
 		this.vSync = vSync;
 		this.targetFps = targetFps;
 		this.targetUps = targetUps;
-		
-		this.nextWidth = nextWidth;
-		this.nextHeight = nextHeight;
-		this.nextVSync = vSync;
 		
 		this.timer = new Timer();
 		this.lock = new Object();
@@ -63,39 +68,34 @@ public class Window {
 		GLFWErrorCallback.createPrint(System.err).set();
 
 		// Initialize GLFW. Most GLFW functions will not work before doing this.
-		if (!glfwInit()) {
+		if (!glfwInit())
 			throw new IllegalStateException("Unable to initialize GLFW");
-		}
 
 		// Configure our window
 		glfwDefaultWindowHints(); // optional, the current window hints are already the default
 		glfwWindowHint(GLFW_VISIBLE, GL_FALSE); // the window will stay hidden after creation
 		glfwWindowHint(GLFW_RESIZABLE, GL_TRUE); // the window will be resizable
 
+		// Get the resolution of the primary monitor
+		this.monitor = glfwGetPrimaryMonitor();
+		this.vidmode = glfwGetVideoMode(monitor);
+		
 		// Create the window
 		this.handle = glfwCreateWindow(this.width, this.height, this.title, NULL, NULL);
-		if (this.handle == NULL) {
+		if (this.handle == NULL)
 			throw new RuntimeException("Failed to create the GLFW window");
-		}
 
         // Setup resize callback
-        glfwSetFramebufferSizeCallback(this.handle, (window, width, height) -> {
+        glfwSetFramebufferSizeCallback(this.handle, this.resizeCallback = (window, width, height) -> {
 			if (width > 0 && height > 0)
 				this.setNextSize(width, height);
         });
 
-		// Get the resolution of the primary monitor
-		GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 		// Center our window
-		glfwSetWindowPos(
-			this.handle,
-			(vidmode.width() - this.width) / 2,
-			(vidmode.height() - this.height) / 2
-		);
-
+		this.updateWindowMonitor();
+		
 		// Make the window visible
 		glfwShowWindow(this.handle);
-		
 	}
 	
 	public void event() {
@@ -123,6 +123,7 @@ public class Window {
 	}
 	
 	public void init() {
+		
 		// This adds the OpenGL context into this function.
 		glfwMakeContextCurrent(this.handle);
 		
@@ -132,6 +133,9 @@ public class Window {
 		// creates the ContextCapabilities instance and makes the OpenGL
 		// bindings available for use.
 		GL.createCapabilities();
+		
+		// Check vSync
+		glfwSwapInterval(this.isVSync() ? 1 : 0);
 		
 		// Start timer.
 		this.timer.init();
@@ -184,9 +188,13 @@ public class Window {
 	public boolean checkUpdateSize() {
 		if (!this.shouldUpdateSize())
 			return false;
+		
+		this.fullscreen = this.nextFullscreen;
 		this.width = this.nextWidth;
 		this.height = this.nextHeight;
 		glViewport(0, 0, this.getWidth(), this.getHeight());
+		
+		this.updateWindowMonitor();
 		this.updateSize = false;
 		return true;
 	}
@@ -194,11 +202,27 @@ public class Window {
 	public boolean checkUpdateVSync() {
 		if (!this.shouldUpdateVSync())
 			return false;
+		
 		this.vSync = this.nextVSync;
-		glfwSwapInterval(this.isVSync() ? 1 : 0);
+		
+		this.updateSwapInterval();
 		this.updateVSync = false;
 		return true;
 	}
+	
+	protected void updateWindowMonitor() {
+		glfwSetWindowMonitor(
+			this.getHandle(), this.getCurrentMonitor(),
+			this.getCenteredXPos(), this.getCenteredYPos(),
+			this.getWidth(), this.getHeight(),
+			GLFW_DONT_CARE
+		);
+	}
+	
+	protected void updateSwapInterval() {
+		glfwSwapInterval(this.isVSync() ? 1 : 0);
+	}
+	
 	
 	public void setShouldClose(boolean shouldClose) {
 		glfwSetWindowShouldClose(this.getHandle(), true);
@@ -221,8 +245,9 @@ public class Window {
 	}
 	
 	public long getHandle() { return this.handle; }
-	public boolean isDestroyed() { return this.destroyed; }
 	public Object getLock() { return this.lock; }
+	public boolean isDestroyed() { return this.destroyed; }
+	protected long getCurrentMonitor() { return this.isFullscreen() ? this.monitor : NULL; }
 	
 	public int getTargetFps() { return this.targetFps; }
 	public void setTargetFps(int targetFps) { this.targetFps = targetFps; }
@@ -230,12 +255,26 @@ public class Window {
 	public int getTargetUps() { return this.targetUps; }
 	public void setTargetUps(int targetFps) { this.targetUps = targetUps; }
 	
-	public int getWidth() { return this.width; }
-	public int getHeight() { return this.height; }
+	public int getWidth() { return this.isFullscreen() ? this.getScreenWidth() : this.getWindowWidth(); }
+	public int getHeight() { return this.isFullscreen() ? this.getScreenHeight() : this.getWindowHeight(); }
+	public int getWindowWidth() { return this.width; }
+	public int getWindowHeight() { return this.height; }
+	public int getScreenWidth() { return this.vidmode.width(); }
+	public int getScreenHeight() { return this.vidmode.height(); }
+	public int getCenteredXPos() { return this.isFullscreen() ? 0 : (this.getScreenWidth() - this.getWindowWidth()) / 2; }
+	public int getCenteredYPos() { return this.isFullscreen() ? 0 : (this.getScreenHeight() - this.getWindowHeight()) / 2; }
+	public boolean isFullscreen() { return this.fullscreen; }
 	public boolean shouldUpdateSize() { return this.updateSize; }
 	public void setNextSize(int nextWidth, int nextHeight) { 
 		this.nextWidth = nextWidth;
 		this.nextHeight = nextHeight;
+		this.nextFullscreen = this.fullscreen;
+		this.updateSize = true;
+	}
+	public void setNextSize(boolean fullscreen) { 
+		this.nextWidth = this.width;
+		this.nextHeight = this.height;
+		this.nextFullscreen = fullscreen;
 		this.updateSize = true;
 	}
 	

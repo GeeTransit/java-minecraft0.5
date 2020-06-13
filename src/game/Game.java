@@ -24,6 +24,7 @@ public class Game implements ILogic {
 	private Vector3f movement;
 	private Renderer renderer;
 	private Item[] items;
+	private GLFWKeyCallbackI keyCallback;
 
 	public Game() {
 		this.direction = 0;
@@ -38,11 +39,13 @@ public class Game implements ILogic {
 		System.out.println("OpenGL version: " + GL11.glGetString(GL11.GL_VERSION));
 		
 		// Setup a key callback. It will be called every time a key is pressed, repeated or released.
-		window.setKeyCallback((handle, key, scancode, action, mods) -> {
+		window.setKeyCallback(this.keyCallback = (handle, key, scancode, action, mods) -> {
 			if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE)
 				window.setShouldClose(true);  // We will detect this in the rendering loop
 			if (key == GLFW_KEY_V && action == GLFW_RELEASE)
 				window.setNextVSync(!window.isVSync());
+			if (key == GLFW_KEY_F && action == GLFW_RELEASE)
+				window.setNextSize(!window.isFullscreen());
 			if (key == GLFW_KEY_LEFT && action == GLFW_RELEASE)
 				window.setTargetFps(Math.max(1, window.getTargetFps() - 1));
 			if (key == GLFW_KEY_RIGHT && action == GLFW_RELEASE)
@@ -56,19 +59,51 @@ public class Game implements ILogic {
 		
 		// Create rectangle mesh
 		float[] positions = {
-			-0.5f,  0.5f, -1.0f,
-			-0.5f, -0.5f, -1.0f,
-			 0.5f, -0.5f, -1.0f,
-			 0.5f,  0.5f, -1.0f,
+			// VO
+			-0.5f,  0.5f,  0.5f,
+			// V1
+			-0.5f, -0.5f,  0.5f,
+			// V2
+			0.5f, -0.5f,  0.5f,
+			// V3
+			0.5f,  0.5f,  0.5f,
+			// V4
+			-0.5f,  0.5f, -0.5f,
+			// V5
+			0.5f,  0.5f, -0.5f,
+			// V6
+			-0.5f, -0.5f, -0.5f,
+			// V7
+			0.5f, -0.5f, -0.5f,
 		};
 		float[] colors = {
 			0.5f, 0.0f, 0.0f,
 			0.0f, 0.5f, 0.0f,
 			0.0f, 0.0f, 0.5f,
 			0.0f, 1.0f, 1.0f,
+			0.5f, 0.0f, 0.0f,
+			0.0f, 0.5f, 0.0f,
+			0.0f, 0.0f, 0.5f,
+			0.0f, 1.0f, 1.0f,
 		};
-		int[] indices = {0, 1, 3, 3, 1, 2};
+		int[] indices = {
+			// front
+			0, 1, 3, 3, 1, 2,
+			// top
+			4, 0, 3, 5, 4, 3,
+			// right
+			3, 2, 7, 5, 3, 7,
+			// left
+			6, 1, 0, 6, 0, 4,
+			// bottom
+			2, 1, 6, 2, 6, 7,
+			// back
+			7, 6, 4, 7, 4, 5,
+		};
 		this.items = new Item[]{new Item(new Mesh(positions, colors, indices))};
+		
+		// Use correct depth checking
+		glEnable(GL_DEPTH_TEST);
 	}
 	
 	@Override
@@ -95,8 +130,13 @@ public class Game implements ILogic {
 		
 		Vector3f movement = new Vector3f();
 		this.movement.mul(-0.05f, movement);
-		for (Item item : this.items)
+		for (Item item : this.items) {
 			item.position.add(movement);
+			item.rotation.add(1.5f, 1.5f, 1.5f);
+			item.rotation.x %= 360;
+			item.rotation.y %= 360;
+			item.rotation.z %= 360;
+		}
 	}
 	
 	@Override
