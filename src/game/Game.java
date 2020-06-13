@@ -48,9 +48,9 @@ public class Game implements ILogic {
 				window.setNextVSync(!window.isVSync());
 			if (key == GLFW_KEY_F && action == GLFW_RELEASE)
 				window.setNextSize(!window.isFullscreen());
-			if (key == GLFW_KEY_LEFT && action == GLFW_RELEASE)
+			if (key == GLFW_KEY_LEFT && !window.isVSync() && action == GLFW_RELEASE)
 				window.setTargetFps(Math.max(1, window.getTargetFps() - 1));
-			if (key == GLFW_KEY_RIGHT && action == GLFW_RELEASE)
+			if (key == GLFW_KEY_RIGHT && !window.isVSync() && action == GLFW_RELEASE)
 				window.setTargetFps(window.getTargetFps() + 1);
 		});
 		
