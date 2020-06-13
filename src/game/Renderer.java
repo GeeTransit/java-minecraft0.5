@@ -31,12 +31,14 @@ public class Renderer {
 		this.shader.link();
 		
 		this.shader.createUniform("projectionMatrix");
-		this.shader.createUniform("worldMatrix");
+		this.shader.createUniform("modelViewMatrix");
 		this.shader.createUniform("texture_sampler");
 	}
 
-	public void render(Window window, Item[] items) {
+	public void render(Window window, Camera camera, Item[] items) {
 		this.shader.bind();
+		
+		// projection
 		Matrix4f projectionMatrix = this.transformation.getProjectionMatrix(
 			this.fov,
 			window.getWidth(),
@@ -45,16 +47,15 @@ public class Renderer {
 			Z_FAR
 		);
 		this.shader.setUniform("projectionMatrix", projectionMatrix);
-		this.shader.setUniform("texture_sampler", 0);
-
+		
+		// view
+		Matrix4f viewMatrix = this.transformation.getViewMatrix(camera);
+		
 		// Draw meshes
+		this.shader.setUniform("texture_sampler", 0);
 		for (Item item : items) {
-			Matrix4f worldMatrix = this.transformation.getWorldMatrix(
-                item.position,
-                item.rotation,
-                item.scale
-			);
-			this.shader.setUniform("worldMatrix", worldMatrix);
+			Matrix4f modelViewMatrix = this.transformation.getModelViewMatrix(item, viewMatrix);
+			this.shader.setUniform("modelViewMatrix", modelViewMatrix);
 			item.mesh.render();
 		}
 

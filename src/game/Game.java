@@ -21,17 +21,23 @@ public class Game implements ILogic {
 	
 	private int direction;
 	private float color;
-	private float rotate;
+	private float cameraStep;
+	private float cameraSensitivity;
 	private Vector3f movement;
 	private Renderer renderer;
+	private Camera camera;
+	private Mouse mouse;
 	private Item[] items;
 
 	public Game() {
 		this.direction = 0;
 		this.color = 0.5f;
-		this.rotate = 100f;
+		this.cameraStep = 0.05f;
+		this.cameraSensitivity = 0.3f;
 		this.movement = new Vector3f();
 		this.renderer = new Renderer();
+		this.camera = new Camera();
+		this.mouse = new Mouse();
 	}
 	
 	@Override
@@ -54,6 +60,9 @@ public class Game implements ILogic {
 		});
 		
 		window.clearColor(this.color, this.color, this.color, 0.0f);
+		
+		// Set callbacks
+		this.mouse.init(window);
 		
 		// Link shaders. (located in res/)
 		this.renderer.init();
@@ -165,9 +174,10 @@ public class Game implements ILogic {
 	
 	@Override
 	public void input(Window window) {
+		this.mouse.input(window);
+		
 		if (window.isKeyDown(GLFW_KEY_L)) {
 			this.color = 0f;
-			this.rotate = 0f;
 		}
 		
 		this.direction = 0;
@@ -176,16 +186,12 @@ public class Game implements ILogic {
 		
 		this.movement.zero();
 		if (window.isKeyDown(GLFW_KEY_W)) this.movement.z--;
-		if (window.isKeyDown(GLFW_KEY_A)) this.movement.x--;
 		if (window.isKeyDown(GLFW_KEY_S)) this.movement.z++;
+		if (window.isKeyDown(GLFW_KEY_A)) this.movement.x--;
 		if (window.isKeyDown(GLFW_KEY_D)) this.movement.x++;
-		if (window.isKeyDown(GLFW_KEY_SPACE)) this.movement.y++;
 		if (window.isKeyDown(GLFW_KEY_LEFT_SHIFT)) this.movement.y--;
-		if (window.isKeyDown(GLFW_KEY_LEFT_CONTROL)) this.movement.z *= 2;
-		
-		if (window.isKeyDown(GLFW_KEY_R))
-			if (window.isKeyDown(GLFW_KEY_LEFT_SHIFT)) this.rotate--;
-			else this.rotate++;
+		if (window.isKeyDown(GLFW_KEY_SPACE)) this.movement.y++;
+		if (window.isKeyDown(GLFW_KEY_LEFT_CONTROL) && this.movement.z < 0) this.movement.z *= 2;
 	}
 	
 	@Override
@@ -193,17 +199,20 @@ public class Game implements ILogic {
 		this.color += this.direction * 0.01f;
 		this.color = Math.max(0f, Math.min(1f, this.color));
 		
-		Vector3f movement = new Vector3f();
-		this.movement.mul(-0.05f, movement);
-		float rotate = this.rotate * 0.01f * 1.5f;
-		
-		for (Item item : this.items) {
-			item.position.add(movement);
-			item.rotation.add(rotate, rotate, rotate);
-			item.rotation.x %= 360;
-			item.rotation.y %= 360;
-			item.rotation.z %= 360;
+		if (this.mouse.left && this.mouse.inside) {
+			// dragging
+			Vector3f rotate = new Vector3f(-this.mouse.movement.y, -this.mouse.movement.x, 0);
+			this.camera.rotation.add(rotate.mul(this.cameraSensitivity));
 		}
+		
+		if (this.mouse.right && this.mouse.inside) {
+			// panning
+			Vector3f rotate = new Vector3f(this.mouse.movement.y, this.mouse.movement.x, 0);
+			this.camera.rotation.add(rotate.mul(this.cameraSensitivity));
+		}
+		
+		Vector3f movement = new Vector3f(this.movement.x, this.movement.y, this.movement.z);
+		this.camera.movePosition(movement.mul(this.cameraStep));
 	}
 	
 	@Override
@@ -221,7 +230,7 @@ public class Game implements ILogic {
 		else
 			window.clearColor(this.color, this.color, this.color, 0.0f);
 		
-		this.renderer.render(window, this.items);
+		this.renderer.render(window, this.camera, this.items);
 		
 		// Swap buffers
 		window.update();
