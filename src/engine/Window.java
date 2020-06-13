@@ -19,6 +19,8 @@ public class Window {
 	private Object lock;
 	
 	private String title;
+	private int xPos;
+	private int yPos;
 	private int width;
 	private int height;
 	private boolean fullscreen;
@@ -92,6 +94,8 @@ public class Window {
         });
 
 		// Center our window
+		this.xPos = this.getCenteredXPos();
+		this.yPos = this.getCenteredYPos();
 		this.updateWindowMonitor();
 		
 		// Make the window visible
@@ -189,9 +193,15 @@ public class Window {
 		if (!this.shouldUpdateSize())
 			return false;
 		
+		boolean lastFullscreen = this.isFullscreen();
 		this.fullscreen = this.nextFullscreen;
 		this.width = this.nextWidth;
 		this.height = this.nextHeight;
+		if (!lastFullscreen)
+			this.updateWindowPos();
+		if (this.fullscreen)
+			// workaround to ensure vSync is correct after real fullscreen
+			this.setNextVSync(this.isVSync());
 		glViewport(0, 0, this.getWidth(), this.getHeight());
 		
 		this.updateWindowMonitor();
@@ -210,19 +220,24 @@ public class Window {
 		return true;
 	}
 	
+	protected void updateWindowPos() {
+		int[] xPos = new int[1];
+		int[] yPos = new int[1];
+		glfwGetWindowPos(this.getHandle(), xPos, yPos);
+		this.xPos = xPos[0];
+		this.yPos = yPos[0];
+	}
+	
 	protected void updateWindowMonitor() {
+		glfwSetWindowAttrib(this.getHandle(), GLFW_DECORATED, this.isFullscreen() ? 0 : 1);
 		glfwSetWindowMonitor(
-			this.getHandle(), this.getCurrentMonitor(),
-			this.getCenteredXPos(), this.getCenteredYPos(),
-			this.getWidth(), this.getHeight(),
-			GLFW_DONT_CARE
+			this.getHandle(), this.getCurrentMonitor(), this.getXPos(), this.getYPos(),
+			this.getWidth(), this.getHeight(), GLFW_DONT_CARE
 		);
 	}
 	
-	protected void updateSwapInterval() {
-		glfwSwapInterval(this.isVSync() ? 1 : 0);
-	}
-	
+	protected void updateSwapInterval(boolean vSync) { glfwSwapInterval(vSync ? 1 : 0); }
+	protected void updateSwapInterval() { this.updateSwapInterval(this.isVSync()); }
 	
 	public void setShouldClose(boolean shouldClose) {
 		glfwSetWindowShouldClose(this.getHandle(), true);
@@ -247,7 +262,13 @@ public class Window {
 	public long getHandle() { return this.handle; }
 	public Object getLock() { return this.lock; }
 	public boolean isDestroyed() { return this.destroyed; }
-	protected long getCurrentMonitor() { return this.isFullscreen() ? this.monitor : NULL; }
+	
+	// hold down shift when pressing F to use real fullscreen
+	protected long getCurrentMonitor() {
+		if (this.isFullscreen() && this.isKeyDown(GLFW_KEY_LEFT_SHIFT))
+			return this.monitor;
+		return NULL;
+	}
 	
 	public int getTargetFps() { return this.targetFps; }
 	public void setTargetFps(int targetFps) { this.targetFps = targetFps; }
@@ -261,8 +282,16 @@ public class Window {
 	public int getWindowHeight() { return this.height; }
 	public int getScreenWidth() { return this.vidmode.width(); }
 	public int getScreenHeight() { return this.vidmode.height(); }
+	
+	public int getXPos() { return this.isFullscreen() ? this.getScreenXPos() : this.getWindowXPos(); }
+	public int getYPos() { return this.isFullscreen() ? this.getScreenYPos() : this.getWindowYPos(); }
+	public int getWindowXPos() { return this.xPos; }
+	public int getWindowYPos() { return this.yPos; }
+	public int getScreenXPos() { return 0; }
+	public int getScreenYPos() { return 0; }
 	public int getCenteredXPos() { return this.isFullscreen() ? 0 : (this.getScreenWidth() - this.getWindowWidth()) / 2; }
 	public int getCenteredYPos() { return this.isFullscreen() ? 0 : (this.getScreenHeight() - this.getWindowHeight()) / 2; }
+	
 	public boolean isFullscreen() { return this.fullscreen; }
 	public boolean shouldUpdateSize() { return this.updateSize; }
 	public void setNextSize(int nextWidth, int nextHeight) { 
