@@ -10,9 +10,9 @@ import org.joml.Vector2f;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Mouse {
-	public final Vector2i current;
-	public final Vector2i movement;
-	private Vector2i previous;
+	public final Vector2f current;
+	public final Vector2f movement;
+	private Vector2f previous;
 
 	public boolean inside = false;
 	public boolean left = false;
