@@ -259,6 +259,12 @@ public class Window {
 	public void setAttrib(int attrib, int value) {
 		glfwSetWindowAttrib(this.getHandle(), attrib, value);
 	}
+	public long getAttrib(int attrib) {
+		return glfwGetWindowAttrib(this.getHandle(), attrib);
+	}
+	public void setInputMode(int mode, int value) {
+		glfwSetInputMode(this.getHandle(), mode, value);
+	}
 	public int getKey(int key) {
 		return glfwGetKey(this.getHandle(), key);
 	}

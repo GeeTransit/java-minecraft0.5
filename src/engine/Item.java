@@ -20,4 +20,16 @@ public class Item {
 		this.rotation = new Vector3f();
 		this.scale = 1;
 	}
+	
+	public Item setPosition(float x, float y, float z) {
+		this.position.x = x;
+		this.position.y = y;
+		this.position.z = z;
+		return this;
+	}
+	
+	public Item setScale(float scale) {
+		this.scale = scale;
+		return this;
+	}
 }
