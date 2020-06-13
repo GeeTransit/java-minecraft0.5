@@ -25,7 +25,6 @@ public class Game implements ILogic {
 	private Vector3f movement;
 	private Renderer renderer;
 	private Item[] items;
-	private GLFWKeyCallbackI keyCallback;
 
 	public Game() {
 		this.direction = 0;
@@ -41,7 +40,7 @@ public class Game implements ILogic {
 		System.out.println("OpenGL version: " + GL11.glGetString(GL11.GL_VERSION));
 		
 		// Setup a key callback. It will be called every time a key is pressed, repeated or released.
-		window.setKeyCallback(this.keyCallback = (handle, key, scancode, action, mods) -> {
+		window.setKeyCallback((handle, key, scancode, action, mods) -> {
 			if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE)
 				window.setShouldClose(true);  // We will detect this in the rendering loop
 			if (key == GLFW_KEY_V && action == GLFW_RELEASE)

@@ -40,7 +40,6 @@ public class Window {
 	
 	private long monitor;
 	private GLFWVidMode vidmode;
-	private GLFWFramebufferSizeCallbackI resizeCallback;
 	
 	public Window(
 		String title,
@@ -88,7 +87,7 @@ public class Window {
 			throw new RuntimeException("Failed to create the GLFW window");
 
         // Setup resize callback
-        glfwSetFramebufferSizeCallback(this.handle, this.resizeCallback = (window, width, height) -> {
+        glfwSetFramebufferSizeCallback(this.handle, (window, width, height) -> {
 			if (width > 0 && height > 0)
 				this.setNextSize(width, height);
         });
