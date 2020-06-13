@@ -21,6 +21,7 @@ public class Game implements ILogic {
 	
 	private int direction;
 	private float color;
+	private boolean rotate;
 	private Vector3f movement;
 	private Renderer renderer;
 	private Item[] items;
@@ -29,6 +30,7 @@ public class Game implements ILogic {
 	public Game() {
 		this.direction = 0;
 		this.color = 0.5f;
+		this.rotate = true;
 		this.movement = new Vector3f();
 		this.renderer = new Renderer();
 	}
@@ -44,6 +46,8 @@ public class Game implements ILogic {
 				window.setShouldClose(true);  // We will detect this in the rendering loop
 			if (key == GLFW_KEY_V && action == GLFW_RELEASE)
 				window.setNextVSync(!window.isVSync());
+			if (key == GLFW_KEY_R && action == GLFW_RELEASE)
+				this.rotate = !rotate;
 			if (key == GLFW_KEY_F && action == GLFW_RELEASE)
 				window.setNextSize(!window.isFullscreen());
 			if (key == GLFW_KEY_LEFT && action == GLFW_RELEASE)
@@ -188,10 +192,12 @@ public class Game implements ILogic {
 		this.movement.mul(-0.05f, movement);
 		for (Item item : this.items) {
 			item.position.add(movement);
-			item.rotation.add(1.5f, 1.5f, 1.5f);
-			item.rotation.x %= 360;
-			item.rotation.y %= 360;
-			item.rotation.z %= 360;
+			if (this.rotate) {
+				item.rotation.add(1.5f, 1.5f, 1.5f);
+				item.rotation.x %= 360;
+				item.rotation.y %= 360;
+				item.rotation.z %= 360;
+			}
 		}
 	}
 	
