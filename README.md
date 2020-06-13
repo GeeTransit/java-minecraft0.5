@@ -8,11 +8,16 @@ Github repository # https://github.com/GeeTransit/java-minecraft0.5
 
 (Right now, this is a test for LWJGL. Not much going on.)
 
-* Up to increase background brightness.
-* Down to decrease background brightness.
-* Press V to toggle vSync / vertical sync. (colour=on, gray=off)
-* Left to decrease frame rate. (only for vSync off)
-* Right to increase frame rate. (only for vSync off)
-* WASD to move around.
-* Space to move up, shift to move down.
-* Left control to move faster. (forward and backwards only)
+| Key   | Action |
+| ----- | ------ |
+| Up    | Increase background brightness |
+| Down  | Decrease background brightness |
+| V     | Toggle vSync / vertical sync. (colour=on, gray=off) |
+| Left  | Decrease frame rate (only for vSync off) |
+| Right | Increase frame rate (only for vSync off) |
+| WASD  | Move around |
+| Space | Up |
+| Shift | Down |
+| Ctrl  | Faster (forwards and backwards only) |
+| R     | Rotate more (shift inverts) |
+| L     | Reset background and rotation |

@@ -21,7 +21,7 @@ public class Game implements ILogic {
 	
 	private int direction;
 	private float color;
-	private boolean rotate;
+	private float rotate;
 	private Vector3f movement;
 	private Renderer renderer;
 	private Item[] items;
@@ -30,7 +30,7 @@ public class Game implements ILogic {
 	public Game() {
 		this.direction = 0;
 		this.color = 0.5f;
-		this.rotate = true;
+		this.rotate = 100f;
 		this.movement = new Vector3f();
 		this.renderer = new Renderer();
 	}
@@ -46,8 +46,6 @@ public class Game implements ILogic {
 				window.setShouldClose(true);  // We will detect this in the rendering loop
 			if (key == GLFW_KEY_V && action == GLFW_RELEASE)
 				window.setNextVSync(!window.isVSync());
-			if (key == GLFW_KEY_R && action == GLFW_RELEASE)
-				this.rotate = !rotate;
 			if (key == GLFW_KEY_F && action == GLFW_RELEASE)
 				window.setNextSize(!window.isFullscreen());
 			if (key == GLFW_KEY_LEFT && action == GLFW_RELEASE)
@@ -168,6 +166,11 @@ public class Game implements ILogic {
 	
 	@Override
 	public void input(Window window) {
+		if (window.isKeyDown(GLFW_KEY_L)) {
+			this.color = 0f;
+			this.rotate = 0f;
+		}
+		
 		this.direction = 0;
 		if (window.isKeyDown(GLFW_KEY_UP)) this.direction++;
 		if (window.isKeyDown(GLFW_KEY_DOWN)) this.direction--;
@@ -180,24 +183,27 @@ public class Game implements ILogic {
 		if (window.isKeyDown(GLFW_KEY_SPACE)) this.movement.y++;
 		if (window.isKeyDown(GLFW_KEY_LEFT_SHIFT)) this.movement.y--;
 		if (window.isKeyDown(GLFW_KEY_LEFT_CONTROL)) this.movement.z *= 2;
+		
+		if (window.isKeyDown(GLFW_KEY_R))
+			if (window.isKeyDown(GLFW_KEY_LEFT_SHIFT)) this.rotate--;
+			else this.rotate++;
 	}
 	
 	@Override
 	public void update(float interval) {
 		this.color += this.direction * 0.01f;
-		if (color > 1) this.color = 1.0f;
-		if (color < 0) this.color = 0.0f;
+		this.color = Math.max(0f, Math.min(1f, this.color));
 		
 		Vector3f movement = new Vector3f();
 		this.movement.mul(-0.05f, movement);
+		float rotate = this.rotate * 0.01f * 1.5f;
+		
 		for (Item item : this.items) {
 			item.position.add(movement);
-			if (this.rotate) {
-				item.rotation.add(1.5f, 1.5f, 1.5f);
-				item.rotation.x %= 360;
-				item.rotation.y %= 360;
-				item.rotation.z %= 360;
-			}
+			item.rotation.add(rotate, rotate, rotate);
+			item.rotation.x %= 360;
+			item.rotation.y %= 360;
+			item.rotation.z %= 360;
 		}
 	}
 	
