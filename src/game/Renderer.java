@@ -7,6 +7,7 @@ package geetransit.minecraft05.game;
 
 import geetransit.minecraft05.engine.*;
 
+import java.util.*;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.opengl.GL30.*;
@@ -19,10 +20,11 @@ public class Renderer {
 	private static final float Z_FAR = 1000f;
 	private Transformation transformation;
 	
-	public Renderer() {
-		this.fov = (float) Math.toRadians(60.0f);
+	public Renderer(float fov) {
+		this.fov = (float) Math.toRadians(fov);
 		this.transformation = new Transformation();
 	}
+	public Renderer() { this(60f); }
 	
 	public void init() throws Exception {
 		this.shader = new Shader();
@@ -35,7 +37,7 @@ public class Renderer {
 		this.shader.createUniform("texture_sampler");
 	}
 
-	public void render(Window window, Camera camera, Item[] items) {
+	public void render(Window window, Camera camera, List<Item> items) {
 		this.shader.bind();
 		
 		// projection

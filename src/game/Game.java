@@ -5,6 +5,7 @@ Game logic implementation.
 
 package geetransit.minecraft05.game;
 
+import java.util.*;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
@@ -21,24 +22,28 @@ public class Game implements ILogic {
 	
 	private int direction;
 	private float color;
-	private float cameraStep;
-	private float cameraSensitivity;
+	private float step;
+	private float sensitivity;
 	private Vector3f movement;
 	private Renderer renderer;
 	private Camera camera;
 	private Mouse mouse;
-	private Item[] items;
+	private List<Item> items;
 
-	public Game() {
+	public Game(float step, float sensitivity, float fov) {
 		this.direction = 0;
 		this.color = 0.5f;
-		this.cameraStep = 0.05f;
-		this.cameraSensitivity = 0.3f;
+		this.step = step;
+		this.sensitivity = sensitivity;
 		this.movement = new Vector3f();
-		this.renderer = new Renderer();
+		this.renderer = new Renderer(fov);
 		this.camera = new Camera();
 		this.mouse = new Mouse();
+		this.items = new ArrayList<>();
 	}
+	public Game() { this(60f); }
+	public Game(float fov) { this(0.05f, 0.3f, fov); }
+	public Game(float step, float sensitivity) { this(step, sensitivity, 60f); }
 	
 	@Override
 	public void init(Window window) throws Exception {
@@ -165,8 +170,16 @@ public class Game implements ILogic {
 		};
 		Texture texture = new Texture("/res/grassblock.png");
 		Mesh mesh = new Mesh(positions, indices, coords, texture);
-		Item item = new Item(mesh);
-		this.items = new Item[]{item};
+		
+		this.items.add(new Item(mesh).setPosition(-1, -1, -1));
+		this.items.add(new Item(mesh).setPosition( 0, -1, -1));
+		this.items.add(new Item(mesh).setPosition(+1,  0, -1));
+		this.items.add(new Item(mesh).setPosition(-1, -1,  0));
+		this.items.add(new Item(mesh).setPosition( 0,  0,  0));
+		this.items.add(new Item(mesh).setPosition(+1, +1,  0));
+		this.items.add(new Item(mesh).setPosition(-1,  0, +1));
+		this.items.add(new Item(mesh).setPosition( 0, +1, +1));
+		this.items.add(new Item(mesh).setPosition(+1, +1, +1));
 		
 		// Use correct depth checking
 		glEnable(GL_DEPTH_TEST);
@@ -199,20 +212,16 @@ public class Game implements ILogic {
 		this.color += this.direction * 0.01f;
 		this.color = Math.max(0f, Math.min(1f, this.color));
 		
-		if (this.mouse.left && this.mouse.inside) {
-			// dragging
-			Vector3f rotate = new Vector3f(-this.mouse.movement.y, -this.mouse.movement.x, 0);
-			this.camera.rotation.add(rotate.mul(this.cameraSensitivity));
-		}
-		
-		if (this.mouse.right && this.mouse.inside) {
-			// panning
-			Vector3f rotate = new Vector3f(this.mouse.movement.y, this.mouse.movement.x, 0);
-			this.camera.rotation.add(rotate.mul(this.cameraSensitivity));
+		if (this.mouse.inside) {
+			if (this.mouse.left)  // dragging
+				this.camera.rotation.add(new Vector3f(-this.mouse.movement.y, -this.mouse.movement.x, 0).mul(this.sensitivity));
+			if (this.mouse.right)  // panning
+				this.camera.rotation.add(new Vector3f(this.mouse.movement.y, this.mouse.movement.x, 0).mul(this.sensitivity));
+			this.camera.rotation.x = Math.max(-90f, Math.min(90f, this.camera.rotation.x));
 		}
 		
 		Vector3f movement = new Vector3f(this.movement.x, this.movement.y, this.movement.z);
-		this.camera.movePosition(movement.mul(this.cameraStep));
+		this.camera.movePosition(movement.mul(this.step));
 	}
 	
 	@Override
@@ -239,7 +248,6 @@ public class Game implements ILogic {
 	@Override
 	public void cleanup() {
 		this.renderer.cleanup();
-		for (Item item : this.items)
-			item.mesh.cleanup();
+		this.items.stream().forEach(item -> item.mesh.cleanup());
 	}
 }

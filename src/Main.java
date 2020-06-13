@@ -14,10 +14,10 @@ public class Main {
 		try {
 			boolean fullscreen = false;
 			boolean vSync = true;
-			int targetFps = 5;
+			int targetFps = 10;
 			int targetUps = 30;
 			Window window = new Window("Hello World!", 300, 300, fullscreen, vSync, targetFps, targetUps);
-			ILogic logic = new Game();
+			ILogic logic = new Game(80f);
 			Engine engine = new Engine(window, logic);
 			engine.run();
 		} catch (Exception e) {
