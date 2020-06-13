@@ -10,16 +10,16 @@ Book # https://ahbejarano.gitbook.io/lwjglgamedev
 
 (Right now, this is a test for LWJGL. Not much going on.)
 
-| Key   | Action |
-| ----- | ------ |
-| Up    | Increase background brightness |
-| Down  | Decrease background brightness |
-| V     | Toggle vSync / vertical sync. (colour=on, gray=off) |
-| Left  | Decrease frame rate (only for vSync off) |
-| Right | Increase frame rate (only for vSync off) |
-| WASD  | Move around |
-| Space | Up |
-| Shift | Down |
-| Ctrl  | Faster (forwards and backwards only) |
-| R     | Rotate more (shift inverts) |
-| L     | Reset background and rotation |
+| Key         | Action |
+| ----------- | ------ |
+| Up          | Increase background brightness |
+| Down        | Decrease background brightness |
+| V           | Toggle vSync / vertical sync. (colour=on, gray=off) |
+| Left        | Decrease frame rate (only for vSync off) |
+| Right       | Increase frame rate (only for vSync off) |
+| WASD        | Move around |
+| Space       | Up |
+| Shift       | Down |
+| Ctrl        | Faster (forwards and backwards only) |
+| Right Mouse | Pan (moves in same direction) |
+| Left Mouse  | Drag (moves in opposite direction) |
