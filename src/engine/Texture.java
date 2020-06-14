@@ -15,10 +15,22 @@ import static org.lwjgl.stb.STBImage.*;
 
 public class Texture {
 
-	public final int id;
+	private int id;
+	private int width;
+	private int height;
 
-	public Texture(String fileName) throws Exception { this(loadTexture(fileName)); }
-	public Texture(int id) { this.id = id; }
+	public Texture(String fileName) throws Exception {
+		this.loadTexture(fileName);
+	}
+	public Texture(int id, int width, int height) throws Exception {
+		this.id = id;
+		this.width = width;
+		this.height = height;
+	}
+	
+	public int getId() { return this.id; }
+	public int getWidth() { return this.width; }
+	public int getHeight() { return this.height; }
 
 	public void bind() {
 		glBindTexture(GL_TEXTURE_2D, this.id);
@@ -27,9 +39,7 @@ public class Texture {
 		glDeleteTextures(this.id);
 	}
 	
-	private static int loadTexture(String fileName) throws Exception {
-		int width;
-		int height;
+	private void loadTexture(String fileName) throws Exception {
 		ByteBuffer image;
 		ByteBuffer buffer;
 		
@@ -48,8 +58,8 @@ public class Texture {
 				throw new Exception("Image file [" + fileName  + "] not loaded: " + stbi_failure_reason());
 
 			// Get width and height of image
-			width = widthBuffer.get();
-			height = heightBuffer.get();
+			this.width = widthBuffer.get();
+			this.height = heightBuffer.get();
 		}
 
 		// Create a new OpenGL texture
@@ -64,12 +74,12 @@ public class Texture {
 		// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 		// Upload the texture data
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, this.width, this.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
 		// Generate Mip Map
 		glGenerateMipmap(GL_TEXTURE_2D);
 
 		stbi_image_free(image);
-
-		return textureId;
+		
+		this.id = textureId;
 	}
 }

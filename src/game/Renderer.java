@@ -61,9 +61,10 @@ public class Renderer {
 		for (Item item : items) {
 			Matrix4f modelViewMatrix = this.transformation.getModelViewMatrix(item, viewMatrix);
 			this.shader.setUniform("modelViewMatrix", modelViewMatrix);
-			this.shader.setUniform("color", item.mesh.getColor());
-			this.shader.setUniform("useTexture", item.mesh.isTexture() ? 1 : 0);
-			item.mesh.render();
+			Mesh mesh = item.getMesh();
+			this.shader.setUniform("color", mesh.getColor());
+			this.shader.setUniform("useTexture", mesh.isTexture() ? 1 : 0);
+			mesh.render();
 		}
 
 		this.shader.unbind();

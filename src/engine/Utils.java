@@ -45,4 +45,13 @@ public class Utils {
 		InputStreamReader isr = new InputStreamReader(in, StandardCharsets.UTF_8.name());
 		return new BufferedReader(isr).lines();
 	}
+	
+	public static int[] intListToArray(List<Integer> intList) {
+		return intList.stream().mapToInt(i -> i).toArray();
+	}
+	public static float[] floatListToArray(List<Float> floatList) {
+		float[] floatArray = new float[floatList.size()];
+		IntStream.range(0, floatList.size()).forEach(i -> { floatArray[i] = floatList.get(i).floatValue(); });
+		return floatArray;
+	}
 }

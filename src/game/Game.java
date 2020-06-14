@@ -113,7 +113,7 @@ public class Game implements ILogic {
 		if (sprinting && this.movement.z < 0) this.movement.z *= 2;
 		
 		if (this.movement.length() > 1f) this.movement.div(this.movement.length());
-		if (sprinting) this.movement.mul(1.5f);
+		if (sprinting && this.movement.z < 0) this.movement.mul(1.5f);
 	}
 	
 	@Override
@@ -121,16 +121,17 @@ public class Game implements ILogic {
 		this.color += this.direction * 0.01f;
 		this.color = Math.max(0f, Math.min(1f, this.color));
 		
-		if (this.mouse.inside) {
-			if (this.mouse.left)  // dragging
-				this.camera.rotation.add(new Vector3f(-this.mouse.movement.y, -this.mouse.movement.x, 0).mul(this.sensitivity));
-			if (this.mouse.right)  // panning
-				this.camera.rotation.add(new Vector3f(this.mouse.movement.y, this.mouse.movement.x, 0).mul(this.sensitivity));
-			this.camera.rotation.x = Math.max(-90f, Math.min(90f, this.camera.rotation.x));
+		if (this.mouse.isInside()) {
+			float x = this.mouse.getMovement().x;
+			float y = this.mouse.getMovement().y;
+			if (this.mouse.isLeft())  // dragging
+				this.camera.moveRotation(-y*this.sensitivity, -x*this.sensitivity, 0);
+			if (this.mouse.isRight())  // panning
+				this.camera.moveRotation(y*this.sensitivity, x*this.sensitivity, 0);
+			this.camera.getRotation().x = Math.max(-90f, Math.min(90f, this.camera.getRotation().x));
 		}
 		
-		Vector3f movement = new Vector3f(this.movement.x, this.movement.y, this.movement.z);
-		this.camera.movePosition(movement.mul(this.step));
+		this.camera.movePosition(this.movement.mul(this.step, new Vector3f()));
 	}
 	
 	@Override
@@ -157,6 +158,6 @@ public class Game implements ILogic {
 	@Override
 	public void cleanup() {
 		this.renderer.cleanup();
-		this.items.stream().forEach(item -> item.mesh.cleanup());
+		this.items.stream().forEach(item -> item.getMesh().cleanup());
 	}
 }

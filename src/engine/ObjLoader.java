@@ -82,9 +82,9 @@ public class ObjLoader {
 					posList, coordArray, normalArray
 				);
 		
-		// int[] indicesArray = new int[indices.size()];
-		int[] indicesArray = posList.stream().mapToInt((Integer i) -> i).toArray();
-		return new Mesh(posArray, indicesArray, coordArray, normalArray);
+		// int[] indexArray = new int[indices.size()];
+		int[] indexArray = Utils.intListToArray(posList);
+		return new Mesh(posArray, indexArray, coordArray, normalArray);
 	}
 
 	private static void processFaceVertex(
