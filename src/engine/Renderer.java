@@ -7,7 +7,6 @@ package geetransit.minecraft05.engine;
 
 import java.util.*;
 import org.joml.Matrix4f;
-import org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.opengl.GL30.*;
 
 public abstract class Renderer {
@@ -92,6 +91,10 @@ public abstract class Renderer {
 	}
 	public void render2DScene(Window window, Iterable<Item> items) {
 		this.shader.bind();
+		
+		// source # https://stackoverflow.com/a/5467636
+		glDepthMask(false);  // disable writes to Z-Buffer
+		glDisable(GL_DEPTH_TEST);  // disable depth-testing
 
 		Matrix4f orthoMatrix = this.transformation.getOrthoProjectionMatrix(window);
 		for (Item item : items) {
@@ -101,6 +104,9 @@ public abstract class Renderer {
 			this.shader.setUniform("useTexture", item.getMesh().isTexture());
 			item.render(window);
 		}
+		
+		glDepthMask(true);
+		glEnable(GL_DEPTH_TEST);
 
 		this.shader.unbind();
 	}
