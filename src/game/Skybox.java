@@ -30,6 +30,6 @@ public class Skybox extends SceneRender {
 		super.init(window);
 		Mesh mesh = ObjLoader.loadMesh("/res/skybox.obj");
 		mesh.setTexture(new Texture("/res/skybox.png"));
-		this.addItem(new Item(mesh).setScale(10f).setPosition(0, 0, 0));
+		this.addItem(new Item(mesh).setScale(camera.getFar() * 0.5f).setPosition(0, 0, 0));
 	}
 }

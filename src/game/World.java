@@ -40,7 +40,7 @@ public class World extends SceneRender {
 		this.sensitivity = 0.3f;
 		
 		this.camera = camera;
-		this.step = 0.05f;
+		this.step = 0.1f;
 		this.movement = new Vector3f();
 	}
 	
@@ -59,14 +59,16 @@ public class World extends SceneRender {
 		Mesh mesh = ObjLoader.loadMesh("/res/cube.obj");
 		mesh.setTexture(new Texture("/res/grassblock.png"));
 		
+		for (int i = -10; i <= 10; i++) {
+			for (int j = -10; j <= 10; j++) {
+				this.addItem(new Item(mesh).setScale(0.5f).setPosition(i, 0, j));
+			}
+		}
 		this
-			.addItem(new Item(mesh).setScale(0.5f).setPosition(-1, -1, -1))
-			.addItem(new Item(mesh).setScale(0.5f).setPosition( 0, -1, -1))
-			.addItem(new Item(mesh).setScale(0.5f).setPosition(+1,  0, -1))
-			.addItem(new Item(mesh).setScale(0.5f).setPosition(-1, -1,  0))
-			.addItem(new Item(mesh).setScale(0.5f).setPosition( 0,  0,  0))
 			.addItem(new Item(mesh).setScale(0.5f).setPosition(+1, +1,  0))
-			.addItem(new Item(mesh).setScale(0.5f).setPosition(-1,  0, +1))
+			.addItem(new Item(mesh).setScale(0.5f).setPosition(-1, +1,  0))
+			.addItem(new Item(mesh).setScale(0.5f).setPosition( 0, +1, +1))
+			.addItem(new Item(mesh).setScale(0.5f).setPosition( 0, +1, -2))
 			// missing ones is +z (back) and +xz (back-right)
 			// .addItem(new Item(mesh).setScale(0.5f).setPosition( 0, +1, +1))
 			// .addItem(new Item(mesh).setScale(0.5f).setPosition(+1, +1, +1))

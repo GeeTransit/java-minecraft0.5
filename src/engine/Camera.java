@@ -10,7 +10,7 @@ import org.joml.Vector3f;
 public class Camera {
 	private static final float FOV = 80f;
 	private static final float NEAR = 0.01f;
-	private static final float FAR = 20f;
+	private static final float FAR = 50f;
 	
 	private final Vector3f position;
 	private final Vector3f rotation;
