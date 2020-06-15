@@ -12,11 +12,15 @@ public class Transformation {
 	private final Matrix4f projectionMatrix;
 	private final Matrix4f viewMatrix;
 	private final Matrix4f modelViewMatrix;
+	private final Matrix4f orthoProjectionMatrix;
+	private final Matrix4f orthoProjModelMatrix;
 
 	public Transformation() {
 		this.projectionMatrix = new Matrix4f();
 		this.viewMatrix = new Matrix4f();
 		this.modelViewMatrix = new Matrix4f();
+		this.orthoProjectionMatrix = new Matrix4f();
+		this.orthoProjModelMatrix = new Matrix4f();
 	}
 
 	public final Matrix4f getProjectionMatrix(float fov, float width, float height, float zNear, float zFar) {
@@ -36,6 +40,20 @@ public class Transformation {
 	public Matrix4f getModelViewMatrix(Item item, Matrix4f viewMatrix) {
 		return this.modelViewMatrix
 			.set(viewMatrix)
+			.translate(item.getPosition())
+			.rotateX((float) Math.toRadians(-item.getRotation().x))
+			.rotateY((float) Math.toRadians(-item.getRotation().y))
+			.rotateZ((float) Math.toRadians(-item.getRotation().z))
+			.scale(item.getScale());
+	}
+	
+	public Matrix4f getOrthoProjectionMatrix(Window window) {
+		return this.orthoProjectionMatrix.setOrtho2D(0, window.getWidth(), window.getHeight(), 0);
+	}
+	
+	public Matrix4f getOrthoProjModelMatrix(Item item, Matrix4f orthoMatrix) {
+		return this.orthoProjModelMatrix
+			.set(orthoMatrix)
 			.translate(item.getPosition())
 			.rotateX((float) Math.toRadians(-item.getRotation().x))
 			.rotateY((float) Math.toRadians(-item.getRotation().y))
