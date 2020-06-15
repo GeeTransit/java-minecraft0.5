@@ -117,4 +117,33 @@ public abstract class Renderer {
 			this.shader = null;
 		}
 	}
+	
+	public void renderSkybox(Window window, Camera camera) {
+		this.renderSkybox(window, camera, this.parent.getItems());
+	}
+	public void renderSkybox(Window window, Camera camera, Iterable<Item> items) {
+		this.shader.bind();
+		
+		// projection
+		Matrix4f projectionMatrix = this.transformation.getProjectionMatrix(window, camera);
+		this.shader.setUniform("projectionMatrix", projectionMatrix);
+		
+		// view
+		Matrix4f viewMatrix = this.transformation.getViewMatrix(camera);
+		
+		// remove translation (different from render3D)
+		viewMatrix.setTranslation(0, 0, 0);
+		
+		// Draw meshes
+		this.shader.setUniform("texture_sampler", 0);
+		for (Item item : items) {
+			Matrix4f modelViewMatrix = this.transformation.getModelViewMatrix(item, viewMatrix);
+			this.shader.setUniform("modelViewMatrix", modelViewMatrix);
+			this.shader.setUniform("color", item.getMesh().getColor());
+			this.shader.setUniform("useTexture", item.getMesh().isTexture());
+			item.render(window);
+		}
+
+		this.shader.unbind();
+	}
 }

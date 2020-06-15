@@ -19,6 +19,7 @@ public class Game extends SceneBase {
 	private Camera camera;
 	
 	private Background background;
+	private Skybox skybox;
 	private World world;
 	private Hud hud;
 	
@@ -28,11 +29,16 @@ public class Game extends SceneBase {
 		this.camera = new Camera();
 		
 		this.background = new Background();
+		this.skybox = new Skybox(this.camera);
 		this.world = new World(this.mouse, this.camera);
 		this.hud = new Hud(this.mouse, this.camera);
 		
 		// add scenes
-		this.addScene(this.background).addScene(this.world).addScene(this.hud);
+		this
+			.addScene(this.background)
+			.addScene(this.skybox)
+			.addScene(this.world)
+			.addScene(this.hud);
 	}
 	
 	public Mouse getMouse() { return this.mouse; }
