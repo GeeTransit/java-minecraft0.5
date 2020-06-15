@@ -5,8 +5,9 @@ Game item wrapper class.
 
 package geetransit.minecraft05.engine;
 
-import java.nio.charset.Charset;
 import java.util.*;
+import java.nio.charset.Charset;
+import org.joml.Vector4f;
 
 public class TextItem extends Item {
 	private static final float ZPOS = 0f;
@@ -31,8 +32,10 @@ public class TextItem extends Item {
 	
 	public Item setText(String text) {
 		this.text = text;
+		Vector4f color = this.mesh.getColor();
 		this.mesh.cleanup(false);
 		this.mesh = this.buildMesh(this.mesh.getTexture());
+		this.mesh.setColor(color);
 		return this;
 	}
 	
