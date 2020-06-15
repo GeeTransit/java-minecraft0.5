@@ -21,11 +21,11 @@ public class Hud extends SceneRender {
 	public Hud(Mouse mouse, Camera camera) {
 		super();
 		this.setRenderer(new Renderer(this) {
-			public Shader createShader(Window window) throws Exception {
-				return this.create2DShader("/res/vertex-2d.vs", "/res/fragment-2d.fs");
+			public Shader create(Window window) throws Exception {
+				return this.create2D("/res/vertex-2d.vs", "/res/fragment-2d.fs");
 			}
 			public void render(Window window) {
-				this.render2DScene(window);
+				this.render2D(window);
 			}
 		});
 		this.mouse = mouse;

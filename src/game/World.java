@@ -28,11 +28,11 @@ public class World extends SceneRender {
 	public World(Mouse mouse, Camera camera) {
 		super();
 		this.setRenderer(new Renderer(this) {
-			public Shader createShader(Window window) throws Exception {
-				return this.create3DShader("/res/vertex-3d.vs", "/res/fragment-3d.fs");
+			public Shader create(Window window) throws Exception {
+				return this.create3D("/res/vertex-3d.vs", "/res/fragment-3d.fs");
 			}
 			public void render(Window window) {
-				this.render3DScene(window, World.this.getCamera());
+				this.render3D(window, World.this.getCamera());
 			}
 		});
 		

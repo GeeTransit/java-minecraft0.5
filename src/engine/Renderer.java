@@ -26,12 +26,12 @@ public abstract class Renderer {
 	public Renderer setParent(SceneRender parent) { this.parent = parent; return this; }
 	
 	public void init(Window window) throws Exception {
-		this.shader = this.createShader(window);
+		this.shader = this.create(window);
 	}
 	
-	public abstract Shader createShader(Window window) throws Exception;
+	public abstract Shader create(Window window) throws Exception;
 	
-	public Shader createLinkedShader(String vertex, String fragment) throws Exception {
+	public Shader createShader(String vertex, String fragment) throws Exception {
 		Shader shader = new Shader();
 		shader.createVertexShader(Utils.loadResource(vertex));
 		shader.createFragmentShader(Utils.loadResource(fragment));
@@ -39,8 +39,8 @@ public abstract class Renderer {
 		return shader;
 	}
 	
-	public Shader create3DShader(String vertex, String fragment) throws Exception {
-		Shader shader = this.createLinkedShader(vertex, fragment);
+	public Shader create3D(String vertex, String fragment) throws Exception {
+		Shader shader = this.createShader(vertex, fragment);
 		shader.createUniform("projectionMatrix");
 		shader.createUniform("modelViewMatrix");
 		shader.createUniform("texture_sampler");
@@ -49,8 +49,8 @@ public abstract class Renderer {
 		return shader;
 	}
 	
-	public Shader create2DShader(String vertex, String fragment) throws Exception {
-		Shader shader = this.createLinkedShader(vertex, fragment);
+	public Shader create2D(String vertex, String fragment) throws Exception {
+		Shader shader = this.createShader(vertex, fragment);
 		shader.createUniform("projModelMatrix");
 		shader.createUniform("texture_sampler");
 		shader.createUniform("color");
@@ -60,10 +60,10 @@ public abstract class Renderer {
 	
 	public abstract void render(Window window);
 	
-	public void render3DScene(Window window, Camera camera) {
-		this.render3DScene(window, camera, this.parent.getItems());
+	public void render3D(Window window, Camera camera) {
+		this.render3D(window, camera, this.parent.getItems());
 	}
-	public void render3DScene(Window window, Camera camera, Iterable<Item> items) {
+	public void render3D(Window window, Camera camera, Iterable<Item> items) {
 		this.shader.bind();
 		
 		// projection
@@ -86,10 +86,10 @@ public abstract class Renderer {
 		this.shader.unbind();
 	}
 	
-	public void render2DScene(Window window) {
-		this.render2DScene(window, this.parent.getItems());
+	public void render2D(Window window) {
+		this.render2D(window, this.parent.getItems());
 	}
-	public void render2DScene(Window window, Iterable<Item> items) {
+	public void render2D(Window window, Iterable<Item> items) {
 		this.shader.bind();
 		
 		// source # https://stackoverflow.com/a/5467636
