@@ -46,6 +46,7 @@ public class Mouse {
 
 	public void input(Window window) {
 		this.current.sub(this.previous, this.movement);
+		this.movement.div(window.getTargetUps() * window.getElapsedTime());
 		this.previous.set(this.current);
 	}
 }
