@@ -40,27 +40,7 @@ public class Texture {
 	}
 	
 	private void loadTexture(String fileName) throws Exception {
-		ByteBuffer image;
-		ByteBuffer buffer;
-		
-		// Load Texture file
-		try (MemoryStack stack = MemoryStack.stackPush()) {
-			IntBuffer widthBuffer = stack.mallocInt(1);
-			IntBuffer heightBuffer = stack.mallocInt(1);
-			IntBuffer channelsBuffer = stack.mallocInt(1);
-			
-			byte[] array = Utils.loadByteArray(fileName);
-			buffer = memAlloc(array.length);
-			buffer.put(array).flip();
-
-			image = stbi_load_from_memory(buffer, widthBuffer, heightBuffer, channelsBuffer, 4);
-			if (image == null)
-				throw new Exception("Image file [" + fileName  + "] not loaded: " + stbi_failure_reason());
-
-			// Get width and height of image
-			this.width = widthBuffer.get();
-			this.height = heightBuffer.get();
-		}
+		ByteBuffer image = Utils.loadImage(fileName, (width, height) -> { this.width = width; this.height = height; });
 
 		// Create a new OpenGL texture
 		int textureId = glGenTextures();
@@ -78,8 +58,8 @@ public class Texture {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, this.width, this.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
 		// Generate Mip Map
 		glGenerateMipmap(GL_TEXTURE_2D);
-
-		stbi_image_free(image);
+		
+		Utils.freeImage(image);
 		
 		this.id = textureId;
 	}

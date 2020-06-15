@@ -8,10 +8,15 @@ package geetransit.minecraft05.engine;
 import java.io.*;
 import java.util.*;
 import java.util.stream.*;
+import java.util.function.*;
 
 import java.nio.*;
 import java.nio.file.*;
 import java.nio.charset.StandardCharsets;
+
+import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
+import org.lwjgl.stb.STBImage;
 
 public class Utils {
 	
@@ -47,6 +52,37 @@ public class Utils {
 		InputStream in = loadInputStream(file);
 		InputStreamReader isr = new InputStreamReader(in, StandardCharsets.UTF_8.name());
 		return new BufferedReader(isr).lines();
+	}
+	
+	public static ByteBuffer loadImage(String fileName, BiConsumer<Integer, Integer> consumer) throws Exception {
+		ByteBuffer imageBuffer;
+		ByteBuffer rawBuffer;
+		
+		// Load Texture file
+		try (MemoryStack stack = MemoryStack.stackPush()) {
+			IntBuffer widthBuffer = stack.mallocInt(1);
+			IntBuffer heightBuffer = stack.mallocInt(1);
+			IntBuffer channelsBuffer = stack.mallocInt(1);
+			
+			byte[] array = loadByteArray(fileName);
+			rawBuffer = MemoryUtil.memAlloc(array.length);
+			rawBuffer.put(array).flip();
+
+			imageBuffer = STBImage.stbi_load_from_memory(rawBuffer, widthBuffer, heightBuffer, channelsBuffer, 4);
+			if (imageBuffer == null)
+				throw new Exception("Image file [" + fileName  + "] not loaded: " + STBImage.stbi_failure_reason());
+
+			// Get width and height of image
+			consumer.accept(widthBuffer.get(), heightBuffer.get());
+		}
+		
+		return imageBuffer;
+	}
+	public static ByteBuffer loadImage(String fileName, int[] widthArray, int[] heightArray) throws Exception {
+		return loadImage(fileName, (width, height) -> { widthArray[0] = width; heightArray[0] = height; });
+	}
+	public static void freeImage(ByteBuffer imageBuffer) {
+		STBImage.stbi_image_free(imageBuffer);
 	}
 	
 	public static int[] intListToArray(List<Integer> intList) {
