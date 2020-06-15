@@ -28,8 +28,8 @@ public class Renderer {
 	
 	public void init() throws Exception {
 		this.shader = new Shader();
-		this.shader.createVertexShader(Utils.loadResource("/res/vertex.vs"));
-		this.shader.createFragmentShader(Utils.loadResource("/res/fragment.fs"));
+		this.shader.createVertexShader(Utils.loadResource("/res/vertex-3d.vs"));
+		this.shader.createFragmentShader(Utils.loadResource("/res/fragment-3d.fs"));
 		this.shader.link();
 		
 		this.shader.createUniform("projectionMatrix");
