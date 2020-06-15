@@ -19,7 +19,7 @@ public class Mesh {
 	private final List<Integer> vboIdList;
 	
 	private Texture texture;
-	private Vector3f color;
+	private Vector4f color;
 
 	public Mesh(float[] posArray, int[] indexArray, float[] coordArray, float[] normalArray) {
 		this.vboIdList = new ArrayList<>();
@@ -92,9 +92,10 @@ public class Mesh {
 	
 	// texture takes precedence
 	public Texture getTexture() { return this.texture; }
-	public Vector3f getColor() { return this.color; }
+	public Vector4f getColor() { return this.color; }
 	public Mesh setTexture(Texture texture) { this.texture = texture; return this; }
-	public Mesh setColor(Vector3f color) { this.color = color; return this; }
+	public Mesh setColor(Vector3f color) { this.color = new Vector4f(color, 1f); return this; }
+	public Mesh setColor(Vector4f color) { this.color = color; return this; }
 	public boolean isTexture() { return this.texture != null; }
 	
 	public void render() {
@@ -132,8 +133,10 @@ public class Mesh {
 	public void cleanup(boolean cleanupTexture) {
 		this.disableVao();
 		this.deleteVbos();
-		if (cleanupTexture && this.isTexture())
+		if (cleanupTexture && this.isTexture()) {
 			this.texture.cleanup();
+			this.texture = null;
+		}
 		this.deleteVao();
 	}
 }
