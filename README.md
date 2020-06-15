@@ -8,18 +8,21 @@ Book # https://ahbejarano.gitbook.io/lwjglgamedev
 
 ## Instructions
 
-| Key         | Action |
-| ----------- | ------ |
-| Right Mouse | Pan (moves in same direction) |
-| Left Mouse  | Drag (moves in opposite direction) |
-| WASD        | Move around |
-| Space       | Move up |
-| Shift       | Move down |
-| Ctrl        | Faster (forwards and backwards only) |
-| F           | Toggle fullscreen (hold shift for real instead of borderless) |
-| V           | Toggle vSync / vertical sync. (colour=on, gray=off) |
-| D           | Print debug mouse and camera info to console |
-| Up          | Increase background brightness |
-| Down        | Decrease background brightness |
-| <- (arrow)  | Decrease frame rate (only for vSync off) |
-| -> (arrow)  | Increase frame rate (only for vSync off) |
+| Key          | Action |
+| ------------ | ------ |
+| Right Mouse  | Pan (moves in same direction) |
+| Left Mouse   | Drag (moves in opposite direction) |
+| WASD         | Move around |
+| Space        | Move up |
+| Shift        | Move down |
+| Ctrl         | Faster (forwards and backwards only) |
+| F            | Toggle fullscreen (hold shift for real instead of borderless) |
+| V            | Toggle vSync / vertical sync. (colour=on, gray=off) |
+| D            | Print debug mouse and camera info to console |
+| L            | Reset background and render distance |
+| Up           | Increase background brightness |
+| Down         | Decrease background brightness |
+| \[ (bracket) | Decreate render distance |
+| \] (bracket) | Increase render distance |
+| <- (arrow)   | Decrease frame rate (only for vSync off) |
+| -> (arrow)   | Increase frame rate (only for vSync off) |

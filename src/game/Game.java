@@ -95,6 +95,15 @@ public class Game extends SceneBase {
 	@Override
 	public void input(Window window) {
 		this.mouse.input(window);
+		
+		// render distance (camera)
+		if (window.isKeyDown(GLFW_KEY_L)) this.camera.setFar(Camera.FAR);
+		if (window.isKeyDown(GLFW_KEY_RIGHT_BRACKET))
+			this.camera.setFar(this.camera.getFar() + 1);
+		if (window.isKeyDown(GLFW_KEY_LEFT_BRACKET))
+			this.camera.setFar(Math.max(0, this.camera.getFar() - 1));
+			window.next.add("targetFps", () -> window.setTargetFps(window.getTargetFps() + 1));
+		
 		super.input(window);
 	}
 	
