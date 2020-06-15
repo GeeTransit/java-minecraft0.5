@@ -98,18 +98,28 @@ public class Mesh {
 	public Mesh setColor(Vector4f color) { this.color = color; return this; }
 	public boolean isTexture() { return this.texture != null; }
 	
-	public void render() {
+	// prepare mesh
+	public void prepare() { this.prepare(null); }
+	public void prepare(Mesh lastMesh) {
+		if (this == lastMesh)
+			return;
 		if (this.isTexture()) {
-			// Activate and bind first texture unit
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, this.texture.getId());
 		}
-		
-		// Bind and draw the mesh
 		glBindVertexArray(this.vaoId);
+	}
+	
+	// draw elements
+	public void render() {
 		glDrawElements(GL_TRIANGLES, this.vertexCount, GL_UNSIGNED_INT, 0);
-
-		// Restore state
+	}
+	
+	// Restore state
+	public void restore() { this.restore(null); }
+	public void restore(Mesh nextMesh) {
+		if (this == nextMesh)
+			return;
 		glBindVertexArray(0);
 	}
 	

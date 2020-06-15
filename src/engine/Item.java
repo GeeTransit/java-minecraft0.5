@@ -25,7 +25,9 @@ public class Item {
 	}
 	
 	public void render(Window window) {
+		this.mesh.prepare();
 		this.mesh.render();
+		this.mesh.restore();
 	}
 	
 	public void cleanup() {

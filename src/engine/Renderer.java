@@ -63,8 +63,11 @@ public abstract class Renderer {
 	public void render3D(Window window, Camera camera) {
 		this.render3D(window, camera, this.parent.getItems());
 	}
-	public void render3D(Window window, Camera camera, Iterable<Item> items) {
+	public void render3D(Window window, Camera camera, List<Item> items) {
 		this.shader.bind();
+		
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
 		
 		// projection
 		Matrix4f projectionMatrix = this.transformation.getProjectionMatrix(window, camera);
@@ -75,13 +78,19 @@ public abstract class Renderer {
 		
 		// Draw meshes
 		this.shader.setUniform("texture_sampler", 0);
-		for (Item item : items) {
+		for (int i = 0; i < items.size(); i++) {
+			Item item = items.get(i);
+			Mesh mesh = item.getMesh();
 			Matrix4f modelViewMatrix = this.transformation.getModelViewMatrix(item, viewMatrix);
 			this.shader.setUniform("modelViewMatrix", modelViewMatrix);
-			this.shader.setUniform("color", item.getMesh().getColor());
-			this.shader.setUniform("useTexture", item.getMesh().isTexture());
-			item.render(window);
+			this.shader.setUniform("color", mesh.getColor());
+			this.shader.setUniform("useTexture", mesh.isTexture());
+			mesh.prepare(i - 1 >= 0 ? items.get(i - 1).getMesh() : null);
+			mesh.render();
+			mesh.restore(i + 1 < items.size() ? items.get(i + 1).getMesh() : null);
 		}
+		
+		glDisable(GL_CULL_FACE);
 
 		this.shader.unbind();
 	}
@@ -89,7 +98,7 @@ public abstract class Renderer {
 	public void render2D(Window window) {
 		this.render2D(window, this.parent.getItems());
 	}
-	public void render2D(Window window, Iterable<Item> items) {
+	public void render2D(Window window, List<Item> items) {
 		this.shader.bind();
 		
 		// source # https://stackoverflow.com/a/5467636
@@ -121,7 +130,7 @@ public abstract class Renderer {
 	public void renderSkybox(Window window, Camera camera) {
 		this.renderSkybox(window, camera, this.parent.getItems());
 	}
-	public void renderSkybox(Window window, Camera camera, Iterable<Item> items) {
+	public void renderSkybox(Window window, Camera camera, List<Item> items) {
 		this.shader.bind();
 		
 		// projection
