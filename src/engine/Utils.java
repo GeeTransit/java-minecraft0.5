@@ -16,7 +16,10 @@ import java.nio.charset.StandardCharsets;
 public class Utils {
 	
 	public static InputStream loadInputStream(String file) throws Exception {
-		return Utils.class.getResourceAsStream(file);
+		InputStream in = Utils.class.getResourceAsStream(file);
+		if (in == null)
+			throw new Exception("file [" + file + "] does not exist");
+		return in;
 	}
 	
 	// source # https://stackoverflow.com/a/17861016
