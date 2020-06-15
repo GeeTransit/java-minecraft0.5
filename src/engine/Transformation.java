@@ -23,8 +23,14 @@ public class Transformation {
 		this.orthoProjModelMatrix = new Matrix4f();
 	}
 
-	public final Matrix4f getProjectionMatrix(float fov, float width, float height, float zNear, float zFar) {
-		return this.projectionMatrix.setPerspective(fov, width / height, zNear, zFar);
+	public Matrix4f getProjectionMatrix(float fov, float width, float height, float zNear, float zFar) {
+		return this.projectionMatrix.setPerspective(-fov, width / height, zNear, zFar);
+	}
+	public Matrix4f getProjectionMatrix(Window window, Camera camera) {
+		return this.getProjectionMatrix(
+			camera.getFov(), (float) window.getWidth(), (float) window.getHeight(),
+			camera.getNear(), camera.getFar()
+		);
 	}
 	
 	public Matrix4f getViewMatrix(Camera camera) {

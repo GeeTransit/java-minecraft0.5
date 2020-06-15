@@ -1,0 +1,62 @@
+/*
+George Zhang
+Background scene.
+*/
+
+package geetransit.minecraft05.game;
+
+import java.util.*;
+import org.joml.Vector3f;
+import org.lwjgl.glfw.*;
+import org.lwjgl.opengl.*;
+import org.lwjgl.Version;
+
+import geetransit.minecraft05.engine.*;
+
+import static org.lwjgl.glfw.Callbacks.*;
+import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.system.MemoryUtil.*;
+
+public class Background implements Scene {
+	private int direction;
+	private float color;
+	
+	public Background() {
+		this.direction = 0;
+		this.color = 0.5f;
+	}
+	
+	@Override
+	public void init(Window window) throws Exception {
+		// blank background for first frame
+		window.clearColor(1f, 1f, 1f, 0f);
+	}
+	
+	@Override
+	public void input(Window window) {
+		if (window.isKeyDown(GLFW_KEY_L)) this.color = 0f;
+		
+		this.direction = 0;
+		if (window.isKeyDown(GLFW_KEY_UP)) this.direction++;
+		if (window.isKeyDown(GLFW_KEY_DOWN)) this.direction--;
+	}
+	
+	@Override
+	public void update(float interval) {
+		this.color += this.direction * 0.01f;
+		this.color = Math.max(0f, Math.min(1f, this.color));
+	}
+	
+	@Override
+	public void render(Window window) {
+		// Different color based on vSync or not (colorful = vSync on)
+		if (window.isVSync())
+			window.clearColor(1-this.color, this.color/2+0.5f, this.color, 0.0f);
+		else
+			window.clearColor(this.color, this.color, this.color, 0.0f);
+	}
+	
+	@Override
+	public void cleanup() {}
+}

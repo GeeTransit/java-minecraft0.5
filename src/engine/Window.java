@@ -17,28 +17,26 @@ public class Window {
 	private long handle;
 	private Timer timer;
 	private Object lock;
+	public final Bucket next;
 	
 	private String title;
 	private int xPos;
 	private int yPos;
 	private int width;
 	private int height;
-	private boolean fullscreen;
-	private boolean borderless;
+	private int mode;
+	
+	public static final int WINDOWED = 0;
+	public static final int BORDERLESS = 1;
+	public static final int FULLSCREEN = 2;
 	
 	private boolean vSync;
 	private int targetFps;
 	private int targetUps;
 	
-	private int nextWidth;
-	private int nextHeight;
-	private boolean nextFullscreen;
-	private boolean nextVSync;
 	private float elapsedTime;
 	private float accumulatedTime;
 	
-	private boolean updateVSync = false;
-	private boolean updateSize = false;
 	private boolean destroyed = false;
 	
 	private long monitor;
@@ -48,7 +46,7 @@ public class Window {
 		String title,
 		int width,
 		int height,
-		boolean fullscreen,
+		int mode,
 		boolean vSync,
 		int targetFps,
 		int targetUps
@@ -56,7 +54,7 @@ public class Window {
 		this.title = title;
 		this.width = width;
 		this.height = height;
-		this.fullscreen = fullscreen;
+		this.mode = mode;
 		
 		this.vSync = vSync;
 		this.targetFps = targetFps;
@@ -64,9 +62,10 @@ public class Window {
 		
 		this.timer = new Timer();
 		this.lock = new Object();
+		this.next = new Bucket();
 	}
 	
-	public void create() {
+	public void createWindow() {
 		// Setup an error callback. The default implementation
 		// will print the error message in System.err.
 		GLFWErrorCallback.createPrint(System.err).set();
@@ -93,7 +92,10 @@ public class Window {
         // Setup resize callback
         glfwSetFramebufferSizeCallback(this.handle, (window, width, height) -> {
 			if (width > 0 && height > 0)
-				this.setNextSize(width, height);
+				this.next.add("size", () -> {
+					if (this.isWindowed())
+						this.setSize(width, height);
+				});
         });
 
 		// Center our window
@@ -102,7 +104,13 @@ public class Window {
 		this.updateWindowMonitor();
 	}
 	
-	public void event() {
+	public void eventThread() {
+		this.eventLoop();
+		this.eventDestroy();
+		this.eventTerminate();
+	}
+	
+	private void eventLoop() {
 		// Make the window visible
 		glfwShowWindow(this.handle);
 		
@@ -116,7 +124,7 @@ public class Window {
 		}
 	}
 	
-	public void destroy() {
+	private void eventDestroy() {
 		synchronized (this.lock) {
 			this.destroyed = true;
 			// Release window (safely)
@@ -126,14 +134,25 @@ public class Window {
 		glfwFreeCallbacks(this.handle);
 	}
 	
-	public void terminate() {
-		// Terminate GLFW and release the GLFWerrorfun
+	public void eventTerminate() {
+		// Terminate GLFW and release the error function
 		glfwTerminate();
 		glfwSetErrorCallback(null).free();
 	}
 	
-	public void init() {
-		
+	public void renderThread(Scene scene) {
+		try {
+			this.renderInit(scene);
+			this.renderLoop(scene);
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(1);
+		} finally {
+			scene.cleanup();
+		}
+	}
+	
+	private void renderInit(Scene scene) throws Exception {
 		// This adds the OpenGL context into this function.
 		glfwMakeContextCurrent(this.handle);
 		
@@ -147,39 +166,49 @@ public class Window {
 		// Check vSync
 		glfwSwapInterval(this.isVSync() ? 1 : 0);
 		
+		// init
+		scene.init(this);
+		
 		// Start timer.
 		this.timer.init();
 	}
 	
 	// Render loop.
-	public void render(ILogic logic) {
-		float elapsedTime;
-		float accumulator = 0f;
-		
+	private void renderLoop(Scene scene) {
 		while (!this.isDestroyed()) {
 			this.elapsedTime = this.timer.getElapsedTime();
 			this.accumulatedTime += this.elapsedTime;
 			
-			logic.input(this);
+			// input
+			scene.input(this);
 			
+			// update
 			float interval = 1f / this.getTargetUps();
-				logic.update(interval);
 			while (this.accumulatedTime >= interval) {
+				scene.update(interval);
 				this.accumulatedTime -= interval;
 			}
 			
-			logic.render(this);
-			if (!this.isVSync()) {
-				this.sync();
-			}
+			// bucket
+			this.next.run("mode");
+			this.next.run("size");
+			this.next.run("vSync");
+			this.next.run("targetFps");
+			this.next.run("targetUps");
+			
+			// render
+			scene.render(this);
+			this.renderUpdate();
+			if (!this.isVSync())
+				this.renderSync();
 		}
 	}
 	
 	// Sync with target FPS.
-	private void sync() {
+	private void renderSync() {
 		float loopSlot = 1f / this.getTargetFps();
 		double endTime = this.timer.getLastLoopTime() + loopSlot;
-		while (timer.getTime() < endTime && !this.shouldUpdateSize()) {
+		while (timer.getTime() < endTime && this.next.empty()) {
 			try {
 				Thread.sleep(1);
 			} catch (InterruptedException e) {
@@ -187,43 +216,12 @@ public class Window {
 		}
 	}
 	
-	public void update() {
+	private void renderUpdate() {
 		// This can fail if not sync'd. (Can only swap when window exists)
 		synchronized (this.lock) {
 			if (!this.destroyed)
 				glfwSwapBuffers(this.handle); // swap the color buffers
 		}
-	}
-	
-	public boolean checkUpdateSize() {
-		if (!this.shouldUpdateSize())
-			return false;
-		
-		boolean lastFullscreen = this.isFullscreen();
-		this.fullscreen = this.nextFullscreen;
-		this.width = this.nextWidth;
-		this.height = this.nextHeight;
-		if (!lastFullscreen)
-			this.updateWindowPos();
-		if (this.fullscreen)
-			// workaround to ensure vSync is correct after real fullscreen
-			this.setNextVSync(this.isVSync());
-		glViewport(0, 0, this.getWidth(), this.getHeight());
-		
-		this.updateWindowMonitor();
-		this.updateSize = false;
-		return true;
-	}
-	
-	public boolean checkUpdateVSync() {
-		if (!this.shouldUpdateVSync())
-			return false;
-		
-		this.vSync = this.nextVSync;
-		
-		this.updateSwapInterval();
-		this.updateVSync = false;
-		return true;
 	}
 	
 	protected void updateWindowPos() {
@@ -235,7 +233,7 @@ public class Window {
 	}
 	
 	protected void updateWindowMonitor() {
-		this.setAttrib(GLFW_DECORATED, this.isFullscreen() ? 0 : 1);
+		this.setAttrib(GLFW_DECORATED, this.isBorderless() ? 0 : 1);
 		glfwSetWindowMonitor(
 			this.getHandle(), this.getCurrentMonitor(), this.getXPos(), this.getYPos(),
 			this.getWidth(), this.getHeight(), GLFW_DONT_CARE
@@ -244,95 +242,73 @@ public class Window {
 	
 	protected void updateSwapInterval(boolean vSync) { glfwSwapInterval(vSync ? 1 : 0); }
 	protected void updateSwapInterval() { this.updateSwapInterval(this.isVSync()); }
+	protected long getCurrentMonitor() { return this.isFullscreen() ? this.monitor : NULL; }
 	
-	public void setShouldClose(boolean shouldClose) {
-		glfwSetWindowShouldClose(this.getHandle(), true);
-	}
-	public void clear(int bits) {
-		glClear(bits);
-	}
-	public void clearColor(float r, float g, float b, float a) {
-		glClearColor(r, g, b, a);
-	}
+	public void setShouldClose(boolean shouldClose) { glfwSetWindowShouldClose(this.getHandle(), true); }
+	public void clear(int bits) { glClear(bits); }
+	public void clearColor(float r, float g, float b, float a) { glClearColor(r, g, b, a); }
 	
-	public GLFWKeyCallback setKeyCallback(GLFWKeyCallbackI keyCallback) {
-		return glfwSetKeyCallback(this.getHandle(), keyCallback);
-	}
-	public void setAttrib(int attrib, int value) {
-		glfwSetWindowAttrib(this.getHandle(), attrib, value);
-	}
-	public long getAttrib(int attrib) {
-		return glfwGetWindowAttrib(this.getHandle(), attrib);
-	}
-	public void setInputMode(int mode, int value) {
-		glfwSetInputMode(this.getHandle(), mode, value);
-	}
-	public int getKey(int key) {
-		return glfwGetKey(this.getHandle(), key);
-	}
-	public boolean isKeyDown(int key) {
-		return (this.getKey(key) == GLFW_PRESS);
-	}
+	public GLFWKeyCallback setKeyCallback(GLFWKeyCallbackI keyCallback) { return glfwSetKeyCallback(this.getHandle(), keyCallback); }
+	public void setAttrib(int attrib, int value)  { glfwSetWindowAttrib(this.getHandle(), attrib, value); }
+	public long getAttrib(int attrib)             { return glfwGetWindowAttrib(this.getHandle(), attrib); }
+	public void setInputMode(int mode, int value) { glfwSetInputMode(this.getHandle(), mode, value); }
+	public int getKey(int key)                    { return glfwGetKey(this.getHandle(), key); }
+	public boolean isKeyDown(int key)             { return (this.getKey(key) == GLFW_PRESS); }
 	
-	public long getHandle() { return this.handle; }
-	public Object getLock() { return this.lock; }
+	public long getHandle()      { return this.handle; }
+	public Object getLock()      { return this.lock; }
 	public boolean isDestroyed() { return this.destroyed; }
-	
-	// hold down shift when pressing F to use real fullscreen
-	protected long getCurrentMonitor() {
-		this.borderless = false;
-		if (this.isFullscreen())
-			if (this.isKeyDown(GLFW_KEY_LEFT_SHIFT))
-				return this.monitor;
-			else
-				this.borderless = true;
-		return NULL;
-	}
 	public float getElapsedTime() { return this.elapsedTime; }
 	public float getAccumulatedTime() { return this.accumulatedTime; }
 	
 	public int getTargetFps() { return this.targetFps; }
-	public void setTargetFps(int targetFps) { this.targetFps = targetFps; }
-	
 	public int getTargetUps() { return this.targetUps; }
+	public void setTargetFps(int targetFps) { this.targetFps = targetFps; }
 	public void setTargetUps(int targetFps) { this.targetUps = targetUps; }
 	
-	public int getWidth() { return this.isFullscreen() ? this.getScreenWidth() : this.getWindowWidth(); }
-	public int getHeight() { return this.isFullscreen() ? this.getScreenHeight() : this.getWindowHeight(); }
-	public int getWindowWidth() { return this.width; }
+	// width, height
+	public int getWidth()        { return !this.isWindowed() ? this.getScreenWidth() : this.getWindowWidth(); }
+	public int getHeight()       { return !this.isWindowed() ? this.getScreenHeight() : this.getWindowHeight(); }
+	public int getWindowWidth()  { return this.width; }
 	public int getWindowHeight() { return this.height; }
-	public int getScreenWidth() { return this.vidmode.width(); }
+	public int getScreenWidth()  { return this.vidmode.width(); }
 	public int getScreenHeight() { return this.vidmode.height(); }
-	
-	public int getXPos() { return this.isFullscreen() ? this.getScreenXPos() : this.getWindowXPos(); }
-	public int getYPos() { return this.isFullscreen() ? this.getScreenYPos() : this.getWindowYPos(); }
-	public int getWindowXPos() { return this.xPos; }
-	public int getWindowYPos() { return this.yPos; }
-	public int getScreenXPos() { return 0; }
-	public int getScreenYPos() { return 0; }
-	public int getCenteredXPos() { return this.isFullscreen() ? 0 : (this.getScreenWidth() - this.getWindowWidth()) / 2; }
-	public int getCenteredYPos() { return this.isFullscreen() ? 0 : (this.getScreenHeight() - this.getWindowHeight()) / 2; }
-	
-	public boolean isFullscreen() { return this.fullscreen; }
-	public boolean isBorderless() { return this.borderless; }
-	public boolean shouldUpdateSize() { return this.updateSize; }
-	public void setNextSize(int nextWidth, int nextHeight) { 
-		this.nextWidth = nextWidth;
-		this.nextHeight = nextHeight;
-		this.nextFullscreen = this.fullscreen;
-		this.updateSize = true;
+	// xpos, ypos
+	public int getXPos()         { return !this.isWindowed() ? this.getScreenXPos() : this.getWindowXPos(); }
+	public int getYPos()         { return !this.isWindowed() ? this.getScreenYPos() : this.getWindowYPos(); }
+	public int getWindowXPos()   { return this.xPos; }
+	public int getWindowYPos()   { return this.yPos; }
+	public int getScreenXPos()   { return 0; }
+	public int getScreenYPos()   { return 0; }
+	public int getCenteredXPos() { return !this.isWindowed() ? 0 : (this.getScreenWidth() - this.getWindowWidth()) / 2; }
+	public int getCenteredYPos() { return !this.isWindowed() ? 0 : (this.getScreenHeight() - this.getWindowHeight()) / 2; }
+	// setter
+	public void setSize(int width, int height) {
+		this.width = width;
+		this.height = height;
+		this.updateWindowPos();
+		glViewport(0, 0, this.getWidth(), this.getHeight());
+		this.updateWindowMonitor();
 	}
-	public void setNextSize(boolean fullscreen) { 
-		this.nextWidth = this.width;
-		this.nextHeight = this.height;
-		this.nextFullscreen = fullscreen;
-		this.updateSize = true;
+	
+	public int getMode()          { return this.mode; }
+	public boolean isWindowed()   { return this.mode == WINDOWED; }
+	public boolean isBorderless() { return this.mode == BORDERLESS; }
+	public boolean isFullscreen() { return this.mode == FULLSCREEN; }
+	public void setMode(int mode) {
+		if (this.isWindowed())
+			this.updateWindowPos();
+		this.mode = mode;
+		if (this.isFullscreen())
+			// workaround to ensure vSync is correct after real fullscreen
+			this.next.add("vSync", () -> this.setVSync(this.isVSync()));
+		glViewport(0, 0, this.getWidth(), this.getHeight());
+		this.updateWindowMonitor();
 	}
 	
 	public boolean isVSync() { return this.vSync; }
-	public boolean shouldUpdateVSync() { return this.updateVSync; }
-	public void setNextVSync(boolean nextVSync) { 
-		this.nextVSync = nextVSync;
-		this.updateVSync = true;
+	public void setVSync(boolean vSync) {
+		this.vSync = vSync;
+		this.updateSwapInterval();
 	}
 }

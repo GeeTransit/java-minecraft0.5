@@ -12,13 +12,13 @@ public class Main {
 
 	public static void main(String[] args) {
 		try {
-			boolean fullscreen = false;
+			int mode = Window.WINDOWED;
 			boolean vSync = true;
 			int targetFps = 10;
 			int targetUps = 30;
-			Window window = new Window("Hello World!", 300, 300, fullscreen, vSync, targetFps, targetUps);
-			ILogic logic = new Game(80f);
-			Engine engine = new Engine(window, logic);
+			Window window = new Window("Hello World!", 300, 300, mode, vSync, targetFps, targetUps);
+			Scene scene = new Game();
+			Engine engine = new Engine(window, scene);
 			engine.run();
 		} catch (Exception e) {
 			e.printStackTrace();
