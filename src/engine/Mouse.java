@@ -49,4 +49,13 @@ public class Mouse {
 		this.movement.div(window.getTargetUps() * window.getElapsedTime());
 		this.previous.set(this.current);
 	}
+	
+	public String toString() {
+		return String.format(
+			"<%s movement=%s current=%s>",
+			this.getClass().getSimpleName(),
+			this.getMovement(),
+			this.getCurrent()
+		);
+	}
 }

@@ -41,4 +41,13 @@ public class Camera {
 		this.rotation.add(x, y, z);
 		return this;
 	}
+	
+	public String toString() {
+		return String.format(
+			"<%s position=%s rotation=%s>",
+			this.getClass().getSimpleName(),
+			this.getPosition(),
+			this.getRotation()
+		);
+	}
 }
