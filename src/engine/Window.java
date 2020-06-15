@@ -34,6 +34,8 @@ public class Window {
 	private int nextHeight;
 	private boolean nextFullscreen;
 	private boolean nextVSync;
+	private float elapsedTime;
+	private float accumulatedTime;
 	
 	private boolean updateVSync = false;
 	private boolean updateSize = false;
@@ -155,15 +157,15 @@ public class Window {
 		float accumulator = 0f;
 		
 		while (!this.isDestroyed()) {
-			elapsedTime = this.timer.getElapsedTime();
-			accumulator += elapsedTime;
+			this.elapsedTime = this.timer.getElapsedTime();
+			this.accumulatedTime += this.elapsedTime;
 			
 			logic.input(this);
 			
 			float interval = 1f / this.getTargetUps();
-			while (accumulator >= interval) {
 				logic.update(interval);
-				accumulator -= interval;
+			while (this.accumulatedTime >= interval) {
+				this.accumulatedTime -= interval;
 			}
 			
 			logic.render(this);
@@ -286,6 +288,8 @@ public class Window {
 				this.borderless = true;
 		return NULL;
 	}
+	public float getElapsedTime() { return this.elapsedTime; }
+	public float getAccumulatedTime() { return this.accumulatedTime; }
 	
 	public int getTargetFps() { return this.targetFps; }
 	public void setTargetFps(int targetFps) { this.targetFps = targetFps; }
