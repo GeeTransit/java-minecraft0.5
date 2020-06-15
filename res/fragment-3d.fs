@@ -4,7 +4,7 @@ in vec2 outCoord;
 out vec4 fragColor;
 
 uniform sampler2D texture_sampler;
-uniform vec3 color;
+uniform vec4 color;
 uniform int useTexture;
 
 void main()
@@ -15,6 +15,6 @@ void main()
 	}
 	else
 	{
-		fragColor = vec4(color, 1);
+		fragColor = color;
 	}
 }
