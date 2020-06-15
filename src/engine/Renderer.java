@@ -55,6 +55,7 @@ public abstract class Renderer {
 		shader.createUniform("projModelMatrix");
 		shader.createUniform("texture_sampler");
 		shader.createUniform("color");
+		shader.createUniform("useTexture");
 		return shader;
 	}
 	
@@ -97,6 +98,7 @@ public abstract class Renderer {
 			Matrix4f projModelMatrix = this.transformation.getOrthoProjModelMatrix(item, orthoMatrix);
 			this.shader.setUniform("projModelMatrix", projModelMatrix);
 			this.shader.setUniform("color", item.getMesh().getColor());
+			this.shader.setUniform("useTexture", item.getMesh().isTexture());
 			item.render(window);
 		}
 
