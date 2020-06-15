@@ -24,6 +24,14 @@ public class Item {
 		this.scale = 1;
 	}
 	
+	public void render(Window window) {
+		this.mesh.render();
+	}
+	
+	public void cleanup() {
+		this.mesh.cleanup();
+	}
+	
 	public Mesh getMesh() { return this.mesh; }
 	public Vector3f getPosition() { return this.position; }
 	public Vector3f getRotation() { return this.rotation; }
