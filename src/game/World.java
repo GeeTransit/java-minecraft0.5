@@ -5,6 +5,7 @@ World scene implementation.
 
 package geetransit.minecraft05.game;
 
+import java.nio.*;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
@@ -24,6 +25,8 @@ public class World extends SceneRender {
 	private Camera camera;
 	private float step;
 	private Vector3f movement;
+	
+	public static final int MAX_COLOR = 255*255*255;
 
 	public World(Mouse mouse, Camera camera) {
 		super();
@@ -59,20 +62,30 @@ public class World extends SceneRender {
 		Mesh mesh = ObjLoader.loadMesh("/res/cube.obj");
 		mesh.setTexture(new Texture("/res/grassblock.png"));
 		
-		for (int i = -10; i <= 10; i++) {
-			for (int j = -10; j <= 10; j++) {
-				this.addItem(new Item(mesh).setScale(0.5f).setPosition(i, 0, j));
+		// get heightmap
+		int widthArray[] = {0};
+		int lengthArray[] = {0};
+		ByteBuffer map = Utils.loadImage("/res/heightmap.png", widthArray, lengthArray);
+		int width = widthArray[0];
+		int length = lengthArray[0];
+		
+		// create terrain
+		for (int i = 0; i < width; i++) {
+			for (int j = 0; j < length; j++) {
+				int height = (int) this.expand(this.compress(this.heightAt(map, i, j, width), 0, MAX_COLOR), 0, 16);
+				this.addItem(new Item(mesh).setScale(0.5f).setPosition(i, height, j));
 			}
 		}
+		
+		// free heightmap
+		Utils.freeImage(map);
+		
+		// add spawn markers (-2z is forwards)
 		this
 			.addItem(new Item(mesh).setScale(0.5f).setPosition(+1, +1,  0))
 			.addItem(new Item(mesh).setScale(0.5f).setPosition(-1, +1,  0))
 			.addItem(new Item(mesh).setScale(0.5f).setPosition( 0, +1, +1))
-			.addItem(new Item(mesh).setScale(0.5f).setPosition( 0, +1, -2))
-			// missing ones is +z (back) and +xz (back-right)
-			// .addItem(new Item(mesh).setScale(0.5f).setPosition( 0, +1, +1))
-			// .addItem(new Item(mesh).setScale(0.5f).setPosition(+1, +1, +1))
-			;
+			.addItem(new Item(mesh).setScale(0.5f).setPosition( 0, +1, -2));
 	}
 	
 	@Override
@@ -110,5 +123,23 @@ public class World extends SceneRender {
 		}
 		
 		this.camera.movePosition(this.movement.mul(this.step, new Vector3f()));
+	}
+	
+	// usage: expand(compress(heightAt(...), 0, MAX_COLOR), 0, 255)
+	// private float compress(float f, float min, float max) { return Math.max(0f, Math.min(1f, (f-min) / (max-min))); }
+	private float compress(int f, float min, float max) { return (f-min) / (max-min); }
+	private float expand(float f, float min, float max) { return min + f*(max-min); }
+	
+	private int heightAt(ByteBuffer buffer, int x, int z, int width) { return this.heightAt(buffer, x*4 + z*4*width); }
+	private int heightAt(ByteBuffer buffer, int i) {
+		byte r = buffer.get(i + 0);
+		byte g = buffer.get(i + 1);
+		byte b = buffer.get(i + 2);
+		byte a = buffer.get(i + 3);
+		return 0
+			| ((0xFF & a) << 0x18)
+			| ((0xFF & r) << 0x10)
+			| ((0xFF & g) << 0x8)
+			| ((0xFF & b) << 0x0);
 	}
 }
