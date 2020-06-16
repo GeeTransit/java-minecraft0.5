@@ -14,6 +14,7 @@ public class Transformation {
 	private final Matrix4f modelViewMatrix;
 	private final Matrix4f orthoProjectionMatrix;
 	private final Matrix4f orthoProjModelMatrix;
+	private final Vector3f rotateVector;
 
 	public Transformation() {
 		this.projectionMatrix = new Matrix4f();
@@ -21,6 +22,7 @@ public class Transformation {
 		this.modelViewMatrix = new Matrix4f();
 		this.orthoProjectionMatrix = new Matrix4f();
 		this.orthoProjModelMatrix = new Matrix4f();
+		this.rotateVector = new Vector3f();
 	}
 
 	public Matrix4f getProjectionMatrix(float fov, float width, float height, float zNear, float zFar) {
@@ -37,10 +39,10 @@ public class Transformation {
 		return this.viewMatrix
 			.identity()
 			// First do the rotation so camera rotates over its position
-			.rotate((float) Math.toRadians(camera.getRotation().x), new Vector3f(1, 0, 0))
-			.rotate((float) Math.toRadians(camera.getRotation().y), new Vector3f(0, 1, 0))
+			.rotate((float) Math.toRadians(camera.getRotation().x), this.rotateVector.set(1, 0, 0))
+			.rotate((float) Math.toRadians(camera.getRotation().y), this.rotateVector.set(0, 1, 0))
 			// Then do the translation
-			.translate(camera.getPosition().negate(new Vector3f()));
+			.translate(camera.getPosition().negate(this.rotateVector));
 	}
 	
 	public Matrix4f getModelViewMatrix(Item item, Matrix4f viewMatrix) {
