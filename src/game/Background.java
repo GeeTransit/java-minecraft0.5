@@ -22,9 +22,14 @@ public class Background implements Scene {
 	private int direction;
 	private float color;
 	
-	public Background() {
+	private Camera camera;
+	private int render;
+	
+	public Background(Camera camera) {
 		this.direction = 0;
 		this.color = 0.5f;
+		this.camera = camera;
+		this.render = 0;
 	}
 	
 	@Override
@@ -40,12 +45,18 @@ public class Background implements Scene {
 		this.direction = 0;
 		if (window.isKeyDown(GLFW_KEY_UP)) this.direction++;
 		if (window.isKeyDown(GLFW_KEY_DOWN)) this.direction--;
+		
+		// render distance (camera)
+		this.render = 0;
+		if (window.isKeyDown(GLFW_KEY_L)) this.camera.setFar(Camera.FAR);
+		if (window.isKeyDown(GLFW_KEY_RIGHT_BRACKET)) this.render++;
+		if (window.isKeyDown(GLFW_KEY_LEFT_BRACKET)) this.render--;
 	}
 	
 	@Override
 	public void update(float interval) {
-		this.color += this.direction * 0.01f;
-		this.color = Math.max(0f, Math.min(1f, this.color));
+		this.color = Math.max(0f, Math.min(1f, 0.01f*this.direction));
+		this.camera.setFar(Math.max(0, this.camera.getFar() + 0.1f*this.render));
 	}
 	
 	@Override

@@ -28,7 +28,7 @@ public class Game extends SceneBase {
 		this.mouse = new Mouse();
 		this.camera = new Camera();
 		
-		this.background = new Background();
+		this.background = new Background(this.camera);
 		this.skybox = new Skybox(this.camera);
 		this.world = new World(this.mouse, this.camera);
 		this.hud = new Hud(this.mouse, this.camera);
@@ -95,15 +95,6 @@ public class Game extends SceneBase {
 	@Override
 	public void input(Window window) {
 		this.mouse.input(window);
-		
-		// render distance (camera)
-		if (window.isKeyDown(GLFW_KEY_L)) this.camera.setFar(Camera.FAR);
-		if (window.isKeyDown(GLFW_KEY_RIGHT_BRACKET))
-			this.camera.setFar(this.camera.getFar() + 1);
-		if (window.isKeyDown(GLFW_KEY_LEFT_BRACKET))
-			this.camera.setFar(Math.max(0, this.camera.getFar() - 1));
-			window.next.add("targetFps", () -> window.setTargetFps(window.getTargetFps() + 1));
-		
 		super.input(window);
 	}
 	
@@ -111,6 +102,7 @@ public class Game extends SceneBase {
 	public void render(Window window) {
 		// clear the framebuffer
 		window.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		// render scenes
 		super.render(window);
 	}
 }
