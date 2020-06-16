@@ -9,6 +9,7 @@ import geetransit.minecraft05.engine.*;
 
 public class Skybox extends SceneRender {
 	private Camera camera;
+	private Item skybox;
 
     public Skybox(Camera camera) {
         super();
@@ -30,6 +31,13 @@ public class Skybox extends SceneRender {
 		super.init(window);
 		Mesh mesh = ObjLoader.loadMesh("/res/skybox.obj");
 		mesh.setTexture(new Texture("/res/skybox.png"));
-		this.addItem(new Item(mesh).setScale(camera.getFar() * 0.5f).setPosition(0, 0, 0));
+		this.skybox = new Item(mesh).setPosition(0, 0, 0);
+		this.addItem(this.skybox);
+	}
+	
+	@Override
+	public void input(Window window) {
+		super.input(window);
+		this.skybox.setScale(this.camera.getFar() * 0.5f);
 	}
 }
