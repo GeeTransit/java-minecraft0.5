@@ -35,7 +35,7 @@ public class World extends SceneRender {
 				return this.create3D("/res/vertex-3d.vs", "/res/fragment-3d.fs");
 			}
 			public void render(Window window) {
-				this.render3D(window, World.this.getCamera());
+				this.render3DSingle(window, World.this.getCamera());
 			}
 		});
 		

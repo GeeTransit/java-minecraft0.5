@@ -78,20 +78,59 @@ public abstract class Renderer {
 		
 		// Draw meshes
 		this.shader.setUniform("texture_sampler", 0);
-		for (int i = 0; i < items.size(); i++) {
+		int itemsSize = items.size();
+		for (int i = 0; i < itemsSize; i++) {
 			Item item = items.get(i);
 			Mesh mesh = item.getMesh();
 			Matrix4f modelViewMatrix = this.transformation.getModelViewMatrix(item, viewMatrix);
 			this.shader.setUniform("modelViewMatrix", modelViewMatrix);
 			this.shader.setUniform("color", mesh.getColor());
 			this.shader.setUniform("useTexture", mesh.isTexture());
-			mesh.prepare(i - 1 >= 0 ? items.get(i - 1).getMesh() : null);
+			mesh.prepare(this.getMeshFromItems(items, i-1, itemsSize));
 			mesh.render();
-			mesh.restore(i + 1 < items.size() ? items.get(i + 1).getMesh() : null);
+			mesh.restore(this.getMeshFromItems(items, i+1, itemsSize));
 		}
 		
 		glDisable(GL_CULL_FACE);
 
+		this.shader.unbind();
+	}
+	
+	public void render3DSingle(Window window, Camera camera) {
+		this.render3DSingle(window, camera, this.parent.getItems());
+	}
+	public void render3DSingle(Window window, Camera camera, List<Item> items) {
+		this.shader.bind();
+		
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+		
+		// projection
+		Matrix4f projectionMatrix = this.transformation.getProjectionMatrix(window, camera);
+		this.shader.setUniform("projectionMatrix", projectionMatrix);
+		
+		// view
+		Matrix4f viewMatrix = this.transformation.getViewMatrix(camera);
+		
+		// Draw meshes
+		this.shader.setUniform("texture_sampler", 0);
+		if (!items.isEmpty()) {
+			Mesh firstMesh = items.get(0).getMesh();
+			this.shader.setUniform("color", firstMesh.getColor());
+			this.shader.setUniform("useTexture", firstMesh.isTexture());
+			firstMesh.prepare();
+			
+			for (Item item : items) {
+				Matrix4f modelViewMatrix = this.transformation.getModelViewMatrix(item, viewMatrix);
+				this.shader.setUniform("modelViewMatrix", modelViewMatrix);
+				item.getMesh().render();
+			}
+			
+			firstMesh.restore();
+		}
+		
+		glDisable(GL_CULL_FACE);
+		
 		this.shader.unbind();
 	}
 	
@@ -106,6 +145,9 @@ public abstract class Renderer {
 		glDisable(GL_DEPTH_TEST);  // disable depth-testing
 
 		Matrix4f orthoMatrix = this.transformation.getOrthoProjectionMatrix(window);
+		
+		// Draw meshes
+		this.shader.setUniform("texture_sampler", 0);
 		for (Item item : items) {
 			Matrix4f projModelMatrix = this.transformation.getOrthoProjModelMatrix(item, orthoMatrix);
 			this.shader.setUniform("projModelMatrix", projModelMatrix);
@@ -118,13 +160,6 @@ public abstract class Renderer {
 		glEnable(GL_DEPTH_TEST);
 
 		this.shader.unbind();
-	}
-	
-	public void cleanup() {
-		if (this.shader != null) {
-			this.shader.cleanup();
-			this.shader = null;
-		}
 	}
 	
 	public void renderSkybox(Window window, Camera camera) {
@@ -154,5 +189,19 @@ public abstract class Renderer {
 		}
 
 		this.shader.unbind();
+	}
+	
+	public Mesh getMeshFromItems(List<Item> items, int index) { return this.getMeshFromItems(items, index, items.size()); }
+	public Mesh getMeshFromItems(List<Item> items, int index, int size) {
+		if (0 <= index && index < size)
+			return items.get(index).getMesh();
+		return null;
+	}
+	
+	public void cleanup() {
+		if (this.shader != null) {
+			this.shader.cleanup();
+			this.shader = null;
+		}
 	}
 }
