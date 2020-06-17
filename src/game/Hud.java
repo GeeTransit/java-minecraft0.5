@@ -46,9 +46,10 @@ public class Hud extends SceneRender {
 	@Override
 	public void input(Window window) {
 		super.input(window);
-		this.text.setText("" + this.camera + "\n" + this.mouse);
-		this.text.setPosition(10f, window.getHeight() * 0.9f, 0f);
-		this.text.setScale(window.getWidth() * (1/3000f));
+		String format = "vsync=%s\ncamera=%s\nmouse=%s";
+		this.text.setText(String.format(format, window.isVSync(), this.camera, this.mouse));
+		this.text.setPosition(10f, window.getHeight() * 0.85f, 0f);
+		this.text.setScale(window.getWidth() * (1/3500f));
 		this.compass.setPosition(window.getWidth() * 0.95f, window.getWidth() * 0.05f, 0f);
 		this.compass.setRotation(0f, 0f, 180f - this.camera.getRotation().y);
 		this.compass.setScale(window.getWidth() * (1/20f));
