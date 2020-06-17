@@ -55,8 +55,8 @@ public class Background implements Scene {
 	
 	@Override
 	public void update(float interval) {
-		this.color = Math.max(0f, Math.min(1f, 0.01f*this.direction));
-		this.camera.setFar(Math.max(0, this.camera.getFar() + 0.1f*this.render));
+		this.color = Math.max(0f, Math.min(1f, this.color+0.01f*this.direction));
+		this.camera.setFar(Math.max(Camera.NEAR+0.01f, this.camera.getFar() + 0.1f*this.render));
 	}
 	
 	@Override
