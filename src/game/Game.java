@@ -68,14 +68,44 @@ public class Game extends SceneBase {
 		
 		// Setup a key callback. It will be called every time a key is pressed, repeated or released.
 		window.setKeyCallback((handle, key, scancode, action, mods) -> {
-			if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE)
+			if (key == GLFW_KEY_F4 && action == GLFW_RELEASE && ((mods & GLFW_MOD_SHIFT) != 0)) {
 				window.setShouldClose(true);  // We will detect this in the rendering loop
+				window.postEmptyEvent();
+			}
+			if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
+				window.next.add("mode", () -> {
+					if (!window.isWindowed())
+						window.setMode(Window.WINDOWED);
+				});
+				window.next.add("inputMode", () -> {
+					if (window.getInputMode(GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {
+						window.setInputMode(GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+						if (glfwRawMouseMotionSupported())
+							window.setInputMode(GLFW_RAW_MOUSE_MOTION, GLFW_FALSE);
+					}
+				});
+				window.postEmptyEvent();
+			}
+			if (key == GLFW_KEY_M && action == GLFW_RELEASE) {
+				window.next.add("inputMode", () -> {
+					if (window.getInputMode(GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {
+						window.setInputMode(GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+						if (glfwRawMouseMotionSupported())
+							window.setInputMode(GLFW_RAW_MOUSE_MOTION, GLFW_FALSE);
+					} else {
+						window.setInputMode(GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+						if (glfwRawMouseMotionSupported())
+							window.setInputMode(GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+					}
+				});
+				window.postEmptyEvent();
+			}
 			if (key == GLFW_KEY_V && action == GLFW_RELEASE)
 				window.next.add("vSync", () -> window.setVSync(!window.isVSync()));
 			if (key == GLFW_KEY_F && action == GLFW_RELEASE)
 				if (!window.isWindowed())
 					window.next.add("mode", () -> window.setMode(Window.WINDOWED));
-				else if ((mods & GLFW_MOD_SHIFT) > 0)
+				else if ((mods & GLFW_MOD_SHIFT) != 0)
 					// hold down shift when pressing F to use real fullscreen
 					window.next.add("mode", () -> window.setMode(Window.FULLSCREEN));
 				else

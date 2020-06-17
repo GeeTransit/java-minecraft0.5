@@ -179,6 +179,15 @@ public class Window {
 			this.elapsedTime = this.timer.getElapsedTime();
 			this.accumulatedTime += this.elapsedTime;
 			
+			// bucket
+			this.next.run("mode");
+			this.next.run("size");
+			this.next.run("vSync");
+			this.next.run("inputMode");
+			this.next.run("attrib");
+			this.next.run("targetFps");
+			this.next.run("targetUps");
+			
 			// input
 			scene.input(this);
 			
@@ -188,13 +197,6 @@ public class Window {
 				scene.update(interval);
 				this.accumulatedTime -= interval;
 			}
-			
-			// bucket
-			this.next.run("mode");
-			this.next.run("size");
-			this.next.run("vSync");
-			this.next.run("targetFps");
-			this.next.run("targetUps");
 			
 			// render
 			scene.render(this);
@@ -252,17 +254,19 @@ public class Window {
 	public void setAttrib(int attrib, int value)  { glfwSetWindowAttrib(this.getHandle(), attrib, value); }
 	public long getAttrib(int attrib)             { return glfwGetWindowAttrib(this.getHandle(), attrib); }
 	public void setInputMode(int mode, int value) { glfwSetInputMode(this.getHandle(), mode, value); }
+	public long getInputMode(int mode)            { return glfwGetInputMode(this.getHandle(), mode); }
 	public int getKey(int key)                    { return glfwGetKey(this.getHandle(), key); }
 	public boolean isKeyDown(int key)             { return (this.getKey(key) == GLFW_PRESS); }
+	public void postEmptyEvent()                  { glfwPostEmptyEvent(); }
 	
-	public long getHandle()      { return this.handle; }
-	public Object getLock()      { return this.lock; }
-	public boolean isDestroyed() { return this.destroyed; }
-	public float getElapsedTime() { return this.elapsedTime; }
+	public long getHandle()           { return this.handle; }
+	public Object getLock()           { return this.lock; }
+	public boolean isDestroyed()      { return this.destroyed; }
+	public float getElapsedTime()     { return this.elapsedTime; }
 	public float getAccumulatedTime() { return this.accumulatedTime; }
 	
-	public int getTargetFps() { return this.targetFps; }
-	public int getTargetUps() { return this.targetUps; }
+	public int getTargetFps()               { return this.targetFps; }
+	public int getTargetUps()               { return this.targetUps; }
 	public void setTargetFps(int targetFps) { this.targetFps = targetFps; }
 	public void setTargetUps(int targetFps) { this.targetUps = targetUps; }
 	
