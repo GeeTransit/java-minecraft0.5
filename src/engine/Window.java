@@ -6,6 +6,7 @@ Window class.
 package geetransit.minecraft05.engine;
 
 import org.lwjgl.glfw.*;
+import org.lwjgl.system.*;
 import org.lwjgl.opengl.*;
 
 import static org.lwjgl.glfw.Callbacks.*;
@@ -41,6 +42,7 @@ public class Window {
 	
 	private long monitor;
 	private GLFWVidMode vidmode;
+	private Callback errorCallbackGL;
 	
 	public Window(
 		String title,
@@ -79,6 +81,7 @@ public class Window {
 		glfwWindowHint(GLFW_VISIBLE, GL_FALSE); // the window will stay hidden after creation
 		glfwWindowHint(GLFW_RESIZABLE, GL_TRUE); // the window will be resizable
 		glfwWindowHint(GLFW_FOCUSED, GL_TRUE); // get focus when shown
+		glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);  // debug
 
 		// Get the resolution of the primary monitor
 		this.monitor = glfwGetPrimaryMonitor();
@@ -138,6 +141,10 @@ public class Window {
 		// Terminate GLFW and release the error function
 		glfwTerminate();
 		glfwSetErrorCallback(null).free();
+		if (this.errorCallbackGL != null) {
+			this.errorCallbackGL.free();
+			this.errorCallbackGL = null;
+		}
 	}
 	
 	public void renderThread(Scene scene) {
@@ -162,6 +169,9 @@ public class Window {
 		// creates the ContextCapabilities instance and makes the OpenGL
 		// bindings available for use.
 		GL.createCapabilities();
+		
+		// add error output
+		this.errorCallbackGL = GLUtil.setupDebugMessageCallback(System.err);
 		
 		// Check vSync
 		glfwSwapInterval(this.isVSync() ? 1 : 0);

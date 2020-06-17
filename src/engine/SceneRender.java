@@ -5,26 +5,34 @@ Base rendered scene implementation.
 
 package geetransit.minecraft05.engine;
 
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 public abstract class SceneRender extends SceneBase {
 	protected Renderer renderer;
 	protected List<Item> items;
+	protected Map<Mesh, List<Item>> meshMap;
 
 	public SceneRender(Renderer renderer) {
 		super();
 		this.renderer = renderer;
 		this.items = new ArrayList<>();
+		this.meshMap = new HashMap<>();
 	}
 	public SceneRender() {
 		this(null);
 	}
 	
 	public Renderer getRenderer() { return this.renderer; }
-	public List<Item> getItems() { return this.items; }
 	public SceneRender setRenderer(Renderer renderer) { this.renderer = renderer; return this; }
-	public SceneRender addItem(Item item) { this.items.add(item); return this; }
+	
+	public List<Item> getItems() { return this.items; }
+	public Map<Mesh, List<Item>> getMeshMap() { return this.meshMap; }
+	public SceneRender addItem(Item item) {
+		this.items.add(item);
+		this.meshMap.putIfAbsent(item.getMesh(), new ArrayList<>());
+		this.meshMap.get(item.getMesh()).add(item);
+		return this;
+	}
 	
 	@Override
 	public void init(Window window) throws Exception {

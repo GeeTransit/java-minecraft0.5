@@ -9,7 +9,7 @@ uniform int useTexture;
 
 void main()
 {
-	if (useTexture == 1)
+	if (useTexture < 0)
 	{
 		fragColor = texture(texture_sampler, outCoord);
 	}

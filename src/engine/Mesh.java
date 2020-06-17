@@ -6,22 +6,23 @@ Mesh class.
 package geetransit.minecraft05.engine;
 
 import java.util.*;
+import java.util.function.*;
 import java.nio.*;
 import org.joml.*;
 import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 public class Mesh {
-	private static final Vector3f DEFAULT_COLOUR = new Vector3f(0.0f, 0.0f, 0.0f);
+	public static final Vector3f DEFAULT_COLOUR = new Vector3f(0.0f, 0.0f, 0.0f);
 	
-	private final int vaoId;
-	private final int vertexCount;
-	private final List<Integer> vboIdList;
+	protected final int vaoId;
+	protected final int vertexCount;
+	protected final List<Integer> vboIdList;
 	
-	private Texture texture;
-	private Vector4f color;
+	protected Texture texture;
+	protected Vector4f color;
 
-	public Mesh(float[] posArray, int[] indexArray, float[] coordArray, float[] normalArray) {
+	public Mesh(float[] posArray, int[] indexArray, float[] coordArray) {
 		this.vboIdList = new ArrayList<>();
 		this.vertexCount = indexArray.length;
 		int vboId;
@@ -29,7 +30,6 @@ public class Mesh {
 		FloatBuffer posBuffer = null;
 		IntBuffer indexBuffer = null;
 		FloatBuffer coordBuffer = null;
-		FloatBuffer normalBuffer = null;
 		try {
 			// Create the VAO
 			this.vaoId = glGenVertexArrays();
@@ -64,16 +64,6 @@ public class Mesh {
 			glBufferData(GL_ARRAY_BUFFER, coordBuffer, GL_STATIC_DRAW);
 			glEnableVertexAttribArray(1);
 			glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0);
-			
-			// normals VBO
-			vboId = glGenBuffers();
-			this.vboIdList.add(vboId);
-			normalBuffer = memAllocFloat(normalArray.length);
-			normalBuffer.put(normalArray).flip();
-			glBindBuffer(GL_ARRAY_BUFFER, vboId);
-			glBufferData(GL_ARRAY_BUFFER, normalBuffer, GL_STATIC_DRAW);
-			glEnableVertexAttribArray(2);
-			glVertexAttribPointer(2, 3, GL_FLOAT, false, 0, 0);
 
 			// Unbind the VBO / VAB
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -83,7 +73,6 @@ public class Mesh {
 			if (posBuffer != null) memFree(posBuffer);
 			if (indexBuffer != null) memFree(indexBuffer);
 			if (coordBuffer != null) memFree(coordBuffer);
-			if (normalBuffer != null) memFree(normalBuffer);
 		}
 	}
 
@@ -96,14 +85,14 @@ public class Mesh {
 	public Mesh setTexture(Texture texture) { this.texture = texture; return this; }
 	public Mesh setColor(Vector3f color) { this.color = new Vector4f(color, 1f); return this; }
 	public Mesh setColor(Vector4f color) { this.color = color; return this; }
-	public boolean isTexture() { return this.texture != null; }
+	public boolean useTexture() { return this.texture != null; }
 	
 	// prepare mesh
 	public void prepare() { this.prepare(null); }
 	public void prepare(Mesh lastMesh) {
 		if (this == lastMesh)
 			return;
-		if (this.isTexture()) {
+		if (this.useTexture()) {
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, this.texture.getId());
 		}
@@ -126,7 +115,8 @@ public class Mesh {
 	protected void deleteVbos() {
 		// Delete the VBO
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		this.vboIdList.stream().forEach(id -> glDeleteBuffers(id));
+		for (int id : this.vboIdList)
+			glDeleteBuffers(id);
 	}
 	
 	protected void disableVao() {
@@ -143,7 +133,7 @@ public class Mesh {
 	public void cleanup(boolean cleanupTexture) {
 		this.disableVao();
 		this.deleteVbos();
-		if (cleanupTexture && this.isTexture()) {
+		if (cleanupTexture && this.useTexture()) {
 			this.texture.cleanup();
 			this.texture = null;
 		}

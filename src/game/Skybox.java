@@ -13,12 +13,16 @@ public class Skybox extends SceneRender {
 
     public Skybox(Camera camera) {
         super();
-		this.setRenderer(new Renderer(this) {
-			public Shader create(Window window) throws Exception {
-				return this.create3D("/res/vertex-3d.vs", "/res/fragment-3d.fs");
+		this.setRenderer(new Renderer() {
+			Shader shader;
+			public void init(Window window) throws Exception {
+				shader = create3D("/res/vertex-3d.vs", "/res/fragment-3d.fs");
 			}
 			public void render(Window window) {
-				this.renderSkybox(window, Skybox.this.getCamera());
+				render3DList(shader, window, Skybox.this.getCamera(), Skybox.this);
+			}
+			public void cleanup() {
+				if (shader != null) shader.cleanup();
 			}
 		});
 		this.camera = camera;
