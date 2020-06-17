@@ -134,6 +134,45 @@ public abstract class Renderer {
 		this.shader.unbind();
 	}
 	
+	// note does NOT call Item.render(Window)
+	public void render3DMap(Window window, Camera camera) {
+		this.render3DMap(window, camera, this.parent.getMeshMap());
+	}
+	public void render3DMap(Window window, Camera camera, Map<Mesh, List<Item>> map) {
+		this.shader.bind();
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+		
+		// projection
+		Matrix4f projectionMatrix = this.transformation.getProjectionMatrix(window, camera);
+		this.shader.setUniform("projectionMatrix", projectionMatrix);
+		
+		// view
+		Matrix4f viewMatrix = this.transformation.getViewMatrix(camera);
+		
+		// Draw meshes
+		this.shader.setUniform("texture_sampler", 0);
+		for (Map.Entry<Mesh, List<Item>> entry : map.entrySet()) {
+			Mesh mesh = entry.getKey();
+			List<Item> items = entry.getValue();
+			this.shader.setUniform("color", mesh.getColor());
+			this.shader.setUniform("useTexture", mesh.isTexture());
+			mesh.prepare();
+			
+			// single : loop through items
+			for (Item item : items) {
+				Matrix4f modelViewMatrix = this.transformation.getModelViewMatrix(item, viewMatrix);
+				this.shader.setUniform("modelViewMatrix", modelViewMatrix);
+				mesh.render();
+			}
+			
+			mesh.restore();
+		}
+		
+		glDisable(GL_CULL_FACE);
+		this.shader.unbind();
+	}
+	
 	public void render2D(Window window) {
 		this.render2D(window, this.parent.getItems());
 	}

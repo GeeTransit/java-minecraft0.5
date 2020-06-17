@@ -35,7 +35,7 @@ public class World extends SceneRender {
 				return this.create3D("/res/vertex-3d.vs", "/res/fragment-3d.fs");
 			}
 			public void render(Window window) {
-				this.render3DSingle(window, World.this.getCamera());
+				this.render3DMap(window, World.this.getCamera());
 			}
 		});
 		
@@ -59,8 +59,10 @@ public class World extends SceneRender {
 		super.init(window);
 		
 		// Create the cube mesh
-		Mesh mesh = ObjLoader.loadMesh("/res/cube.obj");
-		mesh.setTexture(new Texture("/res/grassblock.png"));
+		Mesh grassblock = ObjLoader.loadMesh("/res/cube.obj");
+		grassblock.setTexture(new Texture("/res/grassblock.png"));
+		Mesh cobbleblock = ObjLoader.loadMesh("/res/cube.obj");
+		cobbleblock.setTexture(new Texture("/res/cobbleblock.png"));
 		
 		// get heightmap
 		int widthArray[] = {0};
@@ -73,7 +75,10 @@ public class World extends SceneRender {
 		for (int i = 0; i < width; i++) {
 			for (int j = 0; j < length; j++) {
 				int height = (int) this.expand(this.compress(this.heightAt(map, i, j, width), 0, MAX_COLOR), 0, 16);
-				this.addItem(new Item(mesh).setScale(0.5f).setPosition(i, height, j));
+				this.addItem(new Item(grassblock).setScale(0.5f).setPosition(i, height, j));
+				for (int k = 0; k < 2; k++) {
+					this.addItem(new Item(cobbleblock).setScale(0.5f).setPosition(i, height-1-k, j));
+				}
 			}
 		}
 		
@@ -82,10 +87,10 @@ public class World extends SceneRender {
 		
 		// add spawn markers (-2z is forwards)
 		this
-			.addItem(new Item(mesh).setScale(0.5f).setPosition(+1, +1,  0))
-			.addItem(new Item(mesh).setScale(0.5f).setPosition(-1, +1,  0))
-			.addItem(new Item(mesh).setScale(0.5f).setPosition( 0, +1, +1))
-			.addItem(new Item(mesh).setScale(0.5f).setPosition( 0, +1, -2));
+			.addItem(new Item(grassblock).setScale(0.5f).setPosition(+1, +1,  0))
+			.addItem(new Item(grassblock).setScale(0.5f).setPosition(-1, +1,  0))
+			.addItem(new Item(grassblock).setScale(0.5f).setPosition( 0, +1, +1))
+			.addItem(new Item(grassblock).setScale(0.5f).setPosition( 0, +1, -2));
 	}
 	
 	@Override
