@@ -11,7 +11,6 @@ import org.joml.Quaternionf;
 
 public class Transformation {
 	private final Matrix4f projectionMatrix;
-	private final Matrix4f viewMatrix;
 	private final Matrix4f modelViewMatrix;
 	private final Matrix4f orthoProjectionMatrix;
 	private final Matrix4f orthoProjModelMatrix;
@@ -19,7 +18,6 @@ public class Transformation {
 
 	public Transformation() {
 		this.projectionMatrix = new Matrix4f();
-		this.viewMatrix = new Matrix4f();
 		this.modelViewMatrix = new Matrix4f();
 		this.orthoProjectionMatrix = new Matrix4f();
 		this.orthoProjModelMatrix = new Matrix4f();
@@ -34,16 +32,6 @@ public class Transformation {
 			camera.getFov(), (float) window.getWidth(), (float) window.getHeight(),
 			camera.getNear(), camera.getFar()
 		);
-	}
-	
-	public Matrix4f getViewMatrix(Camera camera) {
-		return this.viewMatrix
-			.identity()
-			// First do the rotation so camera rotates over its position
-			.rotateX((float) Math.toRadians(camera.getRotation().x))
-			.rotateY((float) Math.toRadians(camera.getRotation().y))
-			// Then do the translation
-			.translate(-camera.getPosition().x, -camera.getPosition().y, -camera.getPosition().z);
 	}
 	
 	public Matrix4f getModelMatrix(Item item) {

@@ -74,7 +74,7 @@ public abstract class Renderer {
 		this.shader.setUniform("projectionMatrix", projectionMatrix);
 		
 		// view
-		Matrix4f viewMatrix = this.transformation.getViewMatrix(camera);
+		Matrix4f viewMatrix = camera.getViewMatrix();
 		
 		// Draw meshes
 		this.shader.setUniform("texture_sampler", 0);
@@ -110,7 +110,7 @@ public abstract class Renderer {
 		this.shader.setUniform("projectionMatrix", projectionMatrix);
 		
 		// view
-		Matrix4f viewMatrix = this.transformation.getViewMatrix(camera);
+		Matrix4f viewMatrix = camera.getViewMatrix();
 		
 		// Draw meshes
 		this.shader.setUniform("texture_sampler", 0);
@@ -148,7 +148,7 @@ public abstract class Renderer {
 		this.shader.setUniform("projectionMatrix", projectionMatrix);
 		
 		// view
-		Matrix4f viewMatrix = this.transformation.getViewMatrix(camera);
+		Matrix4f viewMatrix = camera.getViewMatrix();
 		
 		// Draw meshes
 		this.shader.setUniform("texture_sampler", 0);
@@ -212,7 +212,7 @@ public abstract class Renderer {
 		this.shader.setUniform("projectionMatrix", projectionMatrix);
 		
 		// view
-		Matrix4f viewMatrix = this.transformation.getViewMatrix(camera);
+		Matrix4f viewMatrix = camera.getViewMatrix();
 		
 		// remove translation (different from render3D)
 		viewMatrix.setTranslation(0, 0, 0);

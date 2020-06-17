@@ -6,6 +6,7 @@ Camera wrapper class.
 package geetransit.minecraft05.engine;
 
 import org.joml.Vector3f;
+import org.joml.Matrix4f;
 
 public class Camera {
 	public static final float FOV = 80f;
@@ -17,6 +18,7 @@ public class Camera {
 	private float fov;
 	private float near;
 	private float far;
+	private final Matrix4f viewMatrix;
 
 	public Camera(Vector3f position, Vector3f rotation, float fov, float near, float far) {
 		this.position = position;
@@ -24,6 +26,7 @@ public class Camera {
 		this.fov = (float) Math.toRadians(fov);
 		this.near = near;
 		this.far = far;
+		this.viewMatrix = new Matrix4f();
 	}
 	public Camera(Vector3f position, Vector3f rotation, float fov) { this(position, rotation, fov, NEAR, FAR); }
 	public Camera(Vector3f position, Vector3f rotation) { this(position, rotation, FOV); }
@@ -69,5 +72,15 @@ public class Camera {
 			this.getPosition(),
 			this.getRotation()
 		);
+	}
+	
+	public Matrix4f getViewMatrix() {
+		return this.viewMatrix
+			.identity()
+			// First do the rotation so camera rotates over its position
+			.rotateX((float) Math.toRadians(this.rotation.x))
+			.rotateY((float) Math.toRadians(this.rotation.y))
+			// Then do the translation
+			.translate(-this.position.x, -this.position.y, -this.position.z);
 	}
 }
