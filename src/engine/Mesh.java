@@ -96,14 +96,14 @@ public class Mesh {
 	public Mesh setTexture(Texture texture) { this.texture = texture; return this; }
 	public Mesh setColor(Vector3f color) { this.color = new Vector4f(color, 1f); return this; }
 	public Mesh setColor(Vector4f color) { this.color = color; return this; }
-	public boolean isTexture() { return this.texture != null; }
+	public boolean isTextured() { return this.texture != null; }
 	
 	// prepare mesh
 	public void prepare() { this.prepare(null); }
 	public void prepare(Mesh lastMesh) {
 		if (this == lastMesh)
 			return;
-		if (this.isTexture()) {
+		if (this.isTextured()) {
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, this.texture.getId());
 		}
@@ -143,7 +143,7 @@ public class Mesh {
 	public void cleanup(boolean cleanupTexture) {
 		this.disableVao();
 		this.deleteVbos();
-		if (cleanupTexture && this.isTexture()) {
+		if (cleanupTexture && this.isTextured()) {
 			this.texture.cleanup();
 			this.texture = null;
 		}

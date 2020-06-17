@@ -45,7 +45,7 @@ public abstract class Renderer {
 		shader.createUniform("modelViewMatrix");
 		shader.createUniform("texture_sampler");
 		shader.createUniform("color");
-		shader.createUniform("useTexture");
+		shader.createUniform("isTextured");
 		return shader;
 	}
 	
@@ -54,7 +54,7 @@ public abstract class Renderer {
 		shader.createUniform("projModelMatrix");
 		shader.createUniform("texture_sampler");
 		shader.createUniform("color");
-		shader.createUniform("useTexture");
+		shader.createUniform("isTextured");
 		return shader;
 	}
 	
@@ -85,7 +85,7 @@ public abstract class Renderer {
 			Matrix4f modelViewMatrix = this.transformation.getModelViewMatrix(item, viewMatrix);
 			this.shader.setUniform("modelViewMatrix", modelViewMatrix);
 			this.shader.setUniform("color", mesh.getColor());
-			this.shader.setUniform("useTexture", mesh.isTexture());
+			this.shader.setUniform("isTextured", mesh.isTextured());
 			mesh.prepare(this.getMeshFromItems(items, i-1, itemsSize));
 			mesh.render();
 			mesh.restore(this.getMeshFromItems(items, i+1, itemsSize));
@@ -117,7 +117,7 @@ public abstract class Renderer {
 		if (!items.isEmpty()) {
 			Mesh firstMesh = items.get(0).getMesh();
 			this.shader.setUniform("color", firstMesh.getColor());
-			this.shader.setUniform("useTexture", firstMesh.isTexture());
+			this.shader.setUniform("isTextured", firstMesh.isTextured());
 			firstMesh.prepare();
 			
 			for (Item item : items) {
@@ -156,7 +156,7 @@ public abstract class Renderer {
 			Mesh mesh = entry.getKey();
 			List<Item> items = entry.getValue();
 			this.shader.setUniform("color", mesh.getColor());
-			this.shader.setUniform("useTexture", mesh.isTexture());
+			this.shader.setUniform("isTextured", mesh.isTextured());
 			mesh.prepare();
 			
 			// single : loop through items
@@ -191,7 +191,7 @@ public abstract class Renderer {
 			Matrix4f projModelMatrix = this.transformation.getOrthoProjModelMatrix(item, orthoMatrix);
 			this.shader.setUniform("projModelMatrix", projModelMatrix);
 			this.shader.setUniform("color", item.getMesh().getColor());
-			this.shader.setUniform("useTexture", item.getMesh().isTexture());
+			this.shader.setUniform("isTextured", item.getMesh().isTextured());
 			item.render(window);
 		}
 		
@@ -223,7 +223,7 @@ public abstract class Renderer {
 			Matrix4f modelViewMatrix = this.transformation.getModelViewMatrix(item, viewMatrix);
 			this.shader.setUniform("modelViewMatrix", modelViewMatrix);
 			this.shader.setUniform("color", item.getMesh().getColor());
-			this.shader.setUniform("useTexture", item.getMesh().isTexture());
+			this.shader.setUniform("isTextured", item.getMesh().isTextured());
 			item.render(window);
 		}
 
