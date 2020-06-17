@@ -53,9 +53,7 @@ public class Hud extends SceneRender {
 	}
 	
 	@Override
-	public void input(Window window) {
-		super.input(window);
-		
+	public void render(Window window) {
 		String format = "vsync=%s\ncamera=%s\nmouse=%s";
 		this.text.setText(String.format(format, window.isVSync(), this.camera, this.mouse));
 		this.text.setPosition(10f, window.getHeight() * 0.85f, 0f);
@@ -67,5 +65,7 @@ public class Hud extends SceneRender {
 		
 		this.crosshair.setPosition(window.getWidth() * 0.5f, window.getHeight() * 0.5f, 0f);
 		this.crosshair.setScale(window.getWidth() * (1/50f));
+		
+		super.render(window);
 	}
 }

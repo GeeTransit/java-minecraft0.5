@@ -36,8 +36,8 @@ public class Skybox extends SceneRender {
 	}
 	
 	@Override
-	public void input(Window window) {
-		super.input(window);
+	public void render(Window window) {
 		this.skybox.setScale(this.camera.getFar() * 0.5f);
+		super.render(window);
 	}
 }
