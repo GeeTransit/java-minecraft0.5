@@ -16,9 +16,12 @@ Book # https://ahbejarano.gitbook.io/lwjglgamedev
 | Space        | Move up |
 | Shift        | Move down |
 | Ctrl         | Faster (forwards and backwards only) |
+| Alt+F4       | Exit game |
+| Esc          | Exit fullscreen and display mouse |
 | F            | Toggle fullscreen (hold shift for real instead of borderless) |
-| V            | Toggle vSync / vertical sync. (colour=on, gray=off) |
+| V            | Toggle vSync / vertical sync (colour=on, gray=off) |
 | D            | Print debug mouse and camera info to console |
+| M            | Toggle mouse normal / locked |
 | L            | Reset background and render distance |
 | Up           | Increase background brightness |
 | Down         | Decrease background brightness |
