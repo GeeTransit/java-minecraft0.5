@@ -46,6 +46,7 @@ public abstract class Renderer {
 		shader.createUniform("texture_sampler");
 		shader.createUniform("color");
 		shader.createUniform("isTextured");
+		shader.createUniform("isSelected");
 		return shader;
 	}
 	
@@ -86,6 +87,7 @@ public abstract class Renderer {
 			this.shader.setUniform("modelViewMatrix", modelViewMatrix);
 			this.shader.setUniform("color", mesh.getColor());
 			this.shader.setUniform("isTextured", mesh.isTextured());
+			this.shader.setUniform("isSelected", item.isSelected());
 			mesh.prepare(this.getMeshFromItems(items, i-1, itemsSize));
 			mesh.render();
 			mesh.restore(this.getMeshFromItems(items, i+1, itemsSize));
@@ -123,6 +125,7 @@ public abstract class Renderer {
 			for (Item item : items) {
 				Matrix4f modelViewMatrix = this.transformation.getModelViewMatrix(item, viewMatrix);
 				this.shader.setUniform("modelViewMatrix", modelViewMatrix);
+				this.shader.setUniform("isSelected", item.isSelected());
 				item.getMesh().render();
 			}
 			
@@ -163,6 +166,7 @@ public abstract class Renderer {
 			for (Item item : items) {
 				Matrix4f modelViewMatrix = this.transformation.getModelViewMatrix(item, viewMatrix);
 				this.shader.setUniform("modelViewMatrix", modelViewMatrix);
+				this.shader.setUniform("isSelected", item.isSelected());
 				mesh.render();
 			}
 			

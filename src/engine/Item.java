@@ -14,6 +14,7 @@ public class Item {
 	private final Vector3f position;
 	private final Quaternionf rotation;  // Degrees, not radians.
 	private float scale;
+	private boolean selected;
 
 	public Item(Mesh mesh) {
 		this();
@@ -23,6 +24,7 @@ public class Item {
 		this.position = new Vector3f();
 		this.rotation = new Quaternionf();
 		this.scale = 1;
+		this.selected = false;
 	}
 	
 	public void render(Window window) {
@@ -36,10 +38,8 @@ public class Item {
 	}
 	
 	public Mesh getMesh() { return this.mesh; }
-	public Vector3f getPosition() { return this.position; }
-	public Quaternionf getRotation() { return this.rotation; }
-	public float getScale() { return this.scale; }
 	
+	public Vector3f getPosition() { return this.position; }
 	public Item setPosition(Vector3f position) { this.position.set(position); return this; }
 	public Item setPosition(float x, float y, float z) {
 		this.position.x = x;
@@ -48,6 +48,7 @@ public class Item {
 		return this;
 	}
 	
+	public Quaternionf getRotation() { return this.rotation; }
 	public Item setRotation(Quaternionf rotation) { this.rotation.set(rotation); return this; }
 	public Item setRotation(float x, float y, float z) {
 		this.rotation.x = x;
@@ -56,8 +57,15 @@ public class Item {
 		return this;
 	}
 	
+	public float getScale() { return this.scale; }
 	public Item setScale(float scale) {
 		this.scale = scale;
+		return this;
+	}
+	
+	public boolean isSelected() { return this.selected; }
+	public Item setSelected(boolean selected) {
+		this.selected = selected;
 		return this;
 	}
 }

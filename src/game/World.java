@@ -5,8 +5,12 @@ World scene implementation.
 
 package geetransit.minecraft05.game;
 
+import java.util.*;
 import java.nio.*;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
+import org.joml.Matrix4f;
+import org.joml.Intersectionf;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.Version;
@@ -25,6 +29,11 @@ public class World extends SceneRender {
 	private Camera camera;
 	private float step;
 	private Vector3f movement;
+	
+    private Vector3f dir;
+	private final Vector3f max;
+    private final Vector3f min;
+    private final Vector2f nearFar;
 	
 	public static final int MAX_COLOR = 255*255*255;
 
@@ -45,6 +54,11 @@ public class World extends SceneRender {
 		this.camera = camera;
 		this.step = 0.1f;
 		this.movement = new Vector3f();
+		
+		this.dir = new Vector3f();
+        this.min = new Vector3f();
+        this.max = new Vector3f();
+        this.nearFar = new Vector2f();
 	}
 	
 	public Mouse getMouse()       { return this.mouse; }
@@ -127,6 +141,45 @@ public class World extends SceneRender {
 		}
 		
 		this.camera.movePosition(this.movement.mul(this.step, new Vector3f()));
+	}
+	
+	@Override
+	public void render(Window window) {
+		this.updateSelectedItem(this.getItems(), this.camera);
+		super.render(window);
+	}
+	
+	// CAN return null
+	private Item updateSelectedItem(List<Item> items, Camera camera) {
+		Item selected = null;
+		float closest = Float.POSITIVE_INFINITY;
+		this.dir = camera.getViewMatrix().positiveZ(this.dir).negate();
+		
+		// loop through all items
+		for (Item item : items) {
+			item.setSelected(false);
+			this.min.set(item.getPosition());
+			this.max.set(item.getPosition());
+			this.min.add(-item.getScale(), -item.getScale(), -item.getScale());
+			this.max.add(item.getScale(), item.getScale(), item.getScale());
+			
+			// check if intersects and is closer
+			if (Intersectionf.intersectRayAab(
+				camera.getPosition(),
+				this.dir, this.min,
+				this.max, this.nearFar
+			)) {
+				if (this.nearFar.x < closest) {
+					closest = nearFar.x;
+					selected = item;
+				}
+			}
+		}
+		
+		if (selected != null)
+			selected.setSelected(true);
+		
+		return selected;
 	}
 	
 	// usage: expand(compress(heightAt(...), 0, MAX_COLOR), 0, 16)

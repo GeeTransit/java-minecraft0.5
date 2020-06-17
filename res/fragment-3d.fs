@@ -18,4 +18,8 @@ void main()
 	{
 		fragColor = color;
 	}
+	if (isSelected > 0)
+	{
+		fragColor = vec4(fragColor.x, fragColor.y, 11, 1);
+	}
 }
