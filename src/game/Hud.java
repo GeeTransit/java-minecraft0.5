@@ -15,6 +15,7 @@ public class Hud extends SceneRender {
 	
 	private TextItem text;
 	private Item compass;
+	private Item crosshair;
 	private Mouse mouse;
 	private Camera camera;
 	
@@ -35,23 +36,36 @@ public class Hud extends SceneRender {
 	@Override
 	public void init(Window window) throws Exception {
 		super.init(window);
+		
 		this.text = new TextItem("", FONT_FILE, FONT_COLS, FONT_ROWS);
 		this.text.getMesh().setColor(new Vector4f(1, 1, 1, 1));
+		
 		this.compass = new Item(ObjLoader.loadMesh("/res/compass.obj"));
-		this.compass.setScale(40f);
 		this.compass.getMesh().setColor(new Vector4f(1, 1, 1, 1));
-		this.addItem(this.text).addItem(this.compass);
+		
+		this.crosshair = new Item(ObjLoader.loadMesh("/res/crosshair.obj"));
+		this.crosshair.getMesh().setColor(new Vector4f(1, 1, 1, 1));
+		
+		this
+			.addItem(this.text)
+			.addItem(this.compass)
+			.addItem(this.crosshair);
 	}
 	
 	@Override
 	public void input(Window window) {
 		super.input(window);
+		
 		String format = "vsync=%s\ncamera=%s\nmouse=%s";
 		this.text.setText(String.format(format, window.isVSync(), this.camera, this.mouse));
 		this.text.setPosition(10f, window.getHeight() * 0.85f, 0f);
 		this.text.setScale(window.getWidth() * (1/3500f));
+		
 		this.compass.setPosition(window.getWidth() * 0.95f, window.getWidth() * 0.05f, 0f);
 		this.compass.setRotation(0f, 0f, 180f - this.camera.getRotation().y);
 		this.compass.setScale(window.getWidth() * (1/20f));
+		
+		this.crosshair.setPosition(window.getWidth() * 0.5f, window.getHeight() * 0.5f, 0f);
+		this.crosshair.setScale(window.getWidth() * (1/50f));
 	}
 }
