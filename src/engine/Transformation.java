@@ -7,6 +7,7 @@ package geetransit.minecraft05.engine;
 
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.joml.Quaternionf;
 
 public class Transformation {
 	private final Matrix4f projectionMatrix;
@@ -14,7 +15,7 @@ public class Transformation {
 	private final Matrix4f modelViewMatrix;
 	private final Matrix4f orthoProjectionMatrix;
 	private final Matrix4f orthoProjModelMatrix;
-	private final Vector3f rotateVector;
+	private final Matrix4f modelMatrix;
 
 	public Transformation() {
 		this.projectionMatrix = new Matrix4f();
@@ -22,7 +23,7 @@ public class Transformation {
 		this.modelViewMatrix = new Matrix4f();
 		this.orthoProjectionMatrix = new Matrix4f();
 		this.orthoProjModelMatrix = new Matrix4f();
-		this.rotateVector = new Vector3f();
+		this.modelMatrix = new Matrix4f();
 	}
 
 	public Matrix4f getProjectionMatrix(float fov, float width, float height, float zNear, float zFar) {
@@ -39,26 +40,28 @@ public class Transformation {
 		return this.viewMatrix
 			.identity()
 			// First do the rotation so camera rotates over its position
-			.rotate((float) Math.toRadians(camera.getRotation().x), this.rotateVector.set(1, 0, 0))
-			.rotate((float) Math.toRadians(camera.getRotation().y), this.rotateVector.set(0, 1, 0))
+			.rotateX((float) Math.toRadians(camera.getRotation().x))
+			.rotateY((float) Math.toRadians(camera.getRotation().y))
 			// Then do the translation
-			.translate(camera.getPosition().negate(this.rotateVector));
+			.translate(-camera.getPosition().x, -camera.getPosition().y, -camera.getPosition().z);
+	}
+	
+	public Matrix4f getModelMatrix(Item item) {
+		return this.modelMatrix.translationRotateScale(item.getPosition(), item.getRotation(), item.getScale());
 	}
 	
 	public Matrix4f getModelViewMatrix(Item item, Matrix4f viewMatrix) {
-		return this.modelViewMatrix
-			.set(viewMatrix)
-			.translate(item.getPosition())
-			.rotateX((float) Math.toRadians(-item.getRotation().x))
-			.rotateY((float) Math.toRadians(-item.getRotation().y))
-			.rotateZ((float) Math.toRadians(-item.getRotation().z))
-			.scale(item.getScale());
+		return viewMatrix.mulAffine(this.getModelMatrix(item), this.modelViewMatrix);
 	}
 	
 	public Matrix4f getOrthoProjectionMatrix(Window window) {
 		return this.orthoProjectionMatrix.setOrtho2D(0, window.getWidth(), window.getHeight(), 0);
 	}
 	
+	// these 2 are different?
+	public Matrix4f newGetOrthoProjModelMatrix(Item item, Matrix4f orthoMatrix) {
+		return orthoMatrix.mulOrthoAffine(this.getModelMatrix(item), this.orthoProjModelMatrix);
+	}
 	public Matrix4f getOrthoProjModelMatrix(Item item, Matrix4f orthoMatrix) {
 		return this.orthoProjModelMatrix
 			.set(orthoMatrix)

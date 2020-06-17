@@ -76,8 +76,8 @@ public class World extends SceneRender {
 			for (int j = 0; j < length; j++) {
 				int height = (int) this.expand(this.compress(this.heightAt(map, i, j, width), 0, MAX_COLOR), 0, 16);
 				this.addItem(new Item(grassblock).setScale(0.5f).setPosition(i, height, j));
-				for (int k = 0; k < 2; k++) {
-					this.addItem(new Item(cobbleblock).setScale(0.5f).setPosition(i, height-1-k, j));
+				for (int k = height-1; k >= Math.max(height-2, 0); k--) {
+					this.addItem(new Item(cobbleblock).setScale(0.5f).setPosition(i, k, j));
 				}
 			}
 		}
@@ -130,8 +130,7 @@ public class World extends SceneRender {
 		this.camera.movePosition(this.movement.mul(this.step, new Vector3f()));
 	}
 	
-	// usage: expand(compress(heightAt(...), 0, MAX_COLOR), 0, 255)
-	// private float compress(float f, float min, float max) { return Math.max(0f, Math.min(1f, (f-min) / (max-min))); }
+	// usage: expand(compress(heightAt(...), 0, MAX_COLOR), 0, 16)
 	private float compress(int f, float min, float max) { return (f-min) / (max-min); }
 	private float expand(float f, float min, float max) { return min + f*(max-min); }
 	
@@ -142,9 +141,9 @@ public class World extends SceneRender {
 		byte b = buffer.get(i + 2);
 		byte a = buffer.get(i + 3);
 		return 0
-			| ((0xFF & a) << 0x18)
-			| ((0xFF & r) << 0x10)
-			| ((0xFF & g) << 0x8)
-			| ((0xFF & b) << 0x0);
+			// | ((0xFF & a) << 24)  // removed cuz it turns overflows int
+			| ((0xFF & r) << 16)
+			| ((0xFF & g) << 8)
+			| ((0xFF & b) << 0);
 	}
 }

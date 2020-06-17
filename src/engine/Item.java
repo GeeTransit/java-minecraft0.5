@@ -6,12 +6,13 @@ Game item wrapper class.
 package geetransit.minecraft05.engine;
 
 import org.joml.Vector3f;
+import org.joml.Quaternionf;
 
 public class Item {
 	protected Mesh mesh;
 
 	private final Vector3f position;
-	private final Vector3f rotation;  // Degrees, not radians.
+	private final Quaternionf rotation;  // Degrees, not radians.
 	private float scale;
 
 	public Item(Mesh mesh) {
@@ -20,7 +21,7 @@ public class Item {
 	}
 	public Item() {
 		this.position = new Vector3f();
-		this.rotation = new Vector3f();
+		this.rotation = new Quaternionf();
 		this.scale = 1;
 	}
 	
@@ -36,7 +37,7 @@ public class Item {
 	
 	public Mesh getMesh() { return this.mesh; }
 	public Vector3f getPosition() { return this.position; }
-	public Vector3f getRotation() { return this.rotation; }
+	public Quaternionf getRotation() { return this.rotation; }
 	public float getScale() { return this.scale; }
 	
 	public Item setPosition(Vector3f position) { this.position.set(position); return this; }
@@ -47,7 +48,7 @@ public class Item {
 		return this;
 	}
 	
-	public Item setRotation(Vector3f rotation) { this.rotation.set(rotation); return this; }
+	public Item setRotation(Quaternionf rotation) { this.rotation.set(rotation); return this; }
 	public Item setRotation(float x, float y, float z) {
 		this.rotation.x = x;
 		this.rotation.y = y;
