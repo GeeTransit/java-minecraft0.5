@@ -107,7 +107,6 @@ public class World extends SceneRender {
 		
 		if (window.isKeyDown(GLFW_KEY_LEFT_SHIFT)) this.movement.y--;
 		if (window.isKeyDown(GLFW_KEY_SPACE)) this.movement.y++;
-		if (sprinting && this.movement.z < 0) this.movement.z *= 2;
 		
 		if (this.movement.length() > 1f) this.movement.div(this.movement.length());
 		if (sprinting && this.movement.z < 0) this.movement.mul(1.5f);
