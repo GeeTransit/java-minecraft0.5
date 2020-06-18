@@ -14,19 +14,27 @@ public class Camera {
 	public static final float FAR = 50f;
 	
 	private final Vector3f position;
-	private final Vector3f rotation;
+	private final Vector3f rotation;  // in degrees
+	private final Matrix4f viewMatrix;
+	
 	private float fov;
 	private float near;
 	private float far;
-	private final Matrix4f viewMatrix;
+	
+	private Vector3f radiansRotation;
+	private Vector3f negativePosition;
 
 	public Camera(Vector3f position, Vector3f rotation, float fov, float near, float far) {
 		this.position = position;
 		this.rotation = rotation;
+		this.viewMatrix = new Matrix4f();
+		
 		this.fov = (float) Math.toRadians(fov);
 		this.near = near;
 		this.far = far;
-		this.viewMatrix = new Matrix4f();
+		
+		this.radiansRotation = new Vector3f();
+		this.negativePosition = new Vector3f();
 	}
 	public Camera(Vector3f position, Vector3f rotation, float fov) { this(position, rotation, fov, NEAR, FAR); }
 	public Camera(Vector3f position, Vector3f rotation) { this(position, rotation, FOV); }
@@ -65,6 +73,25 @@ public class Camera {
 		return this;
 	}
 	
+	public Vector3f getRadiansRotation() {
+		return this.radiansRotation.set(
+			(float) Math.toRadians(this.rotation.x),
+			(float) Math.toRadians(this.rotation.y),
+			(float) Math.toRadians(this.rotation.z)
+		);
+	}
+	
+	public Vector3f getNegativePosition() {
+		return this.position.negate(this.negativePosition);
+	}
+	
+	public Matrix4f getViewMatrix() {
+		return this.viewMatrix
+			.identity()
+			.rotateXYZ(this.getRadiansRotation())
+			.translate(this.getNegativePosition());
+	}
+	
 	public String toString() {
 		return String.format(
 			"<%s position=%s rotation=%s>",
@@ -72,15 +99,5 @@ public class Camera {
 			this.getPosition(),
 			this.getRotation()
 		);
-	}
-	
-	public Matrix4f getViewMatrix() {
-		return this.viewMatrix
-			.identity()
-			// First do the rotation so camera rotates over its position
-			.rotateX((float) Math.toRadians(this.rotation.x))
-			.rotateY((float) Math.toRadians(this.rotation.y))
-			// Then do the translation
-			.translate(-this.position.x, -this.position.y, -this.position.z);
 	}
 }
