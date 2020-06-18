@@ -148,28 +148,24 @@ public class World extends SceneRender {
 		// placing / removing
 		if (this.change != 0 && this.wait <= 0) {
 			ClosestItem closestItem = new ClosestItem(this.getItems(), this.camera);
-			switch (this.change) {
-			case -1:
+			if (this.change == -1) {
 				if (closestItem.closest != null)
 					this.removeItem(closestItem.closest);
-				break;
-			case 1:
-				if (closestItem.closest == null) {
-					Vector3f position = this.camera.getPosition().round(new Vector3f());
-					this.addItem(newItem(this.grassblock, position.x, position.y, position.z));
+			} else {
+				Vector3f position = new Vector3f();
+				if (closestItem.closest != null) {
+					position.set(closestItem.hit);
+					position.add(closestItem.direction.negate(new Vector3f()).mul(0.5f));
+					position.round();
 				} else {
-					Vector3f hit = new Vector3f(closestItem.hit);
-					hit.add(hit.normalize(new Vector3f()).mul(-0.01f));
-					hit.round();
-					this.addItem(newItem(this.grassblock, hit.x, hit.y, hit.z));
+					this.camera.getPosition().round(position);
 				}
-				break;
-			case 2:
-				if (closestItem.closest == null) {
-					Vector3f position = this.camera.getPosition().round(new Vector3f());
-					this.addItem(newItem(this.cobbleblock, position.x, position.y, position.z));
+				switch (this.change) {
+					case 1:
+						this.addItem(newItem(this.grassblock, position.x, position.y, position.z)); break;
+					case 2:
+						this.addItem(newItem(this.cobbleblock, position.x, position.y, position.z)); break;
 				}
-				break;
 			}
 			this.wait += this.CHANGE_DELAY;
 			this.change = 0;
@@ -200,11 +196,11 @@ public class World extends SceneRender {
 
 	
 class ClosestItem {
-	public float distance;
+	public float distance;  // distance from camera
 	public Item closest;
-	public Vector3f hit;
+	public Vector3f hit;  // position of intersection
+	public Vector3f direction;  // points away from camera
 	
-	private Vector3f direction;
 	private final Vector3f max;
 	private final Vector3f min;
 	private final Vector2f nearFar;
@@ -213,14 +209,17 @@ class ClosestItem {
 		this.distance = Float.POSITIVE_INFINITY;
 		this.closest = null;
 		this.hit = null;
-		
 		this.direction = new Vector3f();
+		
 		this.min = new Vector3f();
 		this.max = new Vector3f();
 		this.nearFar = new Vector2f();
 		
 		// get camera direction
-		camera.getViewMatrix().positiveZ(this.direction).negate();
+		camera.getViewMatrix().positiveZ(this.direction);
+		this.direction
+			.negate()
+			.normalize();
 		
 		// loop through all items
 		for (Item item : items) {
@@ -238,7 +237,7 @@ class ClosestItem {
 					this.distance = nearFar.x;
 					this.closest = item;
 					this.hit = new Vector3f(camera.getPosition());
-					this.hit.add(this.direction.normalize(new Vector3f()).mul(this.distance));
+					this.hit.add(this.direction.mul(this.distance, new Vector3f()));
 				}
 			}
 		}
