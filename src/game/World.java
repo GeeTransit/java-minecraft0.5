@@ -37,11 +37,6 @@ public class World extends SceneRender {
 	private int change;  // -1=remove 1=grass 2=cobble
 	private float wait;  // time until next place / remove
 	
-    private Vector3f dir;
-	private final Vector3f max;
-    private final Vector3f min;
-    private final Vector2f nearFar;
-	
 	private static final int MAX_COLOR = 255*255*255;
 
 	public World(Mouse mouse, Camera camera) {
@@ -61,11 +56,6 @@ public class World extends SceneRender {
 		this.camera = camera;
 		this.step = 0.1f;
 		this.movement = new Vector3f();
-		
-		this.dir = new Vector3f();
-        this.min = new Vector3f();
-        this.max = new Vector3f();
-        this.nearFar = new Vector2f();
 	}
 	
 	public Mouse getMouse()       { return this.mouse; }
@@ -74,6 +64,9 @@ public class World extends SceneRender {
 	public Camera getCamera()     { return this.camera; }
 	public float getStep()        { return this.step; }
 	public Vector3f getMovement() { return this.movement; }
+	
+	public int getChange() { return this.change; }
+	public float getWait() { return this.wait; }
 	
 	@Override
 	public void init(Window window) throws Exception {
@@ -100,9 +93,6 @@ public class World extends SceneRender {
 				}
 			}
 		}
-		
-		// free heightmap
-		Utils.freeImage(map);
 		
 		// add spawn markers (-2z is forwards)
 		this
@@ -160,21 +150,21 @@ public class World extends SceneRender {
 		this.camera.movePosition(this.movement.mul(this.step, new Vector3f()));
 		
 		// placing / removing
-		if (this.change != 0)
-			while (this.wait <= 0) {
-				switch (this.change) {
-				case -1:
-					Item selected = this.updateSelectedItem(this.getItems(), this.camera);
-					if (selected != null)
-						this.removeItem(selected);
-					break;
-				case 1:
-					break;
-				case 2:
-					break;
-				}
-				this.wait += this.CHANGE_DELAY;
+		if (this.change != 0 && this.wait <= 0) {
+			ClosestItem closestItem = new ClosestItem(this.getItems(), this.camera);
+			switch (this.change) {
+			case -1:
+				if (closestItem.closest != null)
+					this.removeItem(closestItem.closest);
+				break;
+			case 1:
+				break;
+			case 2:
+				break;
 			}
+			this.wait += this.CHANGE_DELAY;
+			this.change = 0;
+		}
 		
 		// update wait time
 		if (this.wait > 0)
@@ -185,22 +175,46 @@ public class World extends SceneRender {
 	
 	@Override
 	public void render(Window window) {
-		this.updateSelectedItem(this.getItems(), this.camera);
+		this.updateSelectedItem();
 		super.render(window);
 	}
 	
-	public int getChange() { return this.change; }
-	public float getWait() { return this.wait; }
-	
 	// CAN return null
-	private Item updateSelectedItem(List<Item> items, Camera camera) {
-		Item selected = null;
-		float closest = Float.POSITIVE_INFINITY;
-		this.dir = camera.getViewMatrix().positiveZ(this.dir).negate();
+	private void updateSelectedItem() {
+		ClosestItem closestItem = new ClosestItem(this.getItems(), this.camera);
+		for (Item item : this.getItems())
+			item.setSelected(false);
+		if (closestItem.closest != null)
+			closestItem.closest.setSelected(true);
+	}
+}
+
+	
+class ClosestItem {
+	public float distance;
+	public Item closest;
+	public Vector3f hit;
+	
+	private Vector3f direction;
+	private final Vector3f max;
+	private final Vector3f min;
+	private final Vector2f nearFar;
+	
+	public ClosestItem(List<Item> items, Camera camera) {
+		this.distance = Float.POSITIVE_INFINITY;
+		this.closest = null;
+		this.hit = null;
+		
+		this.direction = new Vector3f();
+		this.min = new Vector3f();
+		this.max = new Vector3f();
+		this.nearFar = new Vector2f();
+		
+		// get camera direction
+		camera.getViewMatrix().positiveZ(this.direction).negate();
 		
 		// loop through all items
 		for (Item item : items) {
-			item.setSelected(false);
 			this.min.set(item.getPosition());
 			this.max.set(item.getPosition());
 			this.min.add(-item.getScale(), -item.getScale(), -item.getScale());
@@ -208,33 +222,57 @@ public class World extends SceneRender {
 			
 			// check if intersects and is closer
 			if (Intersectionf.intersectRayAab(
-				camera.getPosition(),
-				this.dir, this.min,
-				this.max, this.nearFar
+				camera.getPosition(), this.direction,
+				this.min, this.max, this.nearFar
 			)) {
-				if (this.nearFar.x < closest) {
-					closest = nearFar.x;
-					selected = item;
+				if (this.nearFar.x < this.distance) {
+					this.distance = nearFar.x;
+					this.closest = item;
+					this.hit = new Vector3f(camera.getPosition());
+					this.hit.add(this.direction.normalize(new Vector3f()).mul(this.distance));
 				}
 			}
 		}
-		
-		if (selected != null)
-			selected.setSelected(true);
-		
-		return selected;
+	}
+}
+
+class HeightMap implements AutoCloseable {
+	public static int CHANNELS = 4;
+	
+	public final ByteBuffer buffer;
+	public final int width;
+	public final int length;
+	
+	public HeightMap(ByteBuffer buffer, int width, int length) {
+		this.buffer = buffer;
+		this.width = width;
+		this.length = length;
 	}
 	
-	// usage: expand(compress(heightAt(...), 0, MAX_COLOR), 0, 16)
-	private float compress(int f, float min, float max) { return (f-min) / (max-min); }
-	private float expand(float f, float min, float max) { return min + f*(max-min); }
+	public static HeightMap loadFromImage(String fileName) throws Exception {
+		int width[] = {0}, length[] = {0};
+		ByteBuffer buffer = Utils.loadImage(fileName, width, length);
+		return new HeightMap(buffer, width[0], length[0]);
+	}
 	
-	private int heightAt(ByteBuffer buffer, int x, int z, int width) { return this.heightAt(buffer, x*4 + z*4*width); }
-	private int heightAt(ByteBuffer buffer, int i) {
-		byte r = buffer.get(i + 0);
-		byte g = buffer.get(i + 1);
-		byte b = buffer.get(i + 2);
-		byte a = buffer.get(i + 3);
+	@Override
+	public void close() {
+		Utils.freeImage(this.buffer);
+	}
+	
+	// usage: compressExpand(heightAt(...), 0, MAX_COLOR, 0, 16)
+	public static float compressExpand(int f, float cMin, float cMax, float eMin, float eMax) {
+		return expand(compress(f, cMin, cMax), eMin, eMax);
+	}
+	public static float compress(int f, float min, float max) { return (f-min) / (max-min); }
+	public static float expand(float f, float min, float max) { return min + f*(max-min); }
+	
+	public int heightAt(int x, int z) { return this.heightAt(x*CHANNELS + z*CHANNELS*this.width); }
+	public int heightAt(int i) {
+		byte r = this.buffer.get(i + 0);
+		byte g = this.buffer.get(i + 1);
+		byte b = this.buffer.get(i + 2);
+		byte a = this.buffer.get(i + 3);
 		return 0
 			// | ((0xFF & a) << 24)  // removed cuz it turns overflows int
 			| ((0xFF & r) << 16)
