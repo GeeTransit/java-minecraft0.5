@@ -30,6 +30,9 @@ public class World extends SceneRender {
 	private float step;
 	private Vector3f movement;
 	
+	private Mesh grassblock;
+	private Mesh cobbleblock;
+	
 	private static final float CHANGE_DELAY = 0.2f;
 	private int change;  // -1=remove 1=grass 2=cobble
 	private float wait;  // time until next place / remove
@@ -76,11 +79,9 @@ public class World extends SceneRender {
 	public void init(Window window) throws Exception {
 		super.init(window);
 		
-		// Create the cube mesh
-		Mesh grassblock = ObjLoader.loadMesh("/res/cube.obj");
-		grassblock.setTexture(new Texture("/res/grassblock.png"));
-		Mesh cobbleblock = ObjLoader.loadMesh("/res/cube.obj");
-		cobbleblock.setTexture(new Texture("/res/cobbleblock.png"));
+		// Create the blocks' mesh
+		this.grassblock = ObjLoader.loadMesh("/res/cube.obj").setTexture(new Texture("/res/grassblock.png"));
+		this.cobbleblock = ObjLoader.loadMesh("/res/cube.obj").setTexture(new Texture("/res/cobbleblock.png"));
 		
 		// get heightmap
 		int widthArray[] = {0};
@@ -93,9 +94,9 @@ public class World extends SceneRender {
 		for (int i = 0; i < width; i++) {
 			for (int j = 0; j < length; j++) {
 				int height = (int) this.expand(this.compress(this.heightAt(map, i, j, width), 0, MAX_COLOR), 0, 16);
-				this.addItem(new Item(grassblock).setScale(0.5f).setPosition(i, height, j));
+				this.addItem(newItem(grassblock, i, height, j));
 				for (int k = height-1; k >= Math.max(height-2, 0); k--) {
-					this.addItem(new Item(cobbleblock).setScale(0.5f).setPosition(i, k, j));
+					this.addItem(newItem(cobbleblock, i, k, j));
 				}
 			}
 		}
@@ -105,10 +106,14 @@ public class World extends SceneRender {
 		
 		// add spawn markers (-2z is forwards)
 		this
-			.addItem(new Item(grassblock).setScale(0.5f).setPosition(+1, +1,  0))
-			.addItem(new Item(grassblock).setScale(0.5f).setPosition(-1, +1,  0))
-			.addItem(new Item(grassblock).setScale(0.5f).setPosition( 0, +1, +1))
-			.addItem(new Item(grassblock).setScale(0.5f).setPosition( 0, +1, -2));
+			.addItem(newItem(grassblock, +1, +1,  0))
+			.addItem(newItem(grassblock, -1, +1,  0))
+			.addItem(newItem(grassblock,  0, +1, +1))
+			.addItem(newItem(grassblock,  0, +1, -2));
+	}
+	
+	private static Item newItem(Mesh mesh, float x, float y, float z) {
+		return new Item(mesh).setScale(0.5f).setPosition(x, y, z);
 	}
 	
 	@Override
