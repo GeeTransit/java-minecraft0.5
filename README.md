@@ -15,6 +15,7 @@ Book # https://ahbejarano.gitbook.io/lwjglgamedev
 | WASD         | Move around |
 | Space        | Move up |
 | Shift        | Move down |
+| 0            | Destroy the highlighted block |
 | Ctrl         | Faster (forwards and backwards only) |
 | Alt+F4       | Exit game |
 | Esc          | Exit fullscreen and display mouse |
