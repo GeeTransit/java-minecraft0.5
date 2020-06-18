@@ -33,6 +33,11 @@ public abstract class SceneRender extends SceneBase {
 		this.meshMap.get(item.getMesh()).add(item);
 		return this;
 	}
+	public SceneRender removeItem(Item item) {
+		this.items.remove(item);
+		this.meshMap.get(item.getMesh()).remove(item);
+		return this;
+	}
 	
 	@Override
 	public void init(Window window) throws Exception {

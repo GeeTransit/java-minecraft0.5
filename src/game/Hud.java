@@ -18,8 +18,9 @@ public class Hud extends SceneRender {
 	private Item crosshair;
 	private Mouse mouse;
 	private Camera camera;
+	private World world;
 	
-	public Hud(Mouse mouse, Camera camera) {
+	public Hud(Mouse mouse, Camera camera, World world) {
 		super();
 		this.setRenderer(new Renderer(this) {
 			public Shader create(Window window) throws Exception {
@@ -31,6 +32,7 @@ public class Hud extends SceneRender {
 		});
 		this.mouse = mouse;
 		this.camera = camera;
+		this.world = world;
 	}
 	
 	@Override
@@ -54,8 +56,12 @@ public class Hud extends SceneRender {
 	
 	@Override
 	public void render(Window window) {
-		String format = "vsync=%s\ncamera=%s\nmouse=%s";
-		this.text.setText(String.format(format, window.isVSync(), this.camera, this.mouse));
+		this.text.setText(String.format(
+			"vsync=%s mode=%s change=%s wait=%s\ncamera=%s\nmouse=%s",
+			window.isVSync(), window.getMode(),
+			this.world.getChange(), this.world.getWait(),
+			this.camera, this.mouse
+		));
 		this.text.setPosition(10f, window.getHeight() * 0.85f, 0f);
 		this.text.setScale(window.getWidth() * (1/3500f));
 		

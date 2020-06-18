@@ -30,12 +30,16 @@ public class World extends SceneRender {
 	private float step;
 	private Vector3f movement;
 	
+	private static final float CHANGE_DELAY = 0.2f;
+	private int change;  // -1=remove 1=grass 2=cobble
+	private float wait;  // time until next place / remove
+	
     private Vector3f dir;
 	private final Vector3f max;
     private final Vector3f min;
     private final Vector2f nearFar;
 	
-	public static final int MAX_COLOR = 255*255*255;
+	private static final int MAX_COLOR = 255*255*255;
 
 	public World(Mouse mouse, Camera camera) {
 		super();
@@ -111,6 +115,7 @@ public class World extends SceneRender {
 	public void input(Window window) {
 		super.input(window);
 		
+		// movement
 		this.movement.zero();
 		boolean sprinting = (!window.isKeyDown(GLFW_KEY_LEFT_SHIFT) && window.isKeyDown(GLFW_KEY_LEFT_CONTROL));
 		
@@ -124,12 +129,19 @@ public class World extends SceneRender {
 		
 		if (this.movement.length() > 1f) this.movement.div(this.movement.length());
 		if (sprinting && this.movement.z < 0) this.movement.mul(1.5f);
+		
+		// placing / removing
+		this.change = 0;
+		if (window.isKeyDown(GLFW_KEY_0)) this.change = -1;
+		if (window.isKeyDown(GLFW_KEY_1)) this.change = 1;
+		if (window.isKeyDown(GLFW_KEY_2)) this.change = 2;
 	}
 	
 	@Override
 	public void update(float interval) {
 		super.update(interval);
 		
+		// movement
 		if (this.mouse.isInside()) {
 			float x = this.mouse.getMovement().x;
 			float y = this.mouse.getMovement().y;
@@ -139,8 +151,30 @@ public class World extends SceneRender {
 				this.camera.moveRotation(y*this.sensitivity, x*this.sensitivity, 0);
 			this.camera.getRotation().x = Math.max(-90f, Math.min(90f, this.camera.getRotation().x));
 		}
-		
 		this.camera.movePosition(this.movement.mul(this.step, new Vector3f()));
+		
+		// placing / removing
+		if (this.change != 0)
+			while (this.wait <= 0) {
+				switch (this.change) {
+				case -1:
+					Item selected = this.updateSelectedItem(this.getItems(), this.camera);
+					if (selected != null)
+						this.removeItem(selected);
+					break;
+				case 1:
+					break;
+				case 2:
+					break;
+				}
+				this.wait += this.CHANGE_DELAY;
+			}
+		
+		// update wait time
+		if (this.wait > 0)
+			this.wait -= interval;
+		if (this.wait <= 0 && this.change == 0)
+			this.wait = 0;
 	}
 	
 	@Override
@@ -148,6 +182,9 @@ public class World extends SceneRender {
 		this.updateSelectedItem(this.getItems(), this.camera);
 		super.render(window);
 	}
+	
+	public int getChange() { return this.change; }
+	public float getWait() { return this.wait; }
 	
 	// CAN return null
 	private Item updateSelectedItem(List<Item> items, Camera camera) {

@@ -31,7 +31,7 @@ public class Game extends SceneBase {
 		this.background = new Background(this.camera);
 		this.skybox = new Skybox(this.camera);
 		this.world = new World(this.mouse, this.camera);
-		this.hud = new Hud(this.mouse, this.camera);
+		this.hud = new Hud(this.mouse, this.camera, this.world);
 		
 		// add scenes
 		this
