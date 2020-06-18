@@ -131,10 +131,11 @@ public class World extends SceneRender {
 		if (sprinting && this.movement.z < 0) this.movement.mul(1.5f);
 		
 		// placing / removing
-		this.change = 0;
-		if (window.isKeyDown(GLFW_KEY_0)) this.change = -1;
-		if (window.isKeyDown(GLFW_KEY_1)) this.change = 1;
-		if (window.isKeyDown(GLFW_KEY_2)) this.change = 2;
+		if (this.change == 0) {
+			if (window.isKeyDown(GLFW_KEY_0)) this.change = -1;
+			if (window.isKeyDown(GLFW_KEY_1)) this.change = 1;
+			if (window.isKeyDown(GLFW_KEY_2)) this.change = 2;
+		}
 	}
 	
 	@Override
@@ -173,7 +174,7 @@ public class World extends SceneRender {
 		// update wait time
 		if (this.wait > 0)
 			this.wait -= interval;
-		if (this.wait <= 0 && this.change == 0)
+		if (this.wait < 0 && this.change == 0)
 			this.wait = 0;
 	}
 	
