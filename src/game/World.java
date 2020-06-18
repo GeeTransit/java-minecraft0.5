@@ -157,6 +157,11 @@ public class World extends SceneRender {
 				if (closestItem.closest == null) {
 					Vector3f position = this.camera.getPosition().round(new Vector3f());
 					this.addItem(newItem(this.grassblock, position.x, position.y, position.z));
+				} else {
+					Vector3f hit = new Vector3f(closestItem.hit);
+					hit.add(hit.normalize(new Vector3f()).mul(-0.01f));
+					hit.round();
+					this.addItem(newItem(this.grassblock, hit.x, hit.y, hit.z));
 				}
 				break;
 			case 2:
