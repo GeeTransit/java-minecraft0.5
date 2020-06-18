@@ -77,19 +77,15 @@ public class World extends SceneRender {
 		this.cobbleblock = ObjLoader.loadMesh("/res/cube.obj").setTexture(new Texture("/res/cobbleblock.png"));
 		
 		// get heightmap
-		int widthArray[] = {0};
-		int lengthArray[] = {0};
-		ByteBuffer map = Utils.loadImage("/res/heightmap.png", widthArray, lengthArray);
-		int width = widthArray[0];
-		int length = lengthArray[0];
-		
-		// create terrain
-		for (int i = 0; i < width; i++) {
-			for (int j = 0; j < length; j++) {
-				int height = (int) this.expand(this.compress(this.heightAt(map, i, j, width), 0, MAX_COLOR), 0, 16);
-				this.addItem(newItem(grassblock, i, height, j));
-				for (int k = height-1; k >= Math.max(height-2, 0); k--) {
-					this.addItem(newItem(cobbleblock, i, k, j));
+		try (HeightMap heightMap = HeightMap.loadFromImage("/res/heightmap.png")) {
+			// create terrain
+			for (int i = 0; i < heightMap.width; i++) {
+				for (int j = 0; j < heightMap.length; j++) {
+					int height = (int) heightMap.compressExpand(heightMap.heightAt(i, j), 0, MAX_COLOR, 0, 16);
+					this.addItem(newItem(grassblock, i, height, j));
+					for (int k = height-1; k >= Math.max(height-2, 0); k--) {
+						this.addItem(newItem(cobbleblock, i, k, j));
+					}
 				}
 			}
 		}
