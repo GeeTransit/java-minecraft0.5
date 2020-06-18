@@ -158,8 +158,16 @@ public class World extends SceneRender {
 					this.removeItem(closestItem.closest);
 				break;
 			case 1:
+				if (closestItem.closest == null) {
+					Vector3f position = this.camera.getPosition().round(new Vector3f());
+					this.addItem(newItem(this.grassblock, position.x, position.y, position.z));
+				}
 				break;
 			case 2:
+				if (closestItem.closest == null) {
+					Vector3f position = this.camera.getPosition().round(new Vector3f());
+					this.addItem(newItem(this.cobbleblock, position.x, position.y, position.z));
+				}
 				break;
 			}
 			this.wait += this.CHANGE_DELAY;
