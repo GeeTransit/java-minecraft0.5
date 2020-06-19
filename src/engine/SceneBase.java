@@ -5,8 +5,7 @@ Base scene implementation. (no rendering)
 
 package geetransit.minecraft05.engine;
 
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 public abstract class SceneBase implements Scene {
 	private List<Scene> scenes;

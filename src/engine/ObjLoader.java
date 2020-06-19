@@ -6,19 +6,15 @@ ahbejarano
 package geetransit.minecraft05.engine;
 
 import java.util.*;
-import java.util.stream.*;
-import org.joml.Vector3f;
-import org.joml.Vector2f;
+import org.joml.*;
 
 public class ObjLoader {
 	public static Mesh loadMesh(String file) throws Exception {
-		Stream<String> lines = Utils.loadLinesStream(file);
-		
 		List<Vector3f> vertices = new ArrayList<>();
 		List<Vector2f> textures = new ArrayList<>();
 		List<Face> faces = new ArrayList<>();
 		
-		lines.forEach(line -> {
+		Utils.loadLinesStream(file).forEach(line -> {
 			String[] tokens = line.split("\\s+");
 			switch (tokens[0]) {
 			case "v":

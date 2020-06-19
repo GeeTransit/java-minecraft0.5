@@ -5,18 +5,9 @@ Background scene.
 
 package geetransit.minecraft05.game;
 
-import java.util.*;
-import org.joml.Vector3f;
-import org.lwjgl.glfw.*;
-import org.lwjgl.opengl.*;
-import org.lwjgl.Version;
-
 import geetransit.minecraft05.engine.*;
 
-import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.system.MemoryUtil.*;
 
 public class Background implements Scene {
 	private int direction;

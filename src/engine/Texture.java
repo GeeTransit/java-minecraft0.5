@@ -6,11 +6,9 @@ Texture helper class.
 package geetransit.minecraft05.engine;
 
 import java.nio.*;
-import org.lwjgl.system.*;
 
 import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.system.MemoryUtil.*;
-import static org.lwjgl.stb.STBImage.*;
 
 public class Texture {
 

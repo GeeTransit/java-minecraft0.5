@@ -13,9 +13,8 @@ import java.util.function.*;
 import java.nio.*;
 import java.nio.charset.StandardCharsets;
 
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.MemoryUtil;
-import org.lwjgl.stb.STBImage;
+import org.lwjgl.system.*;
+import org.lwjgl.stb.*;
 
 public class Utils {
 	

@@ -7,7 +7,6 @@ package geetransit.minecraft05.game;
 
 import geetransit.minecraft05.engine.*;
 
-import org.joml.Vector4f;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Hud extends SceneRender {

@@ -5,7 +5,6 @@ Camera wrapper class.
 
 package geetransit.minecraft05.engine;
 
-import org.joml.Vector2d;
 import org.joml.Vector2f;
 import static org.lwjgl.glfw.GLFW.*;
 

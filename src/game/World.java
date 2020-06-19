@@ -5,22 +5,13 @@ World scene implementation.
 
 package geetransit.minecraft05.game;
 
-import java.util.*;
-import java.nio.*;
-import org.joml.Vector2f;
-import org.joml.Vector3f;
-import org.joml.Matrix4f;
-import org.joml.Intersectionf;
-import org.lwjgl.glfw.*;
-import org.lwjgl.opengl.*;
-import org.lwjgl.Version;
-
 import geetransit.minecraft05.engine.*;
 
-import static org.lwjgl.glfw.Callbacks.*;
+import java.util.*;
+
+import org.joml.Vector3f;
+
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.system.MemoryUtil.*;
 
 public class World extends SceneRender {
 	private Mouse mouse;

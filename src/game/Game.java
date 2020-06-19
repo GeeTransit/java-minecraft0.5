@@ -5,11 +5,11 @@ Game logic implementation.
 
 package geetransit.minecraft05.game;
 
+import geetransit.minecraft05.engine.*;
+
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.Version;
-
-import geetransit.minecraft05.engine.*;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
