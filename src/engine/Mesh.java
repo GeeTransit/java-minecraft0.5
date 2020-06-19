@@ -24,8 +24,10 @@ public class Mesh {
 	public Mesh(float[] posArray, int[] indexArray, float[] coordArray) {
 		this.vboIdList = new ArrayList<>();
 		this.vertexCount = indexArray.length;
-		int vboId;
+		this.color = new Vector4f();
+		this.setColor(DEFAULT_COLOUR);
 		
+		int vboId;
 		FloatBuffer posBuffer = null;
 		IntBuffer indexBuffer = null;
 		FloatBuffer coordBuffer = null;
@@ -34,7 +36,6 @@ public class Mesh {
 			this.vaoId = glGenVertexArrays();
 			glBindVertexArray(this.vaoId);
 			
-			this.setColor(DEFAULT_COLOUR);
 			
 			// Position VBO
 			vboId = glGenBuffers();
@@ -78,13 +79,15 @@ public class Mesh {
 	public int getVaoId() { return this.vaoId; }
 	public int getVertexCount() { return this.vertexCount; }
 	
-	// texture takes precedence
 	public Texture getTexture() { return this.texture; }
-	public Vector4f getColor() { return this.color; }
 	public Mesh setTexture(Texture texture) { this.texture = texture; return this; }
-	public Mesh setColor(Vector3f color) { this.color = new Vector4f(color, 1f); return this; }
-	public Mesh setColor(Vector4f color) { this.color = color; return this; }
 	public boolean isTextured() { return this.texture != null; }
+	
+	public Vector4f getColor() { return this.color; }
+	public Mesh setColor(float r, float g, float b) { this.setColor(new Vector3f(r, g, b)); return this; }
+	public Mesh setColor(float r, float g, float b, float a) { this.setColor(new Vector4f(r, g, b, a)); return this; }
+	public Mesh setColor(Vector3f color) { this.setColor(new Vector4f(color, 1f)); return this; }
+	public Mesh setColor(Vector4f color) { this.color.set(color); return this; }
 	
 	// prepare mesh
 	public void prepare() { this.prepare(null); }

@@ -40,13 +40,13 @@ public class Hud extends SceneRender {
 		super.init(window);
 		
 		this.text = new TextItem("", FONT_FILE, FONT_COLS, FONT_ROWS);
-		this.text.getMesh().setColor(new Vector4f(1, 1, 1, 1));
+		this.text.getMesh().setColor(1, 1, 1);
 		
 		this.compass = new Item(ObjLoader.loadMesh("/res/compass.obj"));
-		this.compass.getMesh().setColor(new Vector4f(1, 1, 1, 1));
+		this.compass.getMesh().setColor(1, 1, 1);
 		
 		this.crosshair = new Item(ObjLoader.loadMesh("/res/crosshair.obj"));
-		this.crosshair.getMesh().setColor(new Vector4f(1, 1, 1, 1));
+		this.crosshair.getMesh().setColor(1, 1, 1);
 		
 		this
 			.addItem(this.text)
