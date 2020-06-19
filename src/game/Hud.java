@@ -5,8 +5,10 @@ Hud implementation.
 
 package geetransit.minecraft05.game;
 
-import org.joml.Vector4f;
 import geetransit.minecraft05.engine.*;
+
+import org.joml.Vector4f;
+import static org.lwjgl.glfw.GLFW.*;
 
 public class Hud extends SceneRender {
 	private static final int FONT_COLS = 16;
@@ -57,8 +59,8 @@ public class Hud extends SceneRender {
 	@Override
 	public void render(Window window) {
 		this.text.setText(String.format(
-			"vsync=%s mode=%s change=%s wait=%s\ncamera=%s\nmouse=%s",
-			window.isVSync(), window.getMode(),
+			"vsync=%s mode=%s mouse=%s\nchange=%s wait=%s\ncamera=%s\nmouse=%s",
+			window.isVSync(), window.getMode(), window.getInputMode(GLFW_CURSOR) == GLFW_CURSOR_NORMAL,
 			this.world.getChange(), this.world.getWait(),
 			this.camera, this.mouse
 		));
