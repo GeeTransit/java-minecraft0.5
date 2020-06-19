@@ -8,9 +8,9 @@ package geetransit.minecraft05.engine;
 import java.util.*;
 
 public abstract class SceneRender extends SceneBase {
-	protected Renderer renderer;
-	protected List<Item> items;
-	protected Map<Mesh, List<Item>> meshMap;
+	private Renderer renderer;
+	private List<Item> items;
+	private Map<Mesh, List<Item>> meshMap;
 
 	public SceneRender(Renderer renderer) {
 		super();

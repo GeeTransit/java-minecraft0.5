@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 public abstract class SceneBase implements Scene {
-	protected List<Scene> scenes;
+	private List<Scene> scenes;
 
 	public SceneBase() {
 		this.scenes = new ArrayList<>();
