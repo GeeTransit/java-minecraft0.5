@@ -28,14 +28,18 @@ public abstract class SceneRender extends SceneBase {
 	public List<Item> getItems() { return this.items; }
 	public Map<Mesh, List<Item>> getMeshMap() { return this.meshMap; }
 	public SceneRender addItem(Item item) {
+		Mesh mesh = item.getMesh();
 		this.items.add(item);
-		this.meshMap.putIfAbsent(item.getMesh(), new ArrayList<>());
-		this.meshMap.get(item.getMesh()).add(item);
+		this.meshMap.putIfAbsent(mesh, new ArrayList<>());
+		this.meshMap.get(mesh).add(item);
 		return this;
 	}
 	public SceneRender removeItem(Item item) {
+		Mesh mesh = item.getMesh();
 		this.items.remove(item);
-		this.meshMap.get(item.getMesh()).remove(item);
+		this.meshMap.get(mesh).remove(item);
+		if (this.meshMap.get(mesh).size() == 0)
+			this.meshMap.remove(mesh);
 		return this;
 	}
 	

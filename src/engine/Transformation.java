@@ -24,12 +24,9 @@ public class Transformation {
 		this.modelMatrix = new Matrix4f();
 	}
 
-	public Matrix4f getProjectionMatrix(float fov, float width, float height, float zNear, float zFar) {
-		return this.projectionMatrix.setPerspective(-fov, width / height, zNear, zFar);
-	}
 	public Matrix4f getProjectionMatrix(Window window, Camera camera) {
-		return this.getProjectionMatrix(
-			camera.getFov(), (float) window.getWidth(), (float) window.getHeight(),
+		return this.projectionMatrix.setPerspective(
+			-camera.getFov(), (float) window.getWidth() / window.getHeight(),
 			camera.getNear(), camera.getFar()
 		);
 	}

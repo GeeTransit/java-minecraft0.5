@@ -29,6 +29,7 @@ public class World extends SceneRender {
 	private Camera camera;
 	private float step;
 	private Vector3f movement;
+	private ClosestItem closestItem;
 	
 	private Map<String, Item> blockMap;
 	
@@ -55,14 +56,16 @@ public class World extends SceneRender {
 		this.camera = camera;
 		this.step = 0.1f;
 		this.movement = new Vector3f();
+		this.closestItem = new ClosestItem();
 	}
 	
-	public Mouse getMouse()       { return this.mouse; }
+	public Mouse getMouse() { return this.mouse; }
 	public float getSensitivity() { return this.sensitivity; }
 	
-	public Camera getCamera()     { return this.camera; }
-	public float getStep()        { return this.step; }
+	public Camera getCamera() { return this.camera; }
+	public float getStep() { return this.step; }
 	public Vector3f getMovement() { return this.movement; }
+	public ClosestItem getClosestItem() { return this.closestItem; }
 	
 	public String getChange() { return this.change; }
 	public float getWait() { return this.wait; }
@@ -118,11 +121,10 @@ public class World extends SceneRender {
 		if (sprinting && this.movement.z < 0) this.movement.mul(1.5f);
 		
 		// placing / removing
-		if (this.change == null) {
-			if (window.isKeyDown(GLFW_KEY_0)) this.change = "";
-			if (window.isKeyDown(GLFW_KEY_1)) this.change = "grassblock";
-			if (window.isKeyDown(GLFW_KEY_2)) this.change = "cobbleblock";
-		}
+		this.change = null;
+		if (window.isKeyDown(GLFW_KEY_0)) this.change = "";
+		if (window.isKeyDown(GLFW_KEY_1)) this.change = "grassblock";
+		if (window.isKeyDown(GLFW_KEY_2)) this.change = "cobbleblock";
 	}
 	
 	@Override
@@ -136,22 +138,21 @@ public class World extends SceneRender {
 		
 		// placing / removing
 		if (this.change != null && this.wait <= 0) {
-			ClosestItem closestItem = new ClosestItem(this.getItems(), this.camera);
-			if (closestItem.closest != null) {
+			this.closestItem.update(this.getItems(), this.camera);
+			if (this.closestItem.closest != null) {
 				if (this.change.equals("")) {
-					this.removeItem(closestItem.closest);
+					this.removeItem(this.closestItem.closest);
 				} else {
 					Vector3f position = new Vector3f();
-					position.set(closestItem.direction);  // get normalized camera direction
+					position.set(this.closestItem.direction);  // get normalized camera direction
 					position.negate();  // move towards camera
 					position.mul(0.01f);
-					position.add(closestItem.hit);  // start from intersection point
+					position.add(this.closestItem.hit);  // start from intersection point
 					position.round();  // round to grid
 					this.addItem(this.newBlock(this.change).setPosition(position));
 				}
 			}
 			this.wait += this.CHANGE_DELAY;
-			this.change = null;
 		}
 		
 		// update wait time
@@ -167,13 +168,12 @@ public class World extends SceneRender {
 		super.render(window);
 	}
 	
-	// CAN return null
 	private void updateSelectedItem() {
-		ClosestItem closestItem = new ClosestItem(this.getItems(), this.camera);
 		for (Item item : this.getItems())
 			item.setSelected(false);
-		if (closestItem.closest != null)
-			closestItem.closest.setSelected(true);
+		this.closestItem.update(this.getItems(), this.camera);
+		if (this.closestItem.closest != null)
+			this.closestItem.closest.setSelected(true);
 	}
 	
 	private static Item loadBlock(String objFileName, String textureFileName) throws Exception {
