@@ -30,11 +30,10 @@ public class World extends SceneRender {
 	private float step;
 	private Vector3f movement;
 	
-	private Mesh grassblock;
-	private Mesh cobbleblock;
+	private Map<String, Item> blockMap;
 	
 	private static final float CHANGE_DELAY = 0.2f;
-	private int change;  // -1=remove 1=grass 2=cobble
+	private String change;  // ""=air
 	private float wait;  // time until next place / remove
 	
 	private static final int MAX_COLOR = 255*255*255;
@@ -65,7 +64,7 @@ public class World extends SceneRender {
 	public float getStep()        { return this.step; }
 	public Vector3f getMovement() { return this.movement; }
 	
-	public int getChange() { return this.change; }
+	public String getChange() { return this.change; }
 	public float getWait() { return this.wait; }
 	
 	@Override
@@ -73,18 +72,19 @@ public class World extends SceneRender {
 		super.init(window);
 		
 		// Create the blocks' mesh
-		this.grassblock = ObjLoader.loadMesh("/res/cube.obj").setTexture(new Texture("/res/grassblock.png"));
-		this.cobbleblock = ObjLoader.loadMesh("/res/cube.obj").setTexture(new Texture("/res/cobbleblock.png"));
+		this.blockMap = new HashMap<>();
+		this.blockMap.put("grassblock", this.loadBlock("/res/cube.obj", "/res/grassblock.png"));
+		this.blockMap.put("cobbleblock", this.loadBlock("/res/cube.obj", "/res/cobbleblock.png"));
 		
 		// get heightmap
-		try (HeightMap heightMap = HeightMap.loadFromImage("/res/heightmap.png")) {
+		try (HeightMap map = HeightMap.loadFromImage("/res/heightmap.png")) {
 			// create terrain
-			for (int i = 0; i < heightMap.width; i++) {
-				for (int j = 0; j < heightMap.length; j++) {
-					int height = (int) heightMap.compressExpand(heightMap.heightAt(i, j), 0, MAX_COLOR, 0, 16);
-					this.addItem(newItem(grassblock, i, height, j));
-					for (int k = height-1; k >= Math.max(height-2, 0); k--) {
-						this.addItem(newItem(cobbleblock, i, k, j));
+			for (int x = 0; x < map.width; x++) {
+				for (int z = 0; z < map.length; z++) {
+					int y = (int) map.compressExpand(map.heightAt(x, z), 0, MAX_COLOR, 0, 16);
+					this.addItem(this.newBlock("grassblock").setPosition(x, y, z));
+					for (int k = y-1; k >= Math.max(y-2, 0); k--) {
+						this.addItem(this.newBlock("cobbleblock").setPosition(x, k, z));
 					}
 				}
 			}
@@ -92,16 +92,12 @@ public class World extends SceneRender {
 		
 		// add spawn markers (-2z is forwards)
 		this
-			.addItem(newItem(grassblock, +1, +1,  0))
-			.addItem(newItem(grassblock, -1, +1,  0))
-			.addItem(newItem(grassblock,  0, +1, +1))
-			.addItem(newItem(grassblock,  0, +1, -2));
+			.addItem(this.newBlock("grassblock").setPosition(+1, +1,  0))
+			.addItem(this.newBlock("grassblock").setPosition(-1, +1,  0))
+			.addItem(this.newBlock("grassblock").setPosition( 0, +1, +1))
+			.addItem(this.newBlock("grassblock").setPosition( 0, +1, -2));
 	}
-	
-	private static Item newItem(Mesh mesh, float x, float y, float z) {
-		return new Item(mesh).setScale(0.5f).setPosition(x, y, z);
-	}
-	
+
 	@Override
 	public void input(Window window) {
 		super.input(window);
@@ -122,10 +118,10 @@ public class World extends SceneRender {
 		if (sprinting && this.movement.z < 0) this.movement.mul(1.5f);
 		
 		// placing / removing
-		if (this.change == 0) {
-			if (window.isKeyDown(GLFW_KEY_0)) this.change = -1;
-			if (window.isKeyDown(GLFW_KEY_1)) this.change = 1;
-			if (window.isKeyDown(GLFW_KEY_2)) this.change = 2;
+		if (this.change == null) {
+			if (window.isKeyDown(GLFW_KEY_0)) this.change = "";
+			if (window.isKeyDown(GLFW_KEY_1)) this.change = "grassblock";
+			if (window.isKeyDown(GLFW_KEY_2)) this.change = "cobbleblock";
 		}
 	}
 	
@@ -146,35 +142,30 @@ public class World extends SceneRender {
 		this.camera.movePosition(this.movement.mul(this.step, new Vector3f()));
 		
 		// placing / removing
-		if (this.change != 0 && this.wait <= 0) {
+		if (this.change != null && this.wait <= 0) {
 			ClosestItem closestItem = new ClosestItem(this.getItems(), this.camera);
-			if (this.change == -1) {
+			if (this.change.equals("")) {
 				if (closestItem.closest != null)
 					this.removeItem(closestItem.closest);
 			} else {
 				Vector3f position = new Vector3f();
 				if (closestItem.closest != null) {
 					position.set(closestItem.hit);
-					position.add(closestItem.direction.negate(new Vector3f()).mul(0.5f));
+					position.add(closestItem.direction.negate(new Vector3f()).mul(0.01f));
 					position.round();
 				} else {
 					this.camera.getPosition().round(position);
 				}
-				switch (this.change) {
-					case 1:
-						this.addItem(newItem(this.grassblock, position.x, position.y, position.z)); break;
-					case 2:
-						this.addItem(newItem(this.cobbleblock, position.x, position.y, position.z)); break;
-				}
+				this.addItem(this.newBlock(this.change).setPosition(position));
 			}
 			this.wait += this.CHANGE_DELAY;
-			this.change = 0;
+			this.change = null;
 		}
 		
 		// update wait time
 		if (this.wait > 0)
 			this.wait -= interval;
-		if (this.wait < 0 && this.change == 0)
+		if (this.wait < 0 && this.change == null)
 			this.wait = 0;
 	}
 	
@@ -191,6 +182,18 @@ public class World extends SceneRender {
 			item.setSelected(false);
 		if (closestItem.closest != null)
 			closestItem.closest.setSelected(true);
+	}
+	
+	private static Item loadBlock(String objFileName, String textureFileName) throws Exception {
+		Mesh mesh = ObjLoader.loadMesh(objFileName);
+		mesh.setTexture(new Texture(textureFileName));
+		Item block = new Item(mesh);
+		block.setScale(0.5f);
+		return block;
+	}
+	
+	private Item newBlock(String name) {
+		return this.blockMap.get(name).clone();
 	}
 }
 

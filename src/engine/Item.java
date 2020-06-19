@@ -8,7 +8,7 @@ package geetransit.minecraft05.engine;
 import org.joml.Vector3f;
 import org.joml.Quaternionf;
 
-public class Item {
+public class Item implements Cloneable {
 	protected Mesh mesh;
 
 	private final Vector3f position;
@@ -20,7 +20,7 @@ public class Item {
 		this();
 		this.mesh = mesh;
 	}
-	public Item() {
+	protected Item() {
 		this.position = new Vector3f();
 		this.rotation = new Quaternionf();
 		this.scale = 1;
@@ -35,6 +35,16 @@ public class Item {
 	
 	public void cleanup() {
 		this.mesh.cleanup();
+	}
+	
+	// does NOT copy the mesh (shallow copy)
+	@Override
+	public Item clone() {
+		return new Item(this.getMesh())
+			.setPosition(this.getPosition())
+			.setRotation(this.getRotation())
+			.setScale(this.getScale())
+			.setSelected(this.isSelected());
 	}
 	
 	public Mesh getMesh() { return this.mesh; }
