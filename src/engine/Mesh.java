@@ -21,7 +21,7 @@ public class Mesh {
 	private Texture texture;
 	private Vector4f color;
 
-	public Mesh(float[] posArray, int[] indexArray, float[] coordArray, float[] normalArray) {
+	public Mesh(float[] posArray, int[] indexArray, float[] coordArray) {
 		this.vboIdList = new ArrayList<>();
 		this.vertexCount = indexArray.length;
 		int vboId;
@@ -29,7 +29,6 @@ public class Mesh {
 		FloatBuffer posBuffer = null;
 		IntBuffer indexBuffer = null;
 		FloatBuffer coordBuffer = null;
-		FloatBuffer normalBuffer = null;
 		try {
 			// Create the VAO
 			this.vaoId = glGenVertexArrays();
@@ -64,16 +63,6 @@ public class Mesh {
 			glBufferData(GL_ARRAY_BUFFER, coordBuffer, GL_STATIC_DRAW);
 			glEnableVertexAttribArray(1);
 			glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0);
-			
-			// normals VBO
-			vboId = glGenBuffers();
-			this.vboIdList.add(vboId);
-			normalBuffer = memAllocFloat(normalArray.length);
-			normalBuffer.put(normalArray).flip();
-			glBindBuffer(GL_ARRAY_BUFFER, vboId);
-			glBufferData(GL_ARRAY_BUFFER, normalBuffer, GL_STATIC_DRAW);
-			glEnableVertexAttribArray(2);
-			glVertexAttribPointer(2, 3, GL_FLOAT, false, 0, 0);
 
 			// Unbind the VBO / VAB
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -83,7 +72,6 @@ public class Mesh {
 			if (posBuffer != null) memFree(posBuffer);
 			if (indexBuffer != null) memFree(indexBuffer);
 			if (coordBuffer != null) memFree(coordBuffer);
-			if (normalBuffer != null) memFree(normalBuffer);
 		}
 	}
 

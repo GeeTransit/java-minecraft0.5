@@ -107,7 +107,6 @@ public class TextItem extends Item {
 		float[] posArray = Utils.floatListToArray(posList);
 		float[] coordArray = Utils.floatListToArray(coordList);
 		int[] indexArray = Utils.intListToArray(indexList);
-		float[] normalArray = new float[0];
-		return new Mesh(posArray, indexArray, coordArray, normalArray).setTexture(texture);
+		return new Mesh(posArray, indexArray, coordArray).setTexture(texture);
 	}
 }

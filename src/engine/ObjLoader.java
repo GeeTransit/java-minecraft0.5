@@ -16,7 +16,6 @@ public class ObjLoader {
 		
 		List<Vector3f> vertices = new ArrayList<>();
 		List<Vector2f> textures = new ArrayList<>();
-		List<Vector3f> normals = new ArrayList<>();
 		List<Face> faces = new ArrayList<>();
 		
 		lines.forEach(line -> {
@@ -37,14 +36,6 @@ public class ObjLoader {
 					Float.parseFloat(tokens[2])
 				));
 				break;
-			case "vn":
-				// Vertex normal
-				normals.add(new Vector3f(
-					Float.parseFloat(tokens[1]),
-					Float.parseFloat(tokens[2]),
-					Float.parseFloat(tokens[3])
-				));
-				break;
 			case "f":
 				Face face = new Face(tokens[1], tokens[2], tokens[3]);
 				faces.add(face);
@@ -54,13 +45,12 @@ public class ObjLoader {
 				break;
 			}
 		});
-		return reorderLists(vertices, textures, normals, faces);
+		return reorderLists(vertices, textures, faces);
 	}
 	
 	private static Mesh reorderLists(
 		List<Vector3f> vertexList,
 		List<Vector2f> coordList,
-		List<Vector3f> normalList,
 		List<Face> faceList
 	) {
 		List<Integer> posList = new ArrayList<>();
@@ -73,27 +63,21 @@ public class ObjLoader {
 			posArray[i*3 + 2] = pos.z;
 		}
 		float[] coordArray = new float[vertexList.size() * 2];
-		float[] normalArray = new float[vertexList.size() * 3];
 
 		for (Face face : faceList)
 			for (IndexGroup group : face.groups)
-				processFaceVertex(
-					group, coordList, normalList,
-					posList, coordArray, normalArray
-				);
+				processFaceVertex(group, coordList, posList, coordArray);
 		
 		// int[] indexArray = new int[indices.size()];
 		int[] indexArray = Utils.intListToArray(posList);
-		return new Mesh(posArray, indexArray, coordArray, normalArray);
+		return new Mesh(posArray, indexArray, coordArray);
 	}
 
 	private static void processFaceVertex(
 		IndexGroup group,
 		List<Vector2f> coordList,
-		List<Vector3f> normalList,
 		List<Integer> posList,
-		float[] coordArray,
-		float[] normalArray
+		float[] coordArray
 	) {
 		// Set pos for vertex coordinates
 		int pos = group.pos;
@@ -105,25 +89,16 @@ public class ObjLoader {
 			coordArray[pos*2 + 0] = coord.x;
 			coordArray[pos*2 + 1] = 1 - coord.y;
 		}
-		if (group.normal != IndexGroup.NO_VALUE) {
-			// Reorder normal vectors
-			Vector3f normal = normalList.get(group.normal);
-			normalArray[pos*3 + 0] = normal.x;
-			normalArray[pos*3 + 1] = normal.y;
-			normalArray[pos*3 + 2] = normal.z;
-		}
 	}
 	
 	protected static class IndexGroup {
 		public static final int NO_VALUE = -1;
 		public int pos;
 		public int coord;
-		public int normal;
 		
 		public IndexGroup() {
 			this.pos = NO_VALUE;
 			this.coord = NO_VALUE;
-			this.normal = NO_VALUE;
 		}
 	}
 	
@@ -155,7 +130,6 @@ public class ObjLoader {
 			if (length <= 2)
 				return group;
 			
-			group.normal = Integer.parseInt(tokens[2]) - 1;
 			return group;
 		}
 	}
