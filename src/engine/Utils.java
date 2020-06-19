@@ -11,7 +11,6 @@ import java.util.stream.*;
 import java.util.function.*;
 
 import java.nio.*;
-import java.nio.file.*;
 import java.nio.charset.StandardCharsets;
 
 import org.lwjgl.system.MemoryStack;
@@ -29,13 +28,16 @@ public class Utils {
 	
 	// source # https://stackoverflow.com/a/17861016
 	public static byte[] loadByteArray(String file) throws Exception {
-		InputStream in = loadInputStream(file);
-		ByteArrayOutputStream out = new ByteArrayOutputStream(); 
-		byte[] buffer = new byte[0xFFFF];
-		int len;
-		while ((len = in.read(buffer)) != -1)
-			out.write(buffer, 0, len);
-		return out.toByteArray();
+		try (
+			InputStream in = loadInputStream(file);
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+		) {
+			byte[] buffer = new byte[0xFFFF];
+			int len;
+			while ((len = in.read(buffer)) != -1)
+				out.write(buffer, 0, len);
+			return out.toByteArray();
+		}
 	}
 
 	public static String loadResource(String file) throws Exception {
