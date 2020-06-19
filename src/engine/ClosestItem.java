@@ -24,7 +24,7 @@ public class ClosestItem {
 	public ClosestItem(List<Item> items, Camera camera) {
 		this.distance = Float.POSITIVE_INFINITY;
 		this.closest = null;
-		this.hit = null;
+		this.hit = new Vector3f();
 		this.direction = new Vector3f();
 		
 		this.min = new Vector3f();
@@ -33,9 +33,7 @@ public class ClosestItem {
 		
 		// get camera direction
 		camera.getViewMatrix().positiveZ(this.direction);
-		this.direction
-			.negate()
-			.normalize();
+		this.direction.negate().normalize();
 		
 		// loop through all items
 		for (Item item : items) {
@@ -52,8 +50,9 @@ public class ClosestItem {
 				if (this.nearFar.x < this.distance) {
 					this.distance = nearFar.x;
 					this.closest = item;
-					this.hit = new Vector3f(camera.getPosition());
-					this.hit.add(this.direction.mul(this.distance, new Vector3f()));
+					this.hit.set(this.direction);
+					this.hit.mul(this.distance);
+					this.hit.add(camera.getPosition());
 				}
 			}
 		}
