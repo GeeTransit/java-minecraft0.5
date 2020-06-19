@@ -10,26 +10,20 @@ import org.joml.Matrix4f;
 import static org.lwjgl.opengl.GL30.*;
 
 public abstract class Renderer {
-	protected SceneRender parent;
-	protected Shader shader;
 	protected Transformation transformation;
 	
-	private static final float Z_NEAR = 0.01f;
-	private static final float Z_FAR = 1000f;
-	
-	public Renderer(SceneRender parent) {
-		this.parent = parent;
+	public Renderer() {
 		this.transformation = new Transformation();
 	}
 	
-	public SceneRender getParent() { return this.parent; }
-	public Renderer setParent(SceneRender parent) { this.parent = parent; return this; }
+	// create shaders
+	public abstract void init(Window window) throws Exception;
 	
-	public void init(Window window) throws Exception {
-		this.shader = this.create(window);
-	}
+	// render scene
+	public abstract void render(Window window);
 	
-	public abstract Shader create(Window window) throws Exception;
+	// destroy shaders
+	public abstract void cleanup();
 	
 	public Shader createShader(String vertex, String fragment) throws Exception {
 		Shader shader = new Shader();
@@ -59,35 +53,30 @@ public abstract class Renderer {
 		return shader;
 	}
 	
-	public abstract void render(Window window);
-	
-	public void render3D(Window window, Camera camera) {
-		this.render3D(window, camera, this.parent.getItems());
-	}
-	public void render3D(Window window, Camera camera, List<Item> items) {
-		this.shader.bind();
+	public void render3D(Shader shader, Window window, Camera camera, List<Item> items) {
+		shader.bind();
 		
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		
 		// projection
 		Matrix4f projectionMatrix = this.transformation.getProjectionMatrix(window, camera);
-		this.shader.setUniform("projectionMatrix", projectionMatrix);
+		shader.setUniform("projectionMatrix", projectionMatrix);
 		
 		// view
 		Matrix4f viewMatrix = camera.getViewMatrix();
 		
 		// Draw meshes
-		this.shader.setUniform("texture_sampler", 0);
+		shader.setUniform("texture_sampler", 0);
 		int itemsSize = items.size();
 		for (int i = 0; i < itemsSize; i++) {
 			Item item = items.get(i);
 			Mesh mesh = item.getMesh();
 			Matrix4f modelViewMatrix = this.transformation.getModelViewMatrix(item, viewMatrix);
-			this.shader.setUniform("modelViewMatrix", modelViewMatrix);
-			this.shader.setUniform("color", mesh.getColor());
-			this.shader.setUniform("isTextured", mesh.isTextured());
-			this.shader.setUniform("isSelected", item.isSelected());
+			shader.setUniform("modelViewMatrix", modelViewMatrix);
+			shader.setUniform("color", mesh.getColor());
+			shader.setUniform("isTextured", mesh.isTextured());
+			shader.setUniform("isSelected", item.isSelected());
 			mesh.prepare(this.getMeshFromItems(items, i-1, itemsSize));
 			mesh.render();
 			mesh.restore(this.getMeshFromItems(items, i+1, itemsSize));
@@ -95,78 +84,36 @@ public abstract class Renderer {
 		
 		glDisable(GL_CULL_FACE);
 
-		this.shader.unbind();
-	}
-	
-	public void render3DSingle(Window window, Camera camera) {
-		this.render3DSingle(window, camera, this.parent.getItems());
-	}
-	public void render3DSingle(Window window, Camera camera, List<Item> items) {
-		this.shader.bind();
-		
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
-		
-		// projection
-		Matrix4f projectionMatrix = this.transformation.getProjectionMatrix(window, camera);
-		this.shader.setUniform("projectionMatrix", projectionMatrix);
-		
-		// view
-		Matrix4f viewMatrix = camera.getViewMatrix();
-		
-		// Draw meshes
-		this.shader.setUniform("texture_sampler", 0);
-		if (!items.isEmpty()) {
-			Mesh firstMesh = items.get(0).getMesh();
-			this.shader.setUniform("color", firstMesh.getColor());
-			this.shader.setUniform("isTextured", firstMesh.isTextured());
-			firstMesh.prepare();
-			
-			for (Item item : items) {
-				Matrix4f modelViewMatrix = this.transformation.getModelViewMatrix(item, viewMatrix);
-				this.shader.setUniform("modelViewMatrix", modelViewMatrix);
-				this.shader.setUniform("isSelected", item.isSelected());
-				item.getMesh().render();
-			}
-			
-			firstMesh.restore();
-		}
-		
-		glDisable(GL_CULL_FACE);
-		
-		this.shader.unbind();
+		shader.unbind();
 	}
 	
 	// note does NOT call Item.render(Window)
-	public void render3DMap(Window window, Camera camera) {
-		this.render3DMap(window, camera, this.parent.getMeshMap());
-	}
-	public void render3DMap(Window window, Camera camera, Map<Mesh, List<Item>> map) {
-		this.shader.bind();
+	public void render3DMap(Shader shader, Window window, Camera camera, Map<Mesh, List<Item>> map) {
+		shader.bind();
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		
 		// projection
 		Matrix4f projectionMatrix = this.transformation.getProjectionMatrix(window, camera);
-		this.shader.setUniform("projectionMatrix", projectionMatrix);
+		shader.setUniform("projectionMatrix", projectionMatrix);
 		
 		// view
 		Matrix4f viewMatrix = camera.getViewMatrix();
 		
 		// Draw meshes
-		this.shader.setUniform("texture_sampler", 0);
+		shader.setUniform("texture_sampler", 0);
 		for (Map.Entry<Mesh, List<Item>> entry : map.entrySet()) {
 			Mesh mesh = entry.getKey();
 			List<Item> items = entry.getValue();
-			this.shader.setUniform("color", mesh.getColor());
-			this.shader.setUniform("isTextured", mesh.isTextured());
+			shader.setUniform("color", mesh.getColor());
+			shader.setUniform("isTextured", mesh.isTextured());
 			mesh.prepare();
 			
 			// single : loop through items
 			for (Item item : items) {
 				Matrix4f modelViewMatrix = this.transformation.getModelViewMatrix(item, viewMatrix);
-				this.shader.setUniform("modelViewMatrix", modelViewMatrix);
-				this.shader.setUniform("isSelected", item.isSelected());
+				shader.setUniform("modelViewMatrix", modelViewMatrix);
+				shader.setUniform("isSelected", item.isSelected());
 				mesh.render();
 			}
 			
@@ -174,14 +121,11 @@ public abstract class Renderer {
 		}
 		
 		glDisable(GL_CULL_FACE);
-		this.shader.unbind();
+		shader.unbind();
 	}
 	
-	public void render2D(Window window) {
-		this.render2D(window, this.parent.getItems());
-	}
-	public void render2D(Window window, List<Item> items) {
-		this.shader.bind();
+	public void render2D(Shader shader, Window window, List<Item> items) {
+		shader.bind();
 		
 		// source # https://stackoverflow.com/a/5467636
 		glDepthMask(false);  // disable writes to Z-Buffer
@@ -190,30 +134,27 @@ public abstract class Renderer {
 		Matrix4f orthoMatrix = this.transformation.getOrthoProjectionMatrix(window);
 		
 		// Draw meshes
-		this.shader.setUniform("texture_sampler", 0);
+		shader.setUniform("texture_sampler", 0);
 		for (Item item : items) {
 			Matrix4f projModelMatrix = this.transformation.getOrthoProjModelMatrix(item, orthoMatrix);
-			this.shader.setUniform("projModelMatrix", projModelMatrix);
-			this.shader.setUniform("color", item.getMesh().getColor());
-			this.shader.setUniform("isTextured", item.getMesh().isTextured());
+			shader.setUniform("projModelMatrix", projModelMatrix);
+			shader.setUniform("color", item.getMesh().getColor());
+			shader.setUniform("isTextured", item.getMesh().isTextured());
 			item.render(window);
 		}
 		
 		glDepthMask(true);
 		glEnable(GL_DEPTH_TEST);
 
-		this.shader.unbind();
+		shader.unbind();
 	}
 	
-	public void renderSkybox(Window window, Camera camera) {
-		this.renderSkybox(window, camera, this.parent.getItems());
-	}
-	public void renderSkybox(Window window, Camera camera, List<Item> items) {
-		this.shader.bind();
+	public void renderSkybox(Shader shader, Window window, Camera camera, List<Item> items) {
+		shader.bind();
 		
 		// projection
 		Matrix4f projectionMatrix = this.transformation.getProjectionMatrix(window, camera);
-		this.shader.setUniform("projectionMatrix", projectionMatrix);
+		shader.setUniform("projectionMatrix", projectionMatrix);
 		
 		// view
 		Matrix4f viewMatrix = camera.getViewMatrix();
@@ -222,16 +163,16 @@ public abstract class Renderer {
 		viewMatrix.setTranslation(0, 0, 0);
 		
 		// Draw meshes
-		this.shader.setUniform("texture_sampler", 0);
+		shader.setUniform("texture_sampler", 0);
 		for (Item item : items) {
 			Matrix4f modelViewMatrix = this.transformation.getModelViewMatrix(item, viewMatrix);
-			this.shader.setUniform("modelViewMatrix", modelViewMatrix);
-			this.shader.setUniform("color", item.getMesh().getColor());
-			this.shader.setUniform("isTextured", item.getMesh().isTextured());
+			shader.setUniform("modelViewMatrix", modelViewMatrix);
+			shader.setUniform("color", item.getMesh().getColor());
+			shader.setUniform("isTextured", item.getMesh().isTextured());
 			item.render(window);
 		}
 
-		this.shader.unbind();
+		shader.unbind();
 	}
 	
 	public Mesh getMeshFromItems(List<Item> items, int index) { return this.getMeshFromItems(items, index, items.size()); }
@@ -239,12 +180,5 @@ public abstract class Renderer {
 		if (0 <= index && index < size)
 			return items.get(index).getMesh();
 		return null;
-	}
-	
-	public void cleanup() {
-		if (this.shader != null) {
-			this.shader.cleanup();
-			this.shader = null;
-		}
 	}
 }

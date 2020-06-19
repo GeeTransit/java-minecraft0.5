@@ -41,12 +41,16 @@ public class World extends SceneRender {
 
 	public World(Mouse mouse, Camera camera) {
 		super();
-		this.setRenderer(new Renderer(this) {
-			public Shader create(Window window) throws Exception {
-				return this.create3D("/res/vertex-3d.vs", "/res/fragment-3d.fs");
+		this.setRenderer(new Renderer() {
+			Shader shader;
+			public void init(Window window) throws Exception {
+				shader = create3D("/res/vertex-3d.vs", "/res/fragment-3d.fs");
 			}
 			public void render(Window window) {
-				this.render3DMap(window, World.this.getCamera());
+				render3DMap(shader, window, World.this.getCamera(), World.this.getMeshMap());
+			}
+			public void cleanup() {
+				shader.cleanup();
 			}
 		});
 		

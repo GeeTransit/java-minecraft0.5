@@ -24,12 +24,16 @@ public class Hud extends SceneRender {
 	
 	public Hud(Mouse mouse, Camera camera, World world) {
 		super();
-		this.setRenderer(new Renderer(this) {
-			public Shader create(Window window) throws Exception {
-				return this.create2D("/res/vertex-2d.vs", "/res/fragment-2d.fs");
+		this.setRenderer(new Renderer() {
+			Shader shader;
+			public void init(Window window) throws Exception {
+				shader = create2D("/res/vertex-2d.vs", "/res/fragment-2d.fs");
 			}
 			public void render(Window window) {
-				this.render2D(window);
+				render2D(shader, window, Hud.this.getItems());
+			}
+			public void cleanup() {
+				shader.cleanup();
 			}
 		});
 		this.mouse = mouse;
