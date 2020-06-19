@@ -73,6 +73,17 @@ public class Camera {
 		return this;
 	}
 	
+	public Camera rotateUsingMouse(Mouse mouse, float sensitivity) {
+		float x = mouse.getMovement().x;
+		float y = mouse.getMovement().y;
+		if (mouse.isLeft())  // dragging
+			this.moveRotation(-y*sensitivity, -x*sensitivity, 0);
+		if (mouse.isRight())  // panning
+			this.moveRotation(y*sensitivity, x*sensitivity, 0);
+		this.rotation.x = Math.max(-90f, Math.min(90f, this.rotation.x));  // don't allow neck snapping
+		return this;
+	}
+	
 	public Vector3f getRadiansRotation() {
 		return this.radiansRotation.set(
 			(float) Math.toRadians(this.rotation.x),

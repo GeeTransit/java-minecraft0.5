@@ -130,33 +130,25 @@ public class World extends SceneRender {
 		super.update(interval);
 		
 		// movement
-		if (this.mouse.isInside()) {
-			float x = this.mouse.getMovement().x;
-			float y = this.mouse.getMovement().y;
-			if (this.mouse.isLeft())  // dragging
-				this.camera.moveRotation(-y*this.sensitivity, -x*this.sensitivity, 0);
-			if (this.mouse.isRight())  // panning
-				this.camera.moveRotation(y*this.sensitivity, x*this.sensitivity, 0);
-			this.camera.getRotation().x = Math.max(-90f, Math.min(90f, this.camera.getRotation().x));
-		}
+		if (this.mouse.isInside())
+			this.camera.rotateUsingMouse(this.mouse, this.sensitivity);
 		this.camera.movePosition(this.movement.mul(this.step, new Vector3f()));
 		
 		// placing / removing
 		if (this.change != null && this.wait <= 0) {
 			ClosestItem closestItem = new ClosestItem(this.getItems(), this.camera);
-			if (this.change.equals("")) {
-				if (closestItem.closest != null)
+			if (closestItem.closest != null) {
+				if (this.change.equals("")) {
 					this.removeItem(closestItem.closest);
-			} else {
-				Vector3f position = new Vector3f();
-				if (closestItem.closest != null) {
-					position.set(closestItem.hit);
-					position.add(closestItem.direction.negate(new Vector3f()).mul(0.01f));
-					position.round();
 				} else {
-					this.camera.getPosition().round(position);
+					Vector3f position = new Vector3f();
+					position.set(closestItem.direction);  // get normalized camera direction
+					position.negate();  // move towards camera
+					position.mul(0.01f);
+					position.add(closestItem.hit);  // start from intersection point
+					position.round();  // round to grid
+					this.addItem(this.newBlock(this.change).setPosition(position));
 				}
-				this.addItem(this.newBlock(this.change).setPosition(position));
 			}
 			this.wait += this.CHANGE_DELAY;
 			this.change = null;
