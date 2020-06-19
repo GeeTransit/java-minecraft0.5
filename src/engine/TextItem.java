@@ -47,7 +47,7 @@ public class TextItem extends Item {
 		List<Integer> indexList = new ArrayList<>();
 		
 		float width = (float) texture.getWidth() / this.fontCols;
-		float height = (float) texture.getHeight() / this.fontRows;
+		float length = (float) texture.getLength() / this.fontRows;
 		
 		int currentCol = 0;
 		int currentRow = 0;
@@ -66,7 +66,7 @@ public class TextItem extends Item {
 			
 			// Left Top vertex
 			posList.add(currentCol*width); // x
-			posList.add(currentRow*height); // y
+			posList.add(currentRow*length); // y
 			posList.add(ZPOS); // z
 			coordList.add((float) fontCol / this.fontCols);
 			coordList.add((float) fontRow / this.fontRows);
@@ -74,7 +74,7 @@ public class TextItem extends Item {
 			
 			// Left Bottom vertex
 			posList.add(currentCol*width); // x
-			posList.add(currentRow*height + height); // y
+			posList.add(currentRow*length + length); // y
 			posList.add(ZPOS); // z
 			coordList.add((float) fontCol / this.fontCols);
 			coordList.add((float) (fontRow + 1) / this.fontRows);
@@ -82,7 +82,7 @@ public class TextItem extends Item {
 			
 			// Right Bottom vertex
 			posList.add(currentCol*width + width); // x
-			posList.add(currentRow*height + height); // y
+			posList.add(currentRow*length + length); // y
 			posList.add(ZPOS); // z
 			coordList.add((float) (fontCol + 1) / this.fontCols);
 			coordList.add((float) (fontRow + 1) / this.fontRows);
@@ -90,7 +90,7 @@ public class TextItem extends Item {
 			
 			// Right Top vertex
 			posList.add(currentCol*width + width); // x
-			posList.add(currentRow*height); // y
+			posList.add(currentRow*length); // y
 			posList.add(ZPOS); // z
 			coordList.add((float) (fontCol + 1) / this.fontCols);
 			coordList.add((float) fontRow / this.fontRows);

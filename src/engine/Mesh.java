@@ -103,10 +103,8 @@ public class Mesh {
 	public void prepare(Mesh lastMesh) {
 		if (this == lastMesh)
 			return;
-		if (this.isTextured()) {
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, this.texture.getId());
-		}
+		if (this.isTextured())
+			this.texture.prepare();
 		glBindVertexArray(this.vaoId);
 	}
 	
@@ -126,7 +124,8 @@ public class Mesh {
 	protected void deleteVbos() {
 		// Delete the VBO
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		this.vboIdList.stream().forEach(id -> glDeleteBuffers(id));
+		for (int id : this.vboIdList)
+			glDeleteBuffers(id);
 	}
 	
 	protected void disableVao() {
@@ -143,10 +142,8 @@ public class Mesh {
 	public void cleanup(boolean cleanupTexture) {
 		this.disableVao();
 		this.deleteVbos();
-		if (cleanupTexture && this.isTextured()) {
+		if (cleanupTexture && this.isTextured())
 			this.texture.cleanup();
-			this.texture = null;
-		}
 		this.deleteVao();
 	}
 }

@@ -8,8 +8,7 @@ package geetransit.minecraft05.engine;
 import java.nio.*;
 import org.lwjgl.system.*;
 
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL30.glGenerateMipmap;
+import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.system.MemoryUtil.*;
 import static org.lwjgl.stb.STBImage.*;
 
@@ -17,30 +16,34 @@ public class Texture {
 
 	private int id;
 	private int width;
-	private int height;
+	private int length;
 
 	public Texture(String fileName) throws Exception {
 		this.loadTexture(fileName);
 	}
-	public Texture(int id, int width, int height) throws Exception {
+	public Texture(int id, int width, int length) throws Exception {
 		this.id = id;
 		this.width = width;
-		this.height = height;
+		this.length = length;
 	}
 	
 	public int getId() { return this.id; }
 	public int getWidth() { return this.width; }
-	public int getHeight() { return this.height; }
+	public int getLength() { return this.length; }
 
 	public void bind() {
 		glBindTexture(GL_TEXTURE_2D, this.id);
+	}
+	public void prepare() {
+		glActiveTexture(GL_TEXTURE0);
+		this.bind();
 	}
 	public void cleanup() {
 		glDeleteTextures(this.id);
 	}
 	
 	private void loadTexture(String fileName) throws Exception {
-		ByteBuffer image = Utils.loadImage(fileName, (width, height) -> { this.width = width; this.height = height; });
+		ByteBuffer image = Utils.loadImage(fileName, (w, l) -> { this.width = w; this.length = l; });
 
 		// Create a new OpenGL texture
 		int textureId = glGenTextures();
@@ -55,7 +58,7 @@ public class Texture {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 		// Upload the texture data
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, this.width, this.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, this.width, this.length, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
 		// Generate Mip Map
 		glGenerateMipmap(GL_TEXTURE_2D);
 		
