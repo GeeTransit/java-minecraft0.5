@@ -92,7 +92,9 @@ public class Utils {
 	}
 	public static float[] floatListToArray(List<Float> floatList) {
 		float[] floatArray = new float[floatList.size()];
-		IntStream.range(0, floatList.size()).forEach(i -> { floatArray[i] = floatList.get(i).floatValue(); });
+		int i = 0;
+		for (float f : floatList)
+			floatArray[i++] = f;
 		return floatArray;
 	}
 }
