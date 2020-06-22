@@ -140,19 +140,19 @@ public class Window {
 		glfwSetErrorCallback(null).free();
 	}
 	
-	public void renderThread(Scene scene) {
+	public void renderThread(Loopable loop) {
 		try {
-			this.renderInit(scene);
-			this.renderLoop(scene);
+			this.renderInit(loop);
+			this.renderLoop(loop);
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(1);
 		} finally {
-			scene.cleanup();
+			loop.cleanup();
 		}
 	}
 	
-	private void renderInit(Scene scene) throws Exception {
+	private void renderInit(Loopable loop) throws Exception {
 		// This adds the OpenGL context into this function.
 		glfwMakeContextCurrent(this.handle);
 		
@@ -167,14 +167,14 @@ public class Window {
 		glfwSwapInterval(this.isVSync() ? 1 : 0);
 		
 		// init
-		scene.init(this);
+		loop.init(this);
 		
 		// Start timer.
 		this.timer.init();
 	}
 	
 	// Render loop.
-	private void renderLoop(Scene scene) {
+	private void renderLoop(Loopable loop) {
 		while (!this.isDestroyed()) {
 			this.elapsedTime = this.timer.getElapsedTime();
 			this.accumulatedTime += this.elapsedTime;
@@ -189,17 +189,17 @@ public class Window {
 			this.next.run("targetUps");
 			
 			// input
-			scene.input(this);
+			loop.input(this);
 			
 			// update
 			float interval = 1f / this.getTargetUps();
 			while (this.accumulatedTime >= interval) {
-				scene.update(interval);
+				loop.update(interval);
 				this.accumulatedTime -= interval;
 			}
 			
 			// render
-			scene.render(this);
+			loop.render(this);
 			this.renderUpdate();
 			if (!this.isVSync())
 				this.renderSync();

@@ -7,7 +7,7 @@ package geetransit.minecraft05.engine;
 
 public class Engine implements Runnable {
 	private Window window;
-	private Scene scene;
+	private Loopable loop;
 	
 	private boolean updateVSync = false;
 	private boolean updateSize = false;
@@ -15,19 +15,19 @@ public class Engine implements Runnable {
 	
 	public Engine(
 		Window window,
-		Scene scene
+		Loopable loop
 	) {
 		this.window = window;
-		this.scene = scene;
+		this.loop = loop;
 	}
 	
 	@Override
 	public void run() {
 		this.window.createWindow();
-		new Thread(() -> this.window.renderThread(this.scene)).start();
+		new Thread(() -> this.window.renderThread(this.loop)).start();
 		this.window.eventThread();
 	}
 	
 	public Window getWindow() { return this.window; }
-	public Scene getScene() { return this.scene; }
+	public Loopable getLoop() { return this.loop; }
 }

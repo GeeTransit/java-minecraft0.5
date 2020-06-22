@@ -9,7 +9,7 @@ import geetransit.minecraft05.engine.*;
 
 import static org.lwjgl.glfw.GLFW.*;
 
-public class Background implements Scene {
+public class Background implements Loopable {
 	private int direction;
 	private float color;
 	
