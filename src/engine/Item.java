@@ -27,16 +27,6 @@ public class Item implements Cloneable {
 		this.selected = false;
 	}
 	
-	public void render(Window window) {
-		this.mesh.prepare();
-		this.mesh.render();
-		this.mesh.restore();
-	}
-	
-	public void cleanup() {
-		this.mesh.cleanup();
-	}
-	
 	// does NOT copy the mesh (shallow copy)
 	@Override
 	public Item clone() {

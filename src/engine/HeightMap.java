@@ -8,7 +8,8 @@ package geetransit.minecraft05.engine;
 import java.nio.ByteBuffer;
 
 public class HeightMap implements AutoCloseable {
-	public static int CHANNELS = 4;
+	public static final int CHANNELS = 4;
+	public static final int MAX_COLOR = 255*255*255;
 	
 	public final ByteBuffer buffer;
 	public final int width;

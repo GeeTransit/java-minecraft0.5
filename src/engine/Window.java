@@ -227,8 +227,8 @@ public class Window {
 	}
 	
 	protected void updateWindowPos() {
-		int[] xPos = new int[1];
-		int[] yPos = new int[1];
+		int[] xPos = {0};
+		int[] yPos = {0};
 		glfwGetWindowPos(this.getHandle(), xPos, yPos);
 		this.xPos = xPos[0];
 		this.yPos = yPos[0];

@@ -8,10 +8,10 @@ package geetransit.minecraft05.engine;
 import org.joml.Vector2f;
 import static org.lwjgl.glfw.GLFW.*;
 
-public class Mouse {
+public class Mouse implements Initializable, Inputtable {
 	private final Vector2f current;
 	private final Vector2f movement;
-	private Vector2f previous;
+	private final Vector2f previous;
 
 	private boolean inside = false;
 	private boolean left = false;
@@ -22,6 +22,12 @@ public class Mouse {
 		this.movement = new Vector2f();
 		this.previous = new Vector2f(0, 0);
 	}
+	
+	public Vector2f getMovement() { return this.movement; }
+	public Vector2f getCurrent() { return this.current; }
+	public boolean isInside() { return this.inside; }
+	public boolean isLeft() { return this.left; }
+	public boolean isRight() { return this.right; }
 
 	public void init(Window window) {
 		glfwSetCursorPosCallback(window.getHandle(), (handle, x, y) -> {
@@ -36,12 +42,6 @@ public class Mouse {
 			if (button == GLFW_MOUSE_BUTTON_2) this.right = (action == GLFW_PRESS);
 		});
 	}
-	
-	public Vector2f getMovement() { return this.movement; }
-	public Vector2f getCurrent() { return this.current; }
-	public boolean isInside() { return this.inside; }
-	public boolean isLeft() { return this.left; }
-	public boolean isRight() { return this.right; }
 
 	public void input(Window window) {
 		this.current.sub(this.previous, this.movement);

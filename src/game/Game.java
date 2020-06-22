@@ -14,7 +14,7 @@ import org.lwjgl.Version;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 
-public class Game extends SceneBase {
+public class Game extends Scene {
 	private Mouse mouse;
 	private Camera camera;
 	
@@ -25,36 +25,30 @@ public class Game extends SceneBase {
 	
 	public Game() {
 		super();
-		this.mouse = new Mouse();
-		this.camera = new Camera();
 		
-		this.background = new Background(this.camera);
+		// inputs
+		this.mouse = new Mouse();
+		this.camera = new Camera(this.mouse);
+		this
+			.addFrom(this.mouse)
+			.addFrom(this.camera);
+		
+		// child scenes
+		this.background = new Background();
 		this.skybox = new Skybox(this.camera);
 		this.world = new World(this.mouse, this.camera);
 		this.hud = new Hud(this.mouse, this.camera, this.world);
-		
-		// add scenes
 		this
-			.addScene(this.background)
-			.addScene(this.skybox)
-			.addScene(this.world)
-			.addScene(this.hud);
+			.addFrom(this.background)
+			.addFrom(this.skybox)
+			.addFrom(this.world)
+			.addFrom(this.hud);
 	}
-	
-	public Mouse getMouse() { return this.mouse; }
-	public Camera getCamera() { return this.camera; }
-	
-	public Background getBackground() { return this.background; }
-	public World getWorld() { return this.world; }
-	public Hud getHud() { return this.hud; }
 	
 	@Override
 	public void init(Window window) throws Exception {
 		System.out.println("LWJGL version: " + Version.getVersion());
 		System.out.println("OpenGL version: " + GL11.glGetString(GL11.GL_VERSION));
-		
-		// setup mouse
-		this.mouse.init(window);
 		
 		// call child scenes' init
 		super.init(window);
@@ -68,7 +62,7 @@ public class Game extends SceneBase {
 		
 		// Setup a key callback. It will be called every time a key is pressed, repeated or released.
 		window.setKeyCallback((handle, key, scancode, action, mods) -> {
-			if (key == GLFW_KEY_F4 && action == GLFW_RELEASE && ((mods & GLFW_MOD_SHIFT) != 0)) {
+			if (key == GLFW_KEY_F4 && action == GLFW_RELEASE && ((mods & GLFW_MOD_ALT) != 0)) {
 				window.setShouldClose(true);  // We will detect this in the rendering loop
 				window.postEmptyEvent();
 			}
@@ -116,16 +110,10 @@ public class Game extends SceneBase {
 				window.next.add("targetFps", () -> window.setTargetFps(window.getTargetFps() + 1));
 			// debug
 			if (key == GLFW_KEY_U && action == GLFW_RELEASE) {
-				System.out.println(this.camera);
-				System.out.println(this.mouse);
+				System.out.println("mouse="+this.mouse);
+				System.out.println("camera="+this.camera);
 			}
 		});
-	}
-	
-	@Override
-	public void input(Window window) {
-		this.mouse.input(window);
-		super.input(window);
 	}
 	
 	@Override

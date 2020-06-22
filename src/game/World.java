@@ -13,64 +13,56 @@ import org.joml.Vector3f;
 
 import static org.lwjgl.glfw.GLFW.*;
 
-public class World extends SceneRender {
-	private Mouse mouse;
-	private float sensitivity;
+public class World extends Scene {
+	public static final float CHANGE_DELAY = 0.2f;
+	public static final float STEP = 0.1f;
 	
-	private Camera camera;
+	private final Renderer renderer;
+	private final Mouse mouse;
+	private final Camera camera;
+	
+	private final Map<String, Item> blockMap;
+	private final ClosestItem closestItem;
+	private final Vector3f movement;
 	private float step;
-	private Vector3f movement;
-	private ClosestItem closestItem;
+	private int render;
 	
-	private Map<String, Item> blockMap;
-	
-	private static final float CHANGE_DELAY = 0.2f;
 	private String change;  // ""=air
 	private float wait;  // time until next place / remove
-	
-	private static final int MAX_COLOR = 255*255*255;
 
 	public World(Mouse mouse, Camera camera) {
 		super();
-		this.setRenderer(new Renderer() {
+		this.addFrom(this.renderer = new Renderer() {
 			Shader shader;
 			public void init(Window window) throws Exception {
 				shader = create3D("/res/vertex-3d.vs", "/res/fragment-3d.fs");
 			}
 			public void render(Window window) {
-				render3DMap(shader, window, World.this.getCamera(), World.this.getMeshMap());
+				render3D(shader, window, World.this.camera);
 			}
 			public void cleanup() {
-				shader.cleanup();
+				destroy(shader);
 			}
 		});
 		
 		this.mouse = mouse;
-		this.sensitivity = 0.3f;
-		
 		this.camera = camera;
-		this.step = 0.1f;
-		this.movement = new Vector3f();
+		
+		this.blockMap = new HashMap<>();
 		this.closestItem = new ClosestItem();
+		this.movement = new Vector3f();
+		this.step = STEP;
 	}
-	
-	public Mouse getMouse() { return this.mouse; }
-	public float getSensitivity() { return this.sensitivity; }
-	
-	public Camera getCamera() { return this.camera; }
-	public float getStep() { return this.step; }
-	public Vector3f getMovement() { return this.movement; }
-	public ClosestItem getClosestItem() { return this.closestItem; }
 	
 	public String getChange() { return this.change; }
 	public float getWait() { return this.wait; }
 	
+	public float getStep() { return this.step; }
+	public World setStep(float step) { this.step = step; return this; }
+	
 	@Override
 	public void init(Window window) throws Exception {
-		super.init(window);
-		
 		// Create the blocks' mesh
-		this.blockMap = new HashMap<>();
 		this.blockMap.put("grassblock", this.loadBlock("/res/cube.obj", "/res/grassblock.png"));
 		this.blockMap.put("cobbleblock", this.loadBlock("/res/cube.obj", "/res/cobbleblock.png"));
 		
@@ -79,30 +71,31 @@ public class World extends SceneRender {
 			// create terrain
 			for (int x = 0; x < map.width; x++) {
 				for (int z = 0; z < map.length; z++) {
-					int y = (int) map.compressExpand(map.heightAt(x, z), 0, MAX_COLOR, 0, 16);
-					this.addItem(this.newBlock("grassblock").setPosition(x, y, z));
+					int y = (int) map.compressExpand(map.heightAt(x, z), 0, map.MAX_COLOR, 0, 16);
+					this.renderer.addItem(this.newBlock("grassblock").setPosition(x, y, z));
 					for (int k = y-1; k >= Math.max(y-2, 0); k--) {
-						this.addItem(this.newBlock("cobbleblock").setPosition(x, k, z));
+						this.renderer.addItem(this.newBlock("cobbleblock").setPosition(x, k, z));
 					}
 				}
 			}
 		}
 		
 		// add spawn markers (-2z is forwards)
-		this
+		this.renderer
 			.addItem(this.newBlock("grassblock").setPosition(+1, +1,  0))
 			.addItem(this.newBlock("grassblock").setPosition(-1, +1,  0))
 			.addItem(this.newBlock("grassblock").setPosition( 0, +1, +1))
 			.addItem(this.newBlock("grassblock").setPosition( 0, +1, -2));
+		
+		super.init(window);
 	}
 
-	@Override
 	public void input(Window window) {
 		super.input(window);
 		
 		// movement
 		this.movement.zero();
-		boolean sprinting = (!window.isKeyDown(GLFW_KEY_LEFT_SHIFT) && window.isKeyDown(GLFW_KEY_LEFT_CONTROL));
+		boolean SPRINTING = (!window.isKeyDown(GLFW_KEY_LEFT_SHIFT) && window.isKeyDown(GLFW_KEY_LEFT_CONTROL));
 		
 		if (window.isKeyDown(GLFW_KEY_W)) this.movement.z--;
 		if (window.isKeyDown(GLFW_KEY_S)) this.movement.z++;
@@ -113,7 +106,13 @@ public class World extends SceneRender {
 		if (window.isKeyDown(GLFW_KEY_SPACE)) this.movement.y++;
 		
 		if (this.movement.length() > 1f) this.movement.div(this.movement.length());
-		if (sprinting && this.movement.z < 0) this.movement.mul(1.5f);
+		if (SPRINTING && this.movement.z < 0) this.movement.mul(1.5f);
+		
+		// render distance (camera)
+		this.render = 0;
+		if (window.isKeyDown(GLFW_KEY_L)) this.camera.setFar(Camera.FAR);
+		if (window.isKeyDown(GLFW_KEY_RIGHT_BRACKET)) this.render++;
+		if (window.isKeyDown(GLFW_KEY_LEFT_BRACKET)) this.render--;
 		
 		// placing / removing
 		this.change = null;
@@ -122,29 +121,33 @@ public class World extends SceneRender {
 		if (window.isKeyDown(GLFW_KEY_2)) this.change = "cobbleblock";
 	}
 	
-	@Override
 	public void update(float interval) {
-		super.update(interval);
-		
 		// movement
-		if (this.mouse.isInside())
-			this.camera.rotateUsingMouse(this.mouse, this.sensitivity);
 		this.camera.movePosition(this.movement.mul(this.step, new Vector3f()));
+		
+		// render distance
+		this.camera.setFar(Math.max(Camera.NEAR+0.01f, this.camera.getFar() + 0.1f*this.render));
 		
 		// placing / removing
 		if (this.change != null && this.wait <= 0) {
-			this.closestItem.update(this.getItems(), this.camera);
+			this.closestItem.update(this.renderer.items, this.camera);
 			if (this.closestItem.closest != null) {
 				if (this.change.equals("")) {
-					this.removeItem(this.closestItem.closest);
+					this.renderer.removeItem(this.closestItem.closest);
 				} else {
 					Vector3f position = new Vector3f();
 					position.set(this.closestItem.direction);  // get normalized camera direction
 					position.negate();  // move towards camera
-					position.mul(0.01f);
+					position.mul(0.01f);  // add a small offset (to go to next block)
 					position.add(this.closestItem.hit);  // start from intersection point
 					position.round();  // round to grid
-					this.addItem(this.newBlock(this.change).setPosition(position));
+					check: {
+						for (Item item : this.renderer.items)
+							if (item.getPosition().equals(position))
+								break check;
+						// else
+						this.renderer.addItem(this.newBlock(this.change).setPosition(position));
+					}
 				}
 			}
 			this.wait += this.CHANGE_DELAY;
@@ -155,18 +158,19 @@ public class World extends SceneRender {
 			this.wait -= interval;
 		if (this.wait < 0 && this.change == null)
 			this.wait = 0;
+		
+		super.update(interval);
 	}
 	
-	@Override
 	public void render(Window window) {
 		this.updateSelectedItem();
 		super.render(window);
 	}
 	
 	private void updateSelectedItem() {
-		for (Item item : this.getItems())
+		for (Item item : this.renderer.items)
 			item.setSelected(false);
-		this.closestItem.update(this.getItems(), this.camera);
+		this.closestItem.update(this.renderer.items, this.camera);
 		if (this.closestItem.closest != null)
 			this.closestItem.closest.setSelected(true);
 	}

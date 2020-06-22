@@ -9,30 +9,32 @@ import geetransit.minecraft05.engine.*;
 
 import static org.lwjgl.glfw.GLFW.*;
 
-public class Hud extends SceneRender {
+public class Hud extends Scene {
 	private static final int FONT_COLS = 16;
 	private static final int FONT_ROWS = 16;
 	private static final String FONT_FILE = "/res/font.png";
 	
-	private TextItem text;
-	private Item compass;
-	private Item crosshair;
+	private Renderer renderer;
 	private Mouse mouse;
 	private Camera camera;
 	private World world;
 	
+	private TextItem text;
+	private Item compass;
+	private Item crosshair;
+	
 	public Hud(Mouse mouse, Camera camera, World world) {
 		super();
-		this.setRenderer(new Renderer() {
+		this.addFrom(this.renderer = new Renderer() {
 			Shader shader;
 			public void init(Window window) throws Exception {
 				shader = create2D("/res/vertex-2d.vs", "/res/fragment-2d.fs");
 			}
 			public void render(Window window) {
-				render2D(shader, window, Hud.this.getItems());
+				render2DList(shader, window);
 			}
 			public void cleanup() {
-				shader.cleanup();
+				destroy(shader);
 			}
 		});
 		this.mouse = mouse;
@@ -53,7 +55,7 @@ public class Hud extends SceneRender {
 		this.crosshair = new Item(ObjLoader.loadMesh("/res/crosshair.obj"));
 		this.crosshair.getMesh().setColor(1, 1, 1);
 		
-		this
+		this.renderer
 			.addItem(this.text)
 			.addItem(this.compass)
 			.addItem(this.crosshair);
@@ -61,14 +63,14 @@ public class Hud extends SceneRender {
 	
 	@Override
 	public void render(Window window) {
+		this.text.setPosition(10f, window.getHeight() * 0.85f, 0f);
+		this.text.setScale(window.getWidth() * (1/3500f));
 		this.text.setText(String.format(
 			"vsync=%s mode=%s mouse=%s\nchange=%s wait=%s\ncamera=%s\nmouse=%s",
 			window.isVSync(), window.getMode(), window.getInputMode(GLFW_CURSOR) == GLFW_CURSOR_NORMAL,
 			this.world.getChange(), this.world.getWait(),
 			this.camera, this.mouse
 		));
-		this.text.setPosition(10f, window.getHeight() * 0.85f, 0f);
-		this.text.setScale(window.getWidth() * (1/3500f));
 		
 		this.compass.setPosition(window.getWidth() * 0.95f, window.getWidth() * 0.05f, 0f);
 		this.compass.setRotation(0f, 0f, 180f - this.camera.getRotation().y);
