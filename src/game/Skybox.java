@@ -12,8 +12,8 @@ public class Skybox extends Scene {
 	private Camera camera;
 	private Item skybox;
 
-    public Skybox(Camera camera) {
-        super();
+	public Skybox(Camera camera) {
+		super();
 		this.addFrom(this.renderer = new Renderer() {
 			Shader shader;
 			public void init(Window window) throws Exception {
@@ -27,8 +27,8 @@ public class Skybox extends Scene {
 			}
 		});
 		this.camera = camera;
-    }
-	
+	}
+
 	@Override
 	public void init(Window window) throws Exception {
 		Mesh mesh = ObjLoader.loadMesh("/res/skybox.obj");
@@ -37,7 +37,7 @@ public class Skybox extends Scene {
 		this.renderer.addItem(this.skybox);
 		super.init(window);
 	}
-	
+
 	@Override
 	public void render(Window window) {
 		this.skybox.setScale(this.camera.getFar() * 0.5f);

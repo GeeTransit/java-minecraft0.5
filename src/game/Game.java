@@ -17,22 +17,22 @@ import static org.lwjgl.opengl.GL11.*;
 public class Game extends Scene {
 	private Mouse mouse;
 	private Camera camera;
-	
+
 	private Background background;
 	private Skybox skybox;
 	private World world;
 	private Hud hud;
-	
+
 	public Game() {
 		super();
-		
+
 		// inputs
 		this.mouse = new Mouse();
 		this.camera = new Camera(this.mouse);
 		this
 			.addFrom(this.mouse)
 			.addFrom(this.camera);
-		
+
 		// child scenes
 		this.background = new Background();
 		this.skybox = new Skybox(this.camera);
@@ -44,22 +44,22 @@ public class Game extends Scene {
 			.addFrom(this.world)
 			.addFrom(this.hud);
 	}
-	
+
 	@Override
 	public void init(Window window) throws Exception {
 		System.out.println("LWJGL version: " + Version.getVersion());
 		System.out.println("OpenGL version: " + GL11.glGetString(GL11.GL_VERSION));
-		
+
 		// call child scenes' init
 		super.init(window);
-		
+
 		// Use correct depth checking
 		glEnable(GL_DEPTH_TEST);
-		
+
 		// makes text better
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		
+
 		// Setup a key callback. It will be called every time a key is pressed, repeated or released.
 		window.setKeyCallback((handle, key, scancode, action, mods) -> {
 			if (key == GLFW_KEY_F4 && action == GLFW_RELEASE && ((mods & GLFW_MOD_ALT) != 0)) {
@@ -115,12 +115,12 @@ public class Game extends Scene {
 			}
 		});
 	}
-	
+
 	@Override
 	public void render(Window window) {
 		// clear the framebuffer
 		window.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
+
 		// render scenes
 		super.render(window);
 	}

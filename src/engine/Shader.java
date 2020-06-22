@@ -15,7 +15,7 @@ public class Shader {
 
 	private int vertexShaderId;
 	private int fragmentShaderId;
-	
+
 	private final Map<String, Integer> uniforms;
 
 	public Shader() throws Exception {
@@ -25,7 +25,7 @@ public class Shader {
 		}
 		this.uniforms = new HashMap<>();
 	}
-	
+
 	public void createUniform(String name) throws Exception {
 		int location = glGetUniformLocation(this.programId, name);
 		if (location < 0) {
@@ -33,7 +33,7 @@ public class Shader {
 		}
 		uniforms.put(name, location);
 	}
-	
+
 	public void setUniform(String name, Matrix4f value) {
 		// Dump the matrix into a float buffer
 		try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -90,7 +90,7 @@ public class Shader {
 		if (this.fragmentShaderId != 0) {
 			glDetachShader(this.programId, this.fragmentShaderId);
 		}
-		
+
 		// definition in res/vertex.vs
 		// equivalent of `layout (location = #) ...`
 		glBindAttribLocation(this.programId, 0, "position");

@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 public class Update implements Updateable {
 	private List<Updateable> updates;
-	
+
 	public Update(List<Updateable> updates) {
 		this.updates = updates;
 	}

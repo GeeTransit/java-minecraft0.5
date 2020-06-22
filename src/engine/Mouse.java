@@ -22,7 +22,7 @@ public class Mouse implements Initializable, Inputtable {
 		this.movement = new Vector2f();
 		this.previous = new Vector2f(0, 0);
 	}
-	
+
 	public Vector2f getMovement() { return this.movement; }
 	public Vector2f getCurrent() { return this.current; }
 	public boolean isInside() { return this.inside; }
@@ -48,7 +48,7 @@ public class Mouse implements Initializable, Inputtable {
 		this.movement.div(window.getTargetUps() * window.getElapsedTime());
 		this.previous.set(this.current);
 	}
-	
+
 	public String toString() {
 		return String.format(
 			"<%s movement=%s current=%s>",

@@ -26,7 +26,7 @@ public class Item implements Cloneable {
 		this.scale = 1;
 		this.selected = false;
 	}
-	
+
 	// does NOT copy the mesh (shallow copy)
 	@Override
 	public Item clone() {
@@ -36,9 +36,9 @@ public class Item implements Cloneable {
 			.setScale(this.getScale())
 			.setSelected(this.isSelected());
 	}
-	
+
 	public Mesh getMesh() { return this.mesh; }
-	
+
 	public Vector3f getPosition() { return this.position; }
 	public Item setPosition(Vector3f position) { this.position.set(position); return this; }
 	public Item setPosition(float x, float y, float z) {
@@ -47,7 +47,7 @@ public class Item implements Cloneable {
 		this.position.z = z;
 		return this;
 	}
-	
+
 	public Quaternionf getRotation() { return this.rotation; }
 	public Item setRotation(Quaternionf rotation) { this.rotation.set(rotation); return this; }
 	public Item setRotation(float x, float y, float z) {
@@ -56,13 +56,13 @@ public class Item implements Cloneable {
 		this.rotation.z = z;
 		return this;
 	}
-	
+
 	public float getScale() { return this.scale; }
 	public Item setScale(float scale) {
 		this.scale = scale;
 		return this;
 	}
-	
+
 	public boolean isSelected() { return this.selected; }
 	public Item setSelected(boolean selected) {
 		this.selected = selected;

@@ -16,15 +16,15 @@ public class ClosestItem {
 	public Item closest;
 	public Vector3f hit;  // position of intersection
 	public Vector3f direction;  // points away from camera
-	
+
 	private final Vector3f max;
 	private final Vector3f min;
 	private final Vector2f nearFar;
-	
+
 	public ClosestItem() {
 		this.hit = new Vector3f();
 		this.direction = new Vector3f();
-		
+
 		this.min = new Vector3f();
 		this.max = new Vector3f();
 		this.nearFar = new Vector2f();
@@ -33,30 +33,30 @@ public class ClosestItem {
 		this();
 		this.update(items, camera);
 	}
-	
+
 	public ClosestItem reset() {
 		this.distance = Float.POSITIVE_INFINITY;
 		this.closest = null;
 		return this;
 	}
-	
+
 	public ClosestItem update(List<Item> items, Camera camera) {
 		this.reset().extend(items, camera);
 		return this;
 	}
-	
+
 	public ClosestItem extend(List<Item> items, Camera camera) {
 		// get camera direction
 		camera.getViewMatrix().positiveZ(this.direction);
 		this.direction.negate().normalize();
-		
+
 		// loop through all items
 		for (Item item : items) {
 			this.min.set(item.getPosition());
 			this.max.set(item.getPosition());
 			this.min.add(-item.getScale(), -item.getScale(), -item.getScale());
 			this.max.add(item.getScale(), item.getScale(), item.getScale());
-			
+
 			// check if intersects and is closer
 			if (Intersectionf.intersectRayAab(
 				camera.getPosition(), this.direction,
@@ -71,7 +71,7 @@ public class ClosestItem {
 				}
 			}
 		}
-		
+
 		// allow method chaining
 		return this;
 	}

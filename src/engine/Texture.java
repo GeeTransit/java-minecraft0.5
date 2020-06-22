@@ -24,7 +24,7 @@ public class Texture {
 		this.width = width;
 		this.length = length;
 	}
-	
+
 	public int getId() { return this.id; }
 	public int getWidth() { return this.width; }
 	public int getLength() { return this.length; }
@@ -39,7 +39,7 @@ public class Texture {
 	public void cleanup() {
 		glDeleteTextures(this.id);
 	}
-	
+
 	private void loadTexture(String fileName) throws Exception {
 		ByteBuffer image = Utils.loadImage(fileName, (w, l) -> { this.width = w; this.length = l; });
 
@@ -59,9 +59,9 @@ public class Texture {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, this.width, this.length, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
 		// Generate Mip Map
 		glGenerateMipmap(GL_TEXTURE_2D);
-		
+
 		Utils.freeImage(image);
-		
+
 		this.id = textureId;
 	}
 }

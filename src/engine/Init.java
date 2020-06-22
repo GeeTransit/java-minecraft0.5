@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 public class Init implements Initializable {
 	private List<Initializable> inits;
-	
+
 	public Init(List<Initializable> inits) {
 		this.inits = inits;
 	}

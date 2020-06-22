@@ -17,14 +17,14 @@ import org.lwjgl.system.*;
 import org.lwjgl.stb.*;
 
 public class Utils {
-	
+
 	public static InputStream loadInputStream(String file) throws Exception {
 		InputStream in = Utils.class.getResourceAsStream(file);
 		if (in == null)
 			throw new Exception("file [" + file + "] does not exist");
 		return in;
 	}
-	
+
 	// source # https://stackoverflow.com/a/17861016
 	public static byte[] loadByteArray(String file) throws Exception {
 		try (
@@ -54,29 +54,29 @@ public class Utils {
 		InputStreamReader isr = new InputStreamReader(in, StandardCharsets.UTF_8.name());
 		return new BufferedReader(isr).lines();
 	}
-	
+
 	public static ByteBuffer loadImage(String fileName, BiConsumer<Integer, Integer> consumer) throws Exception {
 		ByteBuffer imageBuffer;
 		ByteBuffer rawBuffer;
-		
+
 		// Load Texture file
 		try (MemoryStack stack = MemoryStack.stackPush()) {
 			IntBuffer widthBuffer = stack.mallocInt(1);
 			IntBuffer heightBuffer = stack.mallocInt(1);
 			IntBuffer channelsBuffer = stack.mallocInt(1);
-			
+
 			byte[] array = loadByteArray(fileName);
 			rawBuffer = MemoryUtil.memAlloc(array.length);
 			rawBuffer.put(array).flip();
 
 			imageBuffer = STBImage.stbi_load_from_memory(rawBuffer, widthBuffer, heightBuffer, channelsBuffer, 4);
 			if (imageBuffer == null)
-				throw new Exception("Image file [" + fileName  + "] not loaded: " + STBImage.stbi_failure_reason());
+				throw new Exception("Image file [" + fileName + "] not loaded: " + STBImage.stbi_failure_reason());
 
 			// Get width and height of image
 			consumer.accept(widthBuffer.get(), heightBuffer.get());
 		}
-		
+
 		return imageBuffer;
 	}
 	public static ByteBuffer loadImage(String fileName, int[] widthArray, int[] heightArray) throws Exception {
@@ -85,7 +85,7 @@ public class Utils {
 	public static void freeImage(ByteBuffer imageBuffer) {
 		STBImage.stbi_image_free(imageBuffer);
 	}
-	
+
 	public static int[] intListToArray(List<Integer> intList) {
 		return intList.stream().mapToInt(i -> i).toArray();
 	}

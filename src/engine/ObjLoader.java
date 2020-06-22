@@ -13,7 +13,7 @@ public class ObjLoader {
 		List<Vector3f> vertices = new ArrayList<>();
 		List<Vector2f> textures = new ArrayList<>();
 		List<Face> faces = new ArrayList<>();
-		
+
 		Utils.loadLinesStream(file).forEach(line -> {
 			String[] tokens = line.split("\\s+");
 			switch (tokens[0]) {
@@ -43,7 +43,7 @@ public class ObjLoader {
 		});
 		return reorderLists(vertices, textures, faces);
 	}
-	
+
 	private static Mesh reorderLists(
 		List<Vector3f> vertexList,
 		List<Vector2f> coordList,
@@ -63,7 +63,7 @@ public class ObjLoader {
 		for (Face face : faceList)
 			for (IndexGroup group : face.groups)
 				processFaceVertex(group, coordList, posList, coordArray);
-		
+
 		// int[] indexArray = new int[indices.size()];
 		int[] indexArray = Utils.intListToArray(posList);
 		return new Mesh(posArray, indexArray, coordArray);
@@ -86,18 +86,18 @@ public class ObjLoader {
 			coordArray[pos*2 + 1] = 1 - coord.y;
 		}
 	}
-	
+
 	protected static class IndexGroup {
 		public static final int NO_VALUE = -1;
 		public int pos;
 		public int coord;
-		
+
 		public IndexGroup() {
 			this.pos = NO_VALUE;
 			this.coord = NO_VALUE;
 		}
 	}
-	
+
 	protected static class Face {
 		// List of pos groups for a face triangle (3 vertices per face).
 		public final IndexGroup[] groups;
@@ -115,17 +115,17 @@ public class ObjLoader {
 
 			String[] tokens = line.split("/");
 			int length = tokens.length;
-			
+
 			group.pos = Integer.parseInt(tokens[0]) - 1;
 			if (length <= 1)
 				return group;
-			
+
 			// It can be empty if the obj does not define text coords
 			if (tokens[1].length() != 0)
 				group.coord = Integer.parseInt(tokens[1]) - 1;
 			if (length <= 2)
 				return group;
-			
+
 			return group;
 		}
 	}

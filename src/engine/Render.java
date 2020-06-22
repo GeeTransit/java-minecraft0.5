@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 public class Render implements Renderable {
 	private List<Renderable> renders;
-	
+
 	public Render(List<Renderable> renders) {
 		this.renders = renders;
 	}

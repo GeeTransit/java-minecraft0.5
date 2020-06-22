@@ -30,19 +30,19 @@ public class Transformation {
 			camera.getNear(), camera.getFar()
 		);
 	}
-	
+
 	public Matrix4f getModelMatrix(Item item) {
 		return this.modelMatrix.translationRotateScale(item.getPosition(), item.getRotation(), item.getScale());
 	}
-	
+
 	public Matrix4f getModelViewMatrix(Item item, Matrix4f viewMatrix) {
 		return viewMatrix.mulAffine(this.getModelMatrix(item), this.modelViewMatrix);
 	}
-	
+
 	public Matrix4f getOrthoProjectionMatrix(Window window) {
 		return this.orthoProjectionMatrix.setOrtho2D(0, window.getWidth(), window.getHeight(), 0);
 	}
-	
+
 	// these 2 are different?
 	public Matrix4f newGetOrthoProjModelMatrix(Item item, Matrix4f orthoMatrix) {
 		return orthoMatrix.mulOrthoAffine(this.getModelMatrix(item), this.orthoProjModelMatrix);

@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 public class Input implements Inputtable {
 	private List<Inputtable> inputs;
-	
+
 	public Input(List<Inputtable> inputs) {
 		this.inputs = inputs;
 	}

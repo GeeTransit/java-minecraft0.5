@@ -10,8 +10,8 @@ import java.util.*;
 
 public class Scene implements Loopable {
 	// bit flags to add to different lists
-	public static final int INIT   = 0b0001;
-	public static final int INPUT  = 0b0010;
+	public static final int INIT = 0b0001;
+	public static final int INPUT = 0b0010;
 	public static final int UPDATE = 0b0100;
 	public static final int RENDER = 0b1000;
 	public static final int ALL = INIT & INPUT & UPDATE & RENDER;
