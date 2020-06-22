@@ -13,7 +13,7 @@ public class Camera implements Inputtable {
 	public static final float FOV = 80f;
 	public static final float NEAR = 0.01f;
 	public static final float FAR = 50f;
-	public static final float SENSITIVITY = 0.75f;
+	public static final float SENSITIVITY = 0.3f;
 
 	private Mouse mouse;
 
@@ -70,6 +70,7 @@ public class Camera implements Inputtable {
 	public Camera setSensitivity(float sensitivity) { this.sensitivity = sensitivity; return this; }
 
 	public Camera movePosition(Vector3f position) { return this.movePosition(position.x, position.y, position.z); }
+	public Camera movePosition(Vector3f position, float step) { return this.movePosition(position.x*step, position.y*step, position.z*step); }
 	public Camera movePosition(float x, float y, float z) {
 		// TODO optimize this (using functions inside Vector3f)
 		if (z != 0) {

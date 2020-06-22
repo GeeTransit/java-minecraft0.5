@@ -123,7 +123,7 @@ public class World extends Scene {
 
 	public void update(float interval) {
 		// movement
-		this.camera.movePosition(this.movement.mul(this.step, new Vector3f()));
+		this.camera.movePosition(this.movement, 30*interval * this.step);
 
 		// render distance
 		this.camera.setFar(Math.max(Camera.NEAR+0.01f, this.camera.getFar() + 0.1f*this.render));

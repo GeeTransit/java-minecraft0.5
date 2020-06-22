@@ -35,7 +35,7 @@ public class Background implements Loopable {
 
 	@Override
 	public void update(float interval) {
-		this.color = Math.max(0f, Math.min(1f, this.color+0.01f*this.direction));
+		this.color = Math.max(0f, Math.min(1f, this.color+30*interval*0.01f*this.direction));
 	}
 
 	@Override
