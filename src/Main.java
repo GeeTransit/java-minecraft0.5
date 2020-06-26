@@ -17,8 +17,8 @@ public class Main {
 			int targetFps = 10;
 			int targetUps = 30;
 			Window window = new Window("Hello World!", 300, 300, mode, vSync, targetFps, targetUps);
-			Scene scene = new Game();
-			Engine engine = new Engine(window, scene);
+			Loopable loop = new Game();
+			Engine engine = new Engine(window, loop);
 			engine.run();
 		} catch (Exception e) {
 			e.printStackTrace();
