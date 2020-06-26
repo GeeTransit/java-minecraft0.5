@@ -9,6 +9,7 @@ set "OPTIONS=-h --help -? -r -c -i:1 -a:1"
 set "REQVARS=ACTION INIFILE AREA"
 set "REQKEYS=TEMPORARY LIBRARY COMPILE SOURCE"
 set "ACTION="
+set "COMPILEARGS="
 
 :options
 for /f "usebackq tokens=*" %%O in (`call "%~dp0normalize" -- %OPTIONS%`) do (set "OPTIONS=%%O")
@@ -62,7 +63,7 @@ if not defined INCLUDELIBRARY (
 %OUTPUT% echo/%INCLUDELIBRARY%
 @rem compile the java files
 %ERROR% mkdir %COMPILE%
-javac -cp %INCLUDELIBRARY% -d %COMPILE% -sourcepath %SOURCE% @%FILES%
+javac -cp %INCLUDELIBRARY% -d %COMPILE% -sourcepath %SOURCE% %COMPILEARGS% @%FILES%
 exit /b %ERRORLEVEL%
 
 :remove
