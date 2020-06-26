@@ -11,9 +11,9 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Intersectionf;
 
-public class ClosestItem {
+public class ClosestItem<T extends Item> {
 	public float distance;  // distance from camera
-	public Item closest;
+	public T closest;
 	public Vector3f hit;  // position of intersection
 	public Vector3f direction;  // points away from camera
 
@@ -29,29 +29,28 @@ public class ClosestItem {
 		this.max = new Vector3f();
 		this.nearFar = new Vector2f();
 	}
-	public ClosestItem(List<Item> items, Camera camera) {
+	public ClosestItem(List<? extends T> items, Camera camera) {
 		this();
 		this.update(items, camera);
 	}
 
-	public ClosestItem reset() {
+	public ClosestItem<T> reset() {
 		this.distance = Float.POSITIVE_INFINITY;
 		this.closest = null;
 		return this;
 	}
 
-	public ClosestItem update(List<Item> items, Camera camera) {
+	public void update(List<? extends T> items, Camera camera) {
 		this.reset().extend(items, camera);
-		return this;
 	}
 
-	public ClosestItem extend(List<Item> items, Camera camera) {
+	public ClosestItem<T> extend(List<? extends T> items, Camera camera) {
 		// get camera direction
 		camera.getViewMatrix().positiveZ(this.direction);
 		this.direction.negate().normalize();
 
 		// loop through all items
-		for (Item item : items) {
+		for (T item : items) {
 			this.min.set(item.getPosition());
 			this.max.set(item.getPosition());
 			this.min.add(-item.getScale(), -item.getScale(), -item.getScale());
