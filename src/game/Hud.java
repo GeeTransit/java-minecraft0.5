@@ -46,7 +46,7 @@ public class Hud extends Scene {
 	public void init(Window window) throws Exception {
 		super.init(window);
 
-		this.text = new TextItem("", FONT_FILE, FONT_COLS, FONT_ROWS);
+		this.text = new TextItem("", new FontTexture(FONT_FILE, FONT_COLS, FONT_ROWS));
 		this.text.getMesh().setColor(1, 1, 1);
 
 		this.compass = new Item(ObjLoader.loadMesh("/res/compass.obj"));
