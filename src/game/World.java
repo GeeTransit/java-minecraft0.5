@@ -175,6 +175,8 @@ public class World implements Loopable {
 		this.shader.bind();
 		this.shader.setUniform("texture_sampler", 0);
 		this.shader.setUniform("projectionMatrix", window.buildProjectionMatrix(this.camera));
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
 
 		// view
 		Matrix4f viewMatrix = this.camera.buildViewMatrix();
@@ -188,6 +190,7 @@ public class World implements Loopable {
 				shader.setUniform("isSelected", item.isSelected());
 			});
 
+		glDisable(GL_CULL_FACE);
 		this.shader.unbind();
 	}
 
