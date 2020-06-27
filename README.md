@@ -16,6 +16,8 @@ Book # https://ahbejarano.gitbook.io/lwjglgamedev
 | Space        | Move up |
 | Shift        | Move down |
 | 0            | Destroy the highlighted block |
+| 1            | Place a grass block |
+| 2            | Place a cobble block |
 | Ctrl         | Faster (forwards and backwards only) |
 | Alt+F4       | Exit game |
 | Esc          | Exit fullscreen and display mouse |
