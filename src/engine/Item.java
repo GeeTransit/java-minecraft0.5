@@ -1,20 +1,19 @@
 /*
 ahbejarano
-Game item wrapper class.
+Game item class.
 */
 
 package geetransit.minecraft05.engine;
 
 import org.joml.Vector3f;
 import org.joml.Quaternionf;
+import org.joml.Matrix4f;
 
-public class Item implements Cloneable {
-	protected Mesh mesh;
-
+public class Item {
+	private Mesh mesh;
 	private final Vector3f position;
 	private final Quaternionf rotation;  // Degrees, not radians.
 	private float scale;
-	private boolean selected;
 
 	public Item(Mesh mesh) {
 		this();
@@ -24,20 +23,10 @@ public class Item implements Cloneable {
 		this.position = new Vector3f();
 		this.rotation = new Quaternionf();
 		this.scale = 1;
-		this.selected = false;
-	}
-
-	// does NOT copy the mesh (shallow copy)
-	@Override
-	public Item clone() {
-		return new Item(this.getMesh())
-			.setPosition(this.getPosition())
-			.setRotation(this.getRotation())
-			.setScale(this.getScale())
-			.setSelected(this.isSelected());
 	}
 
 	public Mesh getMesh() { return this.mesh; }
+	protected Item setMesh(Mesh mesh) { this.mesh = mesh; return this; }
 
 	public Vector3f getPosition() { return this.position; }
 	public Item setPosition(Vector3f position) { this.position.set(position); return this; }
@@ -63,9 +52,25 @@ public class Item implements Cloneable {
 		return this;
 	}
 
-	public boolean isSelected() { return this.selected; }
-	public Item setSelected(boolean selected) {
-		this.selected = selected;
-		return this;
+	public Matrix4f buildModelMatrix(Matrix4f result) {
+		return result.translationRotateScale(this.position, this.rotation, this.scale);
+	}
+
+	public Matrix4f buildModelViewMatrix(Matrix4f viewMatrix, Matrix4f result) {
+		return viewMatrix.mulAffine(this.buildModelMatrix(result), result);
+	}
+
+	// these 2 are different?
+	public Matrix4f newBuildOrthoProjModelMatrix(Matrix4f orthoMatrix, Matrix4f result) {
+		return orthoMatrix.mulOrthoAffine(this.buildModelMatrix(result), result);
+	}
+	public Matrix4f buildOrthoProjModelMatrix(Matrix4f orthoMatrix, Matrix4f result) {
+		return result
+			.set(orthoMatrix)
+			.translate(this.position)
+			.rotateX((float) Math.toRadians(-this.rotation.x))
+			.rotateY((float) Math.toRadians(-this.rotation.y))
+			.rotateZ((float) Math.toRadians(-this.rotation.z))
+			.scale(this.scale);
 	}
 }

@@ -7,44 +7,48 @@ package geetransit.minecraft05.game;
 
 import geetransit.minecraft05.engine.*;
 
-import static org.lwjgl.glfw.GLFW.*;
+import java.util.*;
+import org.joml.Matrix4f;
 
-public class Hud extends Scene {
+import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.*;
+
+public class Hud implements Loopable {
 	private static final int FONT_COLS = 16;
 	private static final int FONT_ROWS = 16;
 	private static final String FONT_FILE = "/res/font.png";
 
-	private Renderer renderer;
 	private Mouse mouse;
 	private Camera camera;
 	private World world;
+	private Window window;
+
+	private Shader shader;
+	private List<Item> items;
 
 	private TextItem text;
 	private Item compass;
 	private Item crosshair;
 
 	public Hud(Mouse mouse, Camera camera, World world) {
-		super();
-		this.addFrom(this.renderer = new Renderer() {
-			Shader shader;
-			public void init(Window window) throws Exception {
-				shader = create2D("/res/vertex-2d.vs", "/res/fragment-2d.fs");
-			}
-			public void render(Window window) {
-				render2DList(shader, window);
-			}
-			public void cleanup() {
-				destroy(shader);
-			}
-		});
 		this.mouse = mouse;
 		this.camera = camera;
 		this.world = world;
+
+		this.items = new ArrayList<>();
 	}
 
 	@Override
 	public void init(Window window) throws Exception {
-		super.init(window);
+		this.shader = new Shader();
+		this.shader.createVertexShader(Utils.loadResource("/res/vertex-2d.vs"));
+		this.shader.createFragmentShader(Utils.loadResource("/res/fragment-2d.fs"));
+		this.shader.link();
+
+		this.shader.createUniform("projModelMatrix");
+		this.shader.createUniform("texture_sampler");
+		this.shader.createUniform("color");
+		this.shader.createUniform("isTextured");
 
 		this.text = new TextItem("", new FontTexture(FONT_FILE, FONT_COLS, FONT_ROWS));
 		this.text.getMesh().setColor(1, 1, 1);
@@ -55,30 +59,63 @@ public class Hud extends Scene {
 		this.crosshair = new Item(ObjLoader.loadMesh("/res/crosshair.obj"));
 		this.crosshair.getMesh().setColor(1, 1, 1);
 
-		this.renderer
-			.addItem(this.text)
-			.addItem(this.compass)
-			.addItem(this.crosshair);
+		this.items.add(this.text);
+		this.items.add(this.compass);
+		this.items.add(this.crosshair);
+
+		this.window = window;
 	}
 
 	@Override
-	public void render(Window window) {
-		this.text.setPosition(10f, window.getHeight() * 0.85f, 0f);
-		this.text.setScale(window.getWidth() * (1/3500f));
+	public void update(float interval) {
+		this.text.setPosition(10f, this.window.getHeight() * 0.85f, 0f);
+		this.text.setScale(this.window.getWidth() * (1/3500f));
 		this.text.setText(String.format(
 			"vsync=%s mode=%s mouse=%s\nchange=%s wait=%s\ncamera=%s\nmouse=%s",
-			window.isVSync(), window.getMode(), window.getInputMode(GLFW_CURSOR) == GLFW_CURSOR_NORMAL,
+			this.window.isVSync(), this.window.getMode(), this.window.getInputMode(GLFW_CURSOR) == GLFW_CURSOR_NORMAL,
 			this.world.getChange(), this.world.getWait(),
 			this.camera, this.mouse
 		));
 
-		this.compass.setPosition(window.getWidth() * 0.95f, window.getWidth() * 0.05f, 0f);
+		this.compass.setPosition(this.window.getWidth() * 0.95f, this.window.getWidth() * 0.05f, 0f);
 		this.compass.setRotation(0f, 0f, 180f - this.camera.getRotation().y);
-		this.compass.setScale(window.getWidth() * (1/20f));
+		this.compass.setScale(this.window.getWidth() * (1/20f));
 
-		this.crosshair.setPosition(window.getWidth() * 0.5f, window.getHeight() * 0.5f, 0f);
-		this.crosshair.setScale(window.getWidth() * (1/50f));
+		this.crosshair.setPosition(this.window.getWidth() * 0.5f, this.window.getHeight() * 0.5f, 0f);
+		this.crosshair.setScale(this.window.getWidth() * (1/50f));
+	}
 
-		super.render(window);
+	@Override
+	public void render(Window window) {
+
+		// rendering
+		this.shader.bind();
+		this.shader.setUniform("texture_sampler", 0);
+
+		// disable depth testing : source # https://stackoverflow.com/a/5467636
+		glDepthMask(false);  // disable writes to Z-Buffer
+		glDisable(GL_DEPTH_TEST);  // disable depth-testing
+
+		Matrix4f orthoMatrix = window.buildOrthoProjectionMatrix();
+
+		// draw items
+		Matrix4f temp = new Matrix4f();
+		for (Item item : this.items)
+			// ($, $$) are ignored paramenters
+			item.getMesh().renderItem(item, this.shader, ($, $$) -> {
+				item.buildOrthoProjModelMatrix(orthoMatrix, temp);
+				this.shader.setUniform("projModelMatrix", temp);
+			});
+
+		glDepthMask(true);
+		glEnable(GL_DEPTH_TEST);
+		this.shader.unbind();
+	}
+
+	@Override
+	public void cleanup() {
+		this.shader.cleanup();
+		for (Item item : this.items)
+			item.getMesh().cleanup();
 	}
 }

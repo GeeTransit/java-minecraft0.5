@@ -114,7 +114,8 @@ public class Camera implements Inputtable {
 		return this.position.negate(this.negativePosition);
 	}
 
-	public Matrix4f getViewMatrix() {
+	public Matrix4f getViewMatrix() { return this.viewMatrix; }
+	public Matrix4f buildViewMatrix() {
 		return this.viewMatrix
 			.identity()
 			.rotateXYZ(this.getRadiansRotation())

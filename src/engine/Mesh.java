@@ -6,6 +6,7 @@ Mesh class.
 package geetransit.minecraft05.engine;
 
 import java.util.*;
+import java.util.function.*;
 import java.nio.*;
 import org.joml.*;
 import static org.lwjgl.opengl.GL30.*;
@@ -84,14 +85,46 @@ public class Mesh {
 	public boolean isTextured() { return this.texture != null; }
 
 	public Vector4f getColor() { return this.color; }
-	public Mesh setColor(float r, float g, float b) { this.setColor(new Vector3f(r, g, b)); return this; }
-	public Mesh setColor(float r, float g, float b, float a) { this.setColor(new Vector4f(r, g, b, a)); return this; }
-	public Mesh setColor(Vector3f color) { this.setColor(new Vector4f(color, 1f)); return this; }
-	public Mesh setColor(Vector4f color) { this.color.set(color); return this; }
+	public Mesh setColor(Vector3f color) { return this.setColor(color.x, color.y, color.z, 1f); }
+	public Mesh setColor(Vector4f color) { return this.setColor(color.x, color.y, color.z, color.w); }
+	public Mesh setColor(float r, float g, float b) { return this.setColor(r, g, b, 1f); }
+	public Mesh setColor(float r, float g, float b, float a) { this.color.set(r, g, b, a); return this; }
+
+	public <T extends Item> void renderList(List<T> items, Shader shader, BiConsumer<T, Shader> consumer) {
+		this.with(shader, () -> {
+			for (T item : items) {
+				consumer.accept(item, shader);
+				this.draw();
+			}
+		});
+	}
+
+	public <T extends Item> void renderItem(T item, Shader shader, BiConsumer<T, Shader> consumer) {
+		this.with(shader, () -> {
+			consumer.accept(item, shader);
+			this.draw();
+		});
+	}
+
+	protected void with(Shader shader, Runnable runnable) {
+		this.prepare();
+		this.setup(shader);
+		runnable.run();
+		this.restore();
+	}
+
+	public void cleanup() { this.cleanup(true); }
+	public void cleanup(boolean cleanupTexture) {
+		this.disableVao();
+		this.deleteVbos();
+		if (cleanupTexture && this.isTextured())
+			this.texture.cleanup();
+		this.deleteVao();
+	}
 
 	// prepare mesh
-	public void prepare() { this.prepare(null); }
-	public void prepare(Mesh lastMesh) {
+	protected void prepare() { this.prepare(null); }
+	protected void prepare(Mesh lastMesh) {
 		if (this == lastMesh)
 			return;
 		if (this.isTextured())
@@ -99,14 +132,20 @@ public class Mesh {
 		glBindVertexArray(this.vaoId);
 	}
 
+	// setup uniforms
+	protected void setup(Shader shader) {
+		shader.setUniform("color", this.color);
+		shader.setUniform("isTextured", this.isTextured());
+	}
+
 	// draw elements
-	public void render() {
+	protected void draw() {
 		glDrawElements(GL_TRIANGLES, this.vertexCount, GL_UNSIGNED_INT, 0);
 	}
 
 	// Restore state
-	public void restore() { this.restore(null); }
-	public void restore(Mesh nextMesh) {
+	protected void restore() { this.restore(null); }
+	protected void restore(Mesh nextMesh) {
 		if (this == nextMesh)
 			return;
 		glBindVertexArray(0);
@@ -127,14 +166,5 @@ public class Mesh {
 		// Delete the VAO
 		glBindVertexArray(0);
 		glDeleteVertexArrays(this.vaoId);
-	}
-
-	public void cleanup() { this.cleanup(true); }
-	public void cleanup(boolean cleanupTexture) {
-		this.disableVao();
-		this.deleteVbos();
-		if (cleanupTexture && this.isTextured())
-			this.texture.cleanup();
-		this.deleteVao();
 	}
 }

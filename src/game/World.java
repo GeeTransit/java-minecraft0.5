@@ -8,21 +8,25 @@ package geetransit.minecraft05.game;
 import geetransit.minecraft05.engine.*;
 
 import java.util.*;
-
 import org.joml.Vector3f;
+import org.joml.Matrix4f;
 
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.*;
 
-public class World extends Scene {
+public class World implements Loopable {
 	public static final float CHANGE_DELAY = 0.2f;
 	public static final float STEP = 0.1f;
 
-	private final Renderer renderer;
 	private final Mouse mouse;
 	private final Camera camera;
 
-	private final Map<String, Item> blockMap;
-	private final ClosestItem closestItem;
+	private Shader shader;
+	private final Map<String, Mesh> meshMap;
+	private final Map<Mesh, List<BlockItem>> blockMap;
+	private final List<BlockItem> blockList;
+
+	private final ClosestItem<BlockItem> closestItem;
 	private final Vector3f movement;
 	private float step;
 	private int render;
@@ -31,25 +35,14 @@ public class World extends Scene {
 	private float wait;  // time until next place / remove
 
 	public World(Mouse mouse, Camera camera) {
-		super();
-		this.addFrom(this.renderer = new Renderer() {
-			Shader shader;
-			public void init(Window window) throws Exception {
-				shader = create3D("/res/vertex-3d.vs", "/res/fragment-3d.fs");
-			}
-			public void render(Window window) {
-				render3D(shader, window, World.this.camera);
-			}
-			public void cleanup() {
-				destroy(shader);
-			}
-		});
-
 		this.mouse = mouse;
 		this.camera = camera;
 
+		this.meshMap = new HashMap<>();
 		this.blockMap = new HashMap<>();
-		this.closestItem = new ClosestItem();
+		this.blockList = new ArrayList<>();
+
+		this.closestItem = new ClosestItem<>();
 		this.movement = new Vector3f();
 		this.step = STEP;
 	}
@@ -62,9 +55,22 @@ public class World extends Scene {
 
 	@Override
 	public void init(Window window) throws Exception {
+		this.shader = new Shader();
+		this.shader.createVertexShader(Utils.loadResource("/res/vertex-3d.vs"));
+		this.shader.createFragmentShader(Utils.loadResource("/res/fragment-3d-block.fs"));
+		this.shader.link();
+
+		this.shader.createUniform("projectionMatrix");
+		this.shader.createUniform("modelViewMatrix");
+		this.shader.createUniform("texture_sampler");
+		this.shader.createUniform("color");
+		this.shader.createUniform("isTextured");
+		this.shader.createUniform("isSelected");
+
 		// Create the blocks' mesh
-		this.blockMap.put("grassblock", this.loadBlock("/res/cube.obj", "/res/grassblock.png"));
-		this.blockMap.put("cobbleblock", this.loadBlock("/res/cube.obj", "/res/cobbleblock.png"));
+		this
+			.putMesh("grassblock", this.loadMesh("/res/cube.obj", "/res/grassblock.png"))
+			.putMesh("cobbleblock", this.loadMesh("/res/cube.obj", "/res/cobbleblock.png"));
 
 		// get heightmap
 		try (HeightMap map = HeightMap.loadFromImage("/res/heightmap.png")) {
@@ -72,27 +78,23 @@ public class World extends Scene {
 			for (int x = 0; x < map.width; x++) {
 				for (int z = 0; z < map.length; z++) {
 					int y = (int) map.compressExpand(map.heightAt(x, z), 0, map.MAX_COLOR, 0, 16);
-					this.renderer.addItem(this.newBlock("grassblock").setPosition(x, y, z));
-					for (int k = y-1; k >= Math.max(y-2, 0); k--) {
-						this.renderer.addItem(this.newBlock("cobbleblock").setPosition(x, k, z));
-					}
+					this.addBlock(this.newBlock("grassblock").setPosition(x, y, z));
+					for (int k = y-1; k >= Math.max(y-2, 0); k--)
+						this.addBlock(this.newBlock("cobbleblock").setPosition(x, k, z));
 				}
 			}
 		}
 
 		// add spawn markers (-2z is forwards)
-		this.renderer
-			.addItem(this.newBlock("grassblock").setPosition(+1, +1,  0))
-			.addItem(this.newBlock("grassblock").setPosition(-1, +1,  0))
-			.addItem(this.newBlock("grassblock").setPosition( 0, +1, +1))
-			.addItem(this.newBlock("grassblock").setPosition( 0, +1, -2));
-
-		super.init(window);
+		this
+			.addBlock(this.newBlock("grassblock").setPosition(+1, +1,  0))
+			.addBlock(this.newBlock("grassblock").setPosition(-1, +1,  0))
+			.addBlock(this.newBlock("grassblock").setPosition( 0, +1, +1))
+			.addBlock(this.newBlock("grassblock").setPosition( 0, +1, -2));
 	}
 
+	@Override
 	public void input(Window window) {
-		super.input(window);
-
 		// movement
 		this.movement.zero();
 		boolean SPRINTING = (!window.isKeyDown(GLFW_KEY_LEFT_SHIFT) && window.isKeyDown(GLFW_KEY_LEFT_CONTROL));
@@ -121,6 +123,7 @@ public class World extends Scene {
 		if (window.isKeyDown(GLFW_KEY_2)) this.change = "cobbleblock";
 	}
 
+	@Override
 	public void update(float interval) {
 		// movement
 		this.camera.movePosition(this.movement, 30*interval * this.step);
@@ -130,10 +133,10 @@ public class World extends Scene {
 
 		// placing / removing
 		if (this.change != null && this.wait <= 0) {
-			this.closestItem.update(this.renderer.items, this.camera);
+			this.closestItem.update(this.blockList, this.camera);
 			if (this.closestItem.closest != null) {
 				if (this.change.equals("")) {
-					this.renderer.removeItem(this.closestItem.closest);
+					this.removeBlock(this.closestItem.closest);
 				} else {
 					Vector3f position = new Vector3f();
 					position.set(this.closestItem.direction);  // get normalized camera direction
@@ -142,11 +145,11 @@ public class World extends Scene {
 					position.add(this.closestItem.hit);  // start from intersection point
 					position.round();  // round to grid
 					check: {
-						for (Item item : this.renderer.items)
-							if (item.getPosition().equals(position))
+						for (BlockItem block : this.blockList)
+							if (block.getPosition().equals(position))
 								break check;
 						// else
-						this.renderer.addItem(this.newBlock(this.change).setPosition(position));
+						this.addBlock(this.newBlock(this.change).setPosition(position));
 					}
 				}
 			}
@@ -158,32 +161,75 @@ public class World extends Scene {
 			this.wait -= interval;
 		if (this.wait < 0 && this.change == null)
 			this.wait = 0;
-
-		super.update(interval);
 	}
 
+	@Override
 	public void render(Window window) {
-		this.updateSelectedItem();
-		super.render(window);
-	}
-
-	private void updateSelectedItem() {
-		for (Item item : this.renderer.items)
-			item.setSelected(false);
-		this.closestItem.update(this.renderer.items, this.camera);
+		// update selected item
+		for (BlockItem block : this.blockList)
+			block.setSelected(false);
+		this.closestItem.update(this.blockList, this.camera);
 		if (this.closestItem.closest != null)
 			this.closestItem.closest.setSelected(true);
+
+		this.shader.bind();
+		this.shader.setUniform("texture_sampler", 0);
+		this.shader.setUniform("projectionMatrix", window.buildProjectionMatrix(this.camera));
+
+		// view
+		Matrix4f viewMatrix = this.camera.buildViewMatrix();
+
+		// draw blocks
+		Matrix4f temp = new Matrix4f();
+		for (Map.Entry<Mesh, List<BlockItem>> entry : this.blockMap.entrySet())
+			entry.getKey().renderList(entry.getValue(), this.shader, (item, shader) -> {
+				item.buildModelViewMatrix(viewMatrix, temp);
+				shader.setUniform("modelViewMatrix", temp);
+				shader.setUniform("isSelected", item.isSelected());
+			});
+
+		this.shader.unbind();
 	}
 
-	private static Item loadBlock(String objFileName, String textureFileName) throws Exception {
+	@Override
+	public void cleanup() {
+		this.shader.cleanup();
+		for (Mesh mesh : this.meshMap.values())
+			mesh.cleanup();
+	}
+
+	// block helpers
+	private static Mesh loadMesh(String objFileName, String textureFileName) throws Exception {
 		Mesh mesh = ObjLoader.loadMesh(objFileName);
 		mesh.setTexture(new Texture(textureFileName));
-		Item block = new Item(mesh);
-		block.setScale(0.5f);
-		return block;
+		return mesh;
 	}
 
-	private Item newBlock(String name) {
-		return this.blockMap.get(name).clone();
+	private World putMesh(String name, Mesh mesh) {
+		this.meshMap.put(name, mesh);
+		return this;
+	}
+
+	private BlockItem newBlock(String name) {
+		Mesh mesh = this.meshMap.get(name);
+		return new BlockItem(mesh).setScale(0.5f);
+	}
+
+	private World addBlock(BlockItem block) {
+		Mesh mesh = block.getMesh();
+		this.blockList.add(block);
+		if (!this.blockMap.containsKey(mesh))
+			this.blockMap.put(mesh, new ArrayList<>());
+		this.blockMap.get(mesh).add(block);
+		return this;
+	}
+
+	private World removeBlock(BlockItem block) {
+		Mesh mesh = block.getMesh();
+		this.blockList.remove(block);
+		this.blockMap.get(mesh).remove(block);
+		if (this.blockMap.get(mesh).size() == 0)
+			this.blockMap.remove(mesh);
+		return this;
 	}
 }

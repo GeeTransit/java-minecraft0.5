@@ -12,10 +12,7 @@ public class Main {
 
 	public static void main(String[] args) {
 		try {
-			int mode = Window.WINDOWED;
-			boolean vSync = true;
-			int targetFps = 10;
-			Window window = new Window("Hello World!", 300, 300, mode, vSync, targetFps);
+			Window window = new Window("Hello World!", 300, 300, Window.WINDOWED, /*vSync*/ true, /*targetFps*/ 10);
 			Loopable loop = new Game();
 			Engine engine = new Engine(window, loop);
 			engine.run();

@@ -7,6 +7,7 @@ package geetransit.minecraft05.engine;
 
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
+import org.joml.Matrix4f;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -34,6 +35,9 @@ public class Window {
 	private int targetFps;
 	private float elapsedTime;
 
+	private final Matrix4f projectionMatrix;
+	private final Matrix4f orthoProjectionMatrix;
+
 	private boolean destroyed = false;
 
 	private long monitor;
@@ -58,6 +62,9 @@ public class Window {
 		this.timer = new Timer();
 		this.lock = new Object();
 		this.next = new Bucket();
+
+		this.projectionMatrix = new Matrix4f();
+		this.orthoProjectionMatrix = new Matrix4f();
 	}
 
 	public void createWindow() {
@@ -213,6 +220,19 @@ public class Window {
 			if (!this.destroyed)
 				glfwSwapBuffers(this.handle);  // swap the color buffers
 		}
+	}
+
+	public Matrix4f getProjectionMatrix() { return this.projectionMatrix; }
+	public Matrix4f buildProjectionMatrix(Camera camera) {
+		return this.projectionMatrix.setPerspective(
+			-camera.getFov(), (float) this.getWidth() / this.getHeight(),
+			camera.getNear(), camera.getFar()
+		);
+	}
+
+	public Matrix4f getOrthoProjectionMatrix() { return this.orthoProjectionMatrix; }
+	public Matrix4f buildOrthoProjectionMatrix() {
+		return this.orthoProjectionMatrix.setOrtho2D(0, this.getWidth(), this.getHeight(), 0);
 	}
 
 	protected void updateWindowPos() {
