@@ -55,9 +55,9 @@ public class Skybox implements Loopable {
 
 		// draw skybox
 		Matrix4f temp = new Matrix4f();
-		this.skybox.getMesh().renderItem(this.skybox, this.shader, (item, shader) -> {
-			item.buildModelViewMatrix(viewMatrix, temp);
-			shader.setUniform("modelViewMatrix", temp);
+		this.skybox.getMesh().render(this.shader, this.skybox, ($, $$) -> {
+			this.skybox.buildModelViewMatrix(viewMatrix, temp);
+			this.shader.setUniform("modelViewMatrix", temp);
 		});
 
 		this.shader.unbind();

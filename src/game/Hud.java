@@ -102,7 +102,7 @@ public class Hud implements Loopable {
 		Matrix4f temp = new Matrix4f();
 		for (Item item : this.items)
 			// ($, $$) are ignored paramenters
-			item.getMesh().renderItem(item, this.shader, ($, $$) -> {
+			item.getMesh().render(this.shader, item, ($, $$) -> {
 				item.buildOrthoProjModelMatrix(orthoMatrix, temp);
 				this.shader.setUniform("projModelMatrix", temp);
 			});

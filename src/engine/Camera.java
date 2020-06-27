@@ -8,6 +8,7 @@ package geetransit.minecraft05.engine;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Matrix4f;
+import org.joml.FrustumIntersection;
 
 public class Camera implements Inputtable {
 	public static final float FOV = 80f;
@@ -19,7 +20,10 @@ public class Camera implements Inputtable {
 
 	private final Vector3f position;
 	private final Vector3f rotation;  // in degrees
+
 	private final Matrix4f viewMatrix;
+	private final Matrix4f projViewMatrix;
+	private final FrustumIntersection frustumIntersection;
 
 	private float fov;
 	private float near;
@@ -34,7 +38,10 @@ public class Camera implements Inputtable {
 
 		this.position = new Vector3f();
 		this.rotation = new Vector3f();
+
 		this.viewMatrix = new Matrix4f();
+		this.projViewMatrix = new Matrix4f();
+		this.frustumIntersection = new FrustumIntersection();
 
 		this.setFov(FOV);
 		this.setNear(NEAR);
@@ -120,6 +127,18 @@ public class Camera implements Inputtable {
 			.identity()
 			.rotateXYZ(this.getRadiansRotation())
 			.translate(this.getNegativePosition());
+	}
+
+	public void updateFrustum(Matrix4f projMatrix) {
+		projMatrix.mul(this.viewMatrix, this.projViewMatrix);
+		this.frustumIntersection.set(this.projViewMatrix);
+	}
+
+	public boolean insideFrustum(Vector3f position, float radius) {
+		return this.insideFrustum(position.x, position.y, position.z, radius);
+	}
+	public boolean insideFrustum(float x, float y, float z, float radius) {
+		return this.frustumIntersection.testSphere(x, y, z, radius);
 	}
 
 	public String toString() {

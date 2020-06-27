@@ -12,10 +12,12 @@ import org.joml.Quaternionf;
 
 public class BlockItem extends Item {
 	private boolean selected;
+	private boolean visible;
 
 	public BlockItem(Mesh mesh) {
 		super(mesh);
 		this.selected = false;
+		this.visible = false;
 	}
 
 	public BlockItem setPosition(Vector3f position) { super.setPosition(position); return this; }
@@ -26,4 +28,7 @@ public class BlockItem extends Item {
 
 	public boolean isSelected() { return this.selected; }
 	public BlockItem setSelected(boolean selected) { this.selected = selected; return this; }
+
+	public boolean isVisible() { return this.visible; }
+	public BlockItem setVisible(boolean visible) { this.visible = visible; return this; }
 }

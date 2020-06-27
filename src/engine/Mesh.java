@@ -7,6 +7,7 @@ package geetransit.minecraft05.engine;
 
 import java.util.*;
 import java.util.function.*;
+import java.util.stream.*;
 import java.nio.*;
 import org.joml.*;
 import static org.lwjgl.opengl.GL30.*;
@@ -90,18 +91,21 @@ public class Mesh {
 	public Mesh setColor(float r, float g, float b) { return this.setColor(r, g, b, 1f); }
 	public Mesh setColor(float r, float g, float b, float a) { this.color.set(r, g, b, a); return this; }
 
-	public <T extends Item> void renderList(List<T> items, Shader shader, BiConsumer<T, Shader> consumer) {
+	public <T extends Item> void render(Shader shader, Stream<T> items, BiConsumer<Shader, T> consumer) {
+		this.render(shader, (Iterable<T>) items::iterator, consumer);
+	}
+	public <T extends Item> void render(Shader shader, Iterable<T> items, BiConsumer<Shader, T> consumer) {
 		this.with(shader, () -> {
 			for (T item : items) {
-				consumer.accept(item, shader);
+				consumer.accept(shader, item);
 				this.draw();
 			}
 		});
 	}
 
-	public <T extends Item> void renderItem(T item, Shader shader, BiConsumer<T, Shader> consumer) {
+	public <T extends Item> void render(Shader shader, T item, BiConsumer<Shader, T> consumer) {
 		this.with(shader, () -> {
-			consumer.accept(item, shader);
+			consumer.accept(shader, item);
 			this.draw();
 		});
 	}

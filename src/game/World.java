@@ -161,17 +161,17 @@ public class World implements Loopable {
 			this.wait -= interval;
 		if (this.wait < 0 && this.change == null)
 			this.wait = 0;
-	}
 
-	@Override
-	public void render(Window window) {
-		// update selected item
+		// update selected block
 		for (BlockItem block : this.blockList)
 			block.setSelected(false);
 		this.closestItem.update(this.blockList, this.camera);
 		if (this.closestItem.closest != null)
 			this.closestItem.closest.setSelected(true);
+	}
 
+	@Override
+	public void render(Window window) {
 		this.shader.bind();
 		this.shader.setUniform("texture_sampler", 0);
 		this.shader.setUniform("projectionMatrix", window.buildProjectionMatrix(this.camera));
@@ -181,14 +181,23 @@ public class World implements Loopable {
 		// view
 		Matrix4f viewMatrix = this.camera.buildViewMatrix();
 
+		// update visible blocks
+		this.camera.updateFrustum(window.getProjectionMatrix());
+		for (BlockItem block : this.blockList)
+			block.setVisible(this.camera.insideFrustum(block.getPosition(), 2*block.getScale()));
+
 		// draw blocks
 		Matrix4f temp = new Matrix4f();
 		for (Map.Entry<Mesh, List<BlockItem>> entry : this.blockMap.entrySet())
-			entry.getKey().renderList(entry.getValue(), this.shader, (item, shader) -> {
-				item.buildModelViewMatrix(viewMatrix, temp);
-				shader.setUniform("modelViewMatrix", temp);
-				shader.setUniform("isSelected", item.isSelected());
-			});
+			entry.getKey().render(
+				this.shader,
+				entry.getValue().stream().filter(item -> item.isVisible()),
+				(shader, item) -> {
+					item.buildModelViewMatrix(viewMatrix, temp);
+					shader.setUniform("modelViewMatrix", temp);
+					shader.setUniform("isSelected", item.isSelected());
+				}
+			);
 
 		glDisable(GL_CULL_FACE);
 		this.shader.unbind();
