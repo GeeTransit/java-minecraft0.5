@@ -15,8 +15,7 @@ public class Main {
 			int mode = Window.WINDOWED;
 			boolean vSync = true;
 			int targetFps = 10;
-			int targetUps = 30;
-			Window window = new Window("Hello World!", 300, 300, mode, vSync, targetFps, targetUps);
+			Window window = new Window("Hello World!", 300, 300, mode, vSync, targetFps);
 			Loopable loop = new Game();
 			Engine engine = new Engine(window, loop);
 			engine.run();

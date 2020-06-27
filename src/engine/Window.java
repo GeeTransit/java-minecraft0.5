@@ -32,10 +32,7 @@ public class Window {
 
 	private boolean vSync;
 	private int targetFps;
-	private int targetUps;
-
 	private float elapsedTime;
-	private float accumulatedTime;
 
 	private boolean destroyed = false;
 
@@ -48,8 +45,7 @@ public class Window {
 		int height,
 		int mode,
 		boolean vSync,
-		int targetFps,
-		int targetUps
+		int targetFps
 	) {
 		this.title = title;
 		this.width = width;
@@ -58,7 +54,6 @@ public class Window {
 
 		this.vSync = vSync;
 		this.targetFps = targetFps;
-		this.targetUps = targetUps;
 
 		this.timer = new Timer();
 		this.lock = new Object();
@@ -177,7 +172,6 @@ public class Window {
 	private void renderLoop(Loopable loop) {
 		while (!this.isDestroyed()) {
 			this.elapsedTime = this.timer.getElapsedTime();
-			this.accumulatedTime += this.elapsedTime;
 
 			// bucket
 			this.next.run("mode");
@@ -186,17 +180,12 @@ public class Window {
 			this.next.run("inputMode");
 			this.next.run("attrib");
 			this.next.run("targetFps");
-			this.next.run("targetUps");
 
 			// input
 			loop.input(this);
 
 			// update
-			float interval = 1f / this.getTargetUps();
-			while (this.accumulatedTime >= interval) {
-				loop.update(interval);
-				this.accumulatedTime -= interval;
-			}
+			loop.update(this.elapsedTime);
 
 			// render
 			loop.render(this);
@@ -262,13 +251,10 @@ public class Window {
 	public long getHandle() { return this.handle; }
 	public Object getLock() { return this.lock; }
 	public boolean isDestroyed() { return this.destroyed; }
-	public float getElapsedTime() { return this.elapsedTime; }
-	public float getAccumulatedTime() { return this.accumulatedTime; }
 
+	public float getElapsedTime() { return this.elapsedTime; }
 	public int getTargetFps() { return this.targetFps; }
-	public int getTargetUps() { return this.targetUps; }
 	public void setTargetFps(int targetFps) { this.targetFps = targetFps; }
-	public void setTargetUps(int targetFps) { this.targetUps = targetUps; }
 
 	// width, height
 	public int getWidth() { return !this.isWindowed() ? this.getScreenWidth() : this.getWindowWidth(); }
