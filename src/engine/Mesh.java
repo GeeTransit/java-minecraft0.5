@@ -46,6 +46,7 @@ public class Mesh {
 			posBuffer.put(posArray).flip();
 			glBindBuffer(GL_ARRAY_BUFFER, vboId);
 			glBufferData(GL_ARRAY_BUFFER, posBuffer, GL_STATIC_DRAW);
+			// position uniform
 			glEnableVertexAttribArray(0);
 			glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
 
@@ -64,6 +65,7 @@ public class Mesh {
 			coordBuffer.put(coordArray).flip();
 			glBindBuffer(GL_ARRAY_BUFFER, vboId);
 			glBufferData(GL_ARRAY_BUFFER, coordBuffer, GL_STATIC_DRAW);
+			// coord uniform
 			glEnableVertexAttribArray(1);
 			glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0);
 
@@ -138,8 +140,8 @@ public class Mesh {
 
 	// setup uniforms
 	protected void setup(Shader shader) {
-		shader.setUniform("color", this.color);
-		shader.setUniform("isTextured", this.isTextured());
+		shader.set("color", this.color);
+		shader.set("isTextured", this.isTextured());
 	}
 
 	// draw elements

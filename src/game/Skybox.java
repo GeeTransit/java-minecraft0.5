@@ -31,15 +31,15 @@ public class Skybox implements Loopable {
 	@Override
 	public void init(Window window) throws Exception {
 		this.shader = new Shader();
-		this.shader.createVertexShader(Utils.loadResource("/res/vertex-3d.vs"));
-		this.shader.createFragmentShader(Utils.loadResource("/res/fragment-3d.fs"));
+		this.shader.compileVertex(Utils.loadResource("/res/vertex-3d.vs"));
+		this.shader.compileFragment(Utils.loadResource("/res/fragment-3d.fs"));
 		this.shader.link();
 
-		this.shader.createUniform("projectionMatrix");
-		this.shader.createUniform("modelViewMatrix");
-		this.shader.createUniform("texture_sampler");
-		this.shader.createUniform("color");
-		this.shader.createUniform("isTextured");
+		this.shader.create("projectionMatrix");
+		this.shader.create("modelViewMatrix");
+		this.shader.create("texture_sampler");
+		this.shader.create("color");
+		this.shader.create("isTextured");
 
 		Mesh mesh = ObjLoader.loadMesh("/res/skybox.obj");
 		mesh.setTexture(new Texture("/res/skybox.png"));
@@ -70,8 +70,8 @@ public class Skybox implements Loopable {
 			return;
 
 		this.shader.bind();
-		this.shader.setUniform("texture_sampler", 0);
-		this.shader.setUniform("projectionMatrix", window.getProjectionMatrix());
+		this.shader.set("texture_sampler", 0);
+		this.shader.set("projectionMatrix", window.getProjectionMatrix());
 
 		// remove view translation
 		Matrix4f viewMatrix = this.camera.getViewMatrix();
@@ -82,7 +82,7 @@ public class Skybox implements Loopable {
 		Matrix4f temp = new Matrix4f();
 		this.skybox.getMesh().render(this.shader, this.skybox, ($, $$) -> {
 			this.skybox.buildModelViewMatrix(viewMatrix, temp);
-			this.shader.setUniform("modelViewMatrix", temp);
+			this.shader.set("modelViewMatrix", temp);
 		});
 
 		// undo view translation removal

@@ -55,16 +55,16 @@ public class World implements Loopable {
 	@Override
 	public void init(Window window) throws Exception {
 		this.shader = new Shader();
-		this.shader.createVertexShader(Utils.loadResource("/res/vertex-3d.vs"));
-		this.shader.createFragmentShader(Utils.loadResource("/res/fragment-3d-block.fs"));
+		this.shader.compileVertex(Utils.loadResource("/res/vertex-3d.vs"));
+		this.shader.compileFragment(Utils.loadResource("/res/fragment-3d-block.fs"));
 		this.shader.link();
 
-		this.shader.createUniform("projectionMatrix");
-		this.shader.createUniform("modelViewMatrix");
-		this.shader.createUniform("texture_sampler");
-		this.shader.createUniform("color");
-		this.shader.createUniform("isTextured");
-		this.shader.createUniform("isSelected");
+		this.shader.create("projectionMatrix");
+		this.shader.create("modelViewMatrix");
+		this.shader.create("texture_sampler");
+		this.shader.create("color");
+		this.shader.create("isTextured");
+		this.shader.create("isSelected");
 
 		// Create the blocks' mesh
 		this
@@ -167,8 +167,8 @@ public class World implements Loopable {
 	@Override
 	public void render(Window window) {
 		this.shader.bind();
-		this.shader.setUniform("texture_sampler", 0);
-		this.shader.setUniform("projectionMatrix", window.getProjectionMatrix());
+		this.shader.set("texture_sampler", 0);
+		this.shader.set("projectionMatrix", window.getProjectionMatrix());
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 
@@ -187,8 +187,8 @@ public class World implements Loopable {
 				entry.getValue().stream().filter(item -> item.isVisible()),
 				(shader, item) -> {
 					item.buildModelViewMatrix(viewMatrix, temp);
-					shader.setUniform("modelViewMatrix", temp);
-					shader.setUniform("isSelected", item.isSelected());
+					shader.set("modelViewMatrix", temp);
+					shader.set("isSelected", item.isSelected());
 				}
 			);
 

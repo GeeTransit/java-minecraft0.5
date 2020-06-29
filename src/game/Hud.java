@@ -41,14 +41,14 @@ public class Hud implements Loopable {
 	@Override
 	public void init(Window window) throws Exception {
 		this.shader = new Shader();
-		this.shader.createVertexShader(Utils.loadResource("/res/vertex-2d.vs"));
-		this.shader.createFragmentShader(Utils.loadResource("/res/fragment-2d.fs"));
+		this.shader.compileVertex(Utils.loadResource("/res/vertex-2d.vs"));
+		this.shader.compileFragment(Utils.loadResource("/res/fragment-2d.fs"));
 		this.shader.link();
 
-		this.shader.createUniform("projModelMatrix");
-		this.shader.createUniform("texture_sampler");
-		this.shader.createUniform("color");
-		this.shader.createUniform("isTextured");
+		this.shader.create("projModelMatrix");
+		this.shader.create("texture_sampler");
+		this.shader.create("color");
+		this.shader.create("isTextured");
 
 		this.text = new TextItem("", new FontTexture(FONT_FILE, FONT_COLS, FONT_ROWS));
 		this.text.getMesh().setColor(1, 1, 1);
@@ -88,7 +88,7 @@ public class Hud implements Loopable {
 	@Override
 	public void render(Window window) {
 		this.shader.bind();
-		this.shader.setUniform("texture_sampler", 0);
+		this.shader.set("texture_sampler", 0);
 
 		// disable depth testing : source # https://stackoverflow.com/a/5467636
 		glDepthMask(false);  // disable writes to Z-Buffer
@@ -102,7 +102,7 @@ public class Hud implements Loopable {
 			// ($, $$) are ignored paramenters
 			item.getMesh().render(this.shader, item, ($, $$) -> {
 				item.buildOrthoProjModelMatrix(orthoMatrix, temp);
-				this.shader.setUniform("projModelMatrix", temp);
+				this.shader.set("projModelMatrix", temp);
 			});
 
 		glDepthMask(true);

@@ -12,11 +12,10 @@ import static org.lwjgl.opengl.GL20.*;
 
 public class Shader {
 	private final int program;
+	private final Map<String, Integer> uniforms;
 
 	private int vertex;
 	private int fragment;
-
-	private final Map<String, Integer> uniforms;
 
 	public Shader() throws Exception {
 		this.program = glCreateProgram();
@@ -25,41 +24,41 @@ public class Shader {
 		this.uniforms = new HashMap<>();
 	}
 
-	public void createUniform(String name) throws Exception {
+	public void create(String name) throws Exception {
 		int location = glGetUniformLocation(this.program, name);
 		if (location < 0)
 			throw new Exception("Could not find uniform:" + name);
 		this.uniforms.put(name, location);
 	}
 
-	public void setUniform(String name, Matrix4f value) {
+	public void set(String name, Matrix4f value) {
 		// Dump the matrix into a float buffer
 		try (MemoryStack stack = MemoryStack.stackPush()) {
 			glUniformMatrix4fv(this.uniforms.get(name), false, value.get(stack.mallocFloat(16)));
 		}
 	}
-	public void setUniform(String name, int value) {
+	public void set(String name, int value) {
 		glUniform1i(this.uniforms.get(name), value);
 	}
-	public void setUniform(String name, boolean value) {
-		this.setUniform(name, value ? 1 : 0);
+	public void set(String name, boolean value) {
+		this.set(name, value ? 1 : 0);
 	}
-	public void setUniform(String name, Vector3f value) {
+	public void set(String name, Vector3f value) {
 		glUniform3f(this.uniforms.get(name), value.x, value.y, value.z);
 	}
-	public void setUniform(String name, Vector4f value) {
+	public void set(String name, Vector4f value) {
 		glUniform4f(this.uniforms.get(name), value.x, value.y, value.z, value.w);
 	}
 
-	public void createVertexShader(String code) throws Exception {
-		this.vertex = this.createShader(code, GL_VERTEX_SHADER);
+	public void compileVertex(String code) throws Exception {
+		this.vertex = this.compile(code, GL_VERTEX_SHADER);
 	}
 
-	public void createFragmentShader(String code) throws Exception {
-		this.fragment = this.createShader(code, GL_FRAGMENT_SHADER);
+	public void compileFragment(String code) throws Exception {
+		this.fragment = this.compile(code, GL_FRAGMENT_SHADER);
 	}
 
-	protected int createShader(String code, int type) throws Exception {
+	protected int compile(String code, int type) throws Exception {
 		int id = glCreateShader(type);
 		if (id == 0)
 			throw new Exception("Error creating shader. Type: " + type);
