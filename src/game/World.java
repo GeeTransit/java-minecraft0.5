@@ -34,9 +34,7 @@ public class World implements Loopable {
 	private final ClosestItem<BlockItem> closestItem;
 	private final Vector3f movement;
 	private int render;
-
 	private String change;  // ""=air
-	private float wait;  // time until next place / remove
 
 	public World(Mouse mouse, Camera camera) {
 		this.mouse = mouse;
@@ -52,7 +50,7 @@ public class World implements Loopable {
 	}
 
 	public String getChange() { return this.change; }
-	public float getWait() { return this.wait; }
+	public float getWait() { return this.countdown.getWait(); }
 
 	@Override
 	public void init(Window window) throws Exception {
