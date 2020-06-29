@@ -87,8 +87,6 @@ public class Hud implements Loopable {
 
 	@Override
 	public void render(Window window) {
-
-		// rendering
 		this.shader.bind();
 		this.shader.setUniform("texture_sampler", 0);
 
@@ -96,7 +94,7 @@ public class Hud implements Loopable {
 		glDepthMask(false);  // disable writes to Z-Buffer
 		glDisable(GL_DEPTH_TEST);  // disable depth-testing
 
-		Matrix4f orthoMatrix = window.buildOrthoProjectionMatrix();
+		Matrix4f orthoMatrix = window.getOrthoProjectionMatrix();
 
 		// draw items
 		Matrix4f temp = new Matrix4f();

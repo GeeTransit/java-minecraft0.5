@@ -15,11 +15,16 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 
 public class World implements Loopable {
-	public static final float CHANGE_DELAY = 0.2f;
-	public static final float STEP = 0.1f;
+	public static final float CHANGE_DELAY = 0.2f;  // time between block change (place / remove)
+	public static final float MOVEMENT_STEP = 3.0f;  // distance moved in 1 second
+	public static final float RENDER_STEP = 3.0f;  // render changed in 1 second
+	public static final float SPRINT_MULTIPLIER = 1.5f;  // sprinting change
+	public static final float BLOCK_SCALE = 0.5f;  // block scaling (mesh is 2x2x2)
+	public static final float BLOCK_RADIUS = 2f;  // radius around block (for frustum culling)
 
 	private final Mouse mouse;
 	private final Camera camera;
+	private final Countdown countdown;
 
 	private Shader shader;
 	private final Map<String, Mesh> meshMap;
@@ -28,7 +33,6 @@ public class World implements Loopable {
 
 	private final ClosestItem<BlockItem> closestItem;
 	private final Vector3f movement;
-	private float step;
 	private int render;
 
 	private String change;  // ""=air
@@ -37,6 +41,7 @@ public class World implements Loopable {
 	public World(Mouse mouse, Camera camera) {
 		this.mouse = mouse;
 		this.camera = camera;
+		this.countdown = new Countdown(CHANGE_DELAY);
 
 		this.meshMap = new HashMap<>();
 		this.blockMap = new HashMap<>();
@@ -44,14 +49,10 @@ public class World implements Loopable {
 
 		this.closestItem = new ClosestItem<>();
 		this.movement = new Vector3f();
-		this.step = STEP;
 	}
 
 	public String getChange() { return this.change; }
 	public float getWait() { return this.wait; }
-
-	public float getStep() { return this.step; }
-	public World setStep(float step) { this.step = step; return this; }
 
 	@Override
 	public void init(Window window) throws Exception {
@@ -108,7 +109,7 @@ public class World implements Loopable {
 		if (window.isKeyDown(GLFW_KEY_SPACE)) this.movement.y++;
 
 		if (this.movement.length() > 1f) this.movement.div(this.movement.length());
-		if (SPRINTING && this.movement.z < 0) this.movement.mul(1.5f);
+		if (SPRINTING && this.movement.z < 0) this.movement.mul(SPRINT_MULTIPLIER);
 
 		// render distance (camera)
 		this.render = 0;
@@ -121,18 +122,20 @@ public class World implements Loopable {
 		if (window.isKeyDown(GLFW_KEY_0)) this.change = "";
 		if (window.isKeyDown(GLFW_KEY_1)) this.change = "grassblock";
 		if (window.isKeyDown(GLFW_KEY_2)) this.change = "cobbleblock";
+		if (this.change == null) this.countdown.reset();
 	}
 
 	@Override
 	public void update(float interval) {
 		// movement
-		this.camera.movePosition(this.movement, 30*interval * this.step);
+		this.camera.movePosition(this.movement, interval*MOVEMENT_STEP);
 
 		// render distance
-		this.camera.setFar(Math.max(Camera.NEAR+0.01f, this.camera.getFar() + 0.1f*this.render));
+		this.camera.setFar(Math.max(Camera.NEAR+0.01f, this.camera.getFar() + this.render * interval*RENDER_STEP));
 
 		// placing / removing
-		if (this.change != null && this.wait <= 0) {
+		this.countdown.add(interval);
+		if (this.change != null && this.countdown.nextOnce()) {
 			this.closestItem.update(this.blockList, this.camera);
 			if (this.closestItem.closest != null) {
 				if (this.change.equals("")) {
@@ -153,14 +156,7 @@ public class World implements Loopable {
 					}
 				}
 			}
-			this.wait += this.CHANGE_DELAY;
 		}
-
-		// update wait time
-		if (this.wait > 0)
-			this.wait -= interval;
-		if (this.wait < 0 && this.change == null)
-			this.wait = 0;
 
 		// update selected block
 		for (BlockItem block : this.blockList)
@@ -174,17 +170,16 @@ public class World implements Loopable {
 	public void render(Window window) {
 		this.shader.bind();
 		this.shader.setUniform("texture_sampler", 0);
-		this.shader.setUniform("projectionMatrix", window.buildProjectionMatrix(this.camera));
+		this.shader.setUniform("projectionMatrix", window.getProjectionMatrix());
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 
 		// view
-		Matrix4f viewMatrix = this.camera.buildViewMatrix();
+		Matrix4f viewMatrix = this.camera.getViewMatrix();
 
 		// update visible blocks
-		this.camera.updateFrustum(window.getProjectionMatrix());
 		for (BlockItem block : this.blockList)
-			block.setVisible(this.camera.insideFrustum(block.getPosition(), 2*block.getScale()));
+			block.setVisible(this.camera.insideFrustum(block.getPosition(), BLOCK_RADIUS*block.getScale()));
 
 		// draw blocks
 		Matrix4f temp = new Matrix4f();
@@ -224,7 +219,7 @@ public class World implements Loopable {
 
 	private BlockItem newBlock(String name) {
 		Mesh mesh = this.meshMap.get(name);
-		return new BlockItem(mesh).setScale(0.5f);
+		return new BlockItem(mesh).setScale(BLOCK_SCALE);
 	}
 
 	private World addBlock(BlockItem block) {

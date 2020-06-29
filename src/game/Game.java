@@ -121,6 +121,12 @@ public class Game extends Scene {
 		// clear the framebuffer
 		window.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		// build matrices
+		window.buildProjectionMatrix(this.camera);
+		window.buildOrthoProjectionMatrix();
+		this.camera.buildViewMatrix();
+		this.camera.updateFrustum(window.getProjectionMatrix());
+
 		// render scenes
 		super.render(window);
 	}

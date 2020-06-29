@@ -8,15 +8,24 @@ package geetransit.minecraft05.game;
 import geetransit.minecraft05.engine.*;
 
 import java.util.*;
-import org.joml.Matrix4f;
+import org.joml.*;
+
+import static org.lwjgl.glfw.GLFW.*;
 
 public class Skybox implements Loopable {
 	private Camera camera;
+	private Countdown countdown;
+
 	private Shader shader;
 	private Item skybox;
 
+	private boolean toggle;
+	private boolean visible;
+
 	public Skybox(Camera camera) {
 		this.camera = camera;
+		this.countdown = new Countdown(0.5f);
+		this.visible = true;
 	}
 
 	@Override
@@ -39,18 +48,34 @@ public class Skybox implements Loopable {
 	}
 
 	@Override
+	public void input(Window window) {
+		this.toggle = window.isKeyDown(GLFW_KEY_T);
+		if (!this.toggle)
+			this.countdown.reset();
+	}
+
+	@Override
 	public void update(float interval) {
 		this.skybox.setScale(this.camera.getFar() * 0.5f);
+
+		// toggle skybox
+		this.countdown.add(interval);
+		if (this.toggle && this.countdown.nextOnce())
+			this.visible = !this.visible;
 	}
 
 	@Override
 	public void render(Window window) {
+		if (!this.visible)
+			return;
+
 		this.shader.bind();
 		this.shader.setUniform("texture_sampler", 0);
-		this.shader.setUniform("projectionMatrix", window.buildProjectionMatrix(this.camera));
+		this.shader.setUniform("projectionMatrix", window.getProjectionMatrix());
 
 		// remove view translation
-		Matrix4f viewMatrix = this.camera.buildViewMatrix();
+		Matrix4f viewMatrix = this.camera.getViewMatrix();
+		Vector3f oldTanslation = viewMatrix.getTranslation(new Vector3f());
 		viewMatrix.setTranslation(0, 0, 0);
 
 		// draw skybox
@@ -59,6 +84,9 @@ public class Skybox implements Loopable {
 			this.skybox.buildModelViewMatrix(viewMatrix, temp);
 			this.shader.setUniform("modelViewMatrix", temp);
 		});
+
+		// undo view translation removal
+		viewMatrix.setTranslation(oldTanslation);
 
 		this.shader.unbind();
 	}
