@@ -8,6 +8,7 @@ package geetransit.minecraft05.engine;
 import java.util.*;
 import org.joml.*;
 import org.lwjgl.system.*;
+
 import static org.lwjgl.opengl.GL20.*;
 
 public class Shader {
@@ -17,17 +18,17 @@ public class Shader {
 	private int vertex;
 	private int fragment;
 
-	public Shader() throws Exception {
+	public Shader() {
 		this.program = glCreateProgram();
 		if (this.program == 0)
-			throw new Exception("Could not create Shader");
+			throw new RuntimeException("Could not create Shader");
 		this.uniforms = new HashMap<>();
 	}
 
-	public void create(String name) throws Exception {
+	public void create(String name) {
 		int location = glGetUniformLocation(this.program, name);
 		if (location < 0)
-			throw new Exception("Could not find uniform:" + name);
+			throw new RuntimeException("Could not find uniform:" + name);
 		this.uniforms.put(name, location);
 	}
 
@@ -50,33 +51,33 @@ public class Shader {
 		glUniform4f(this.uniforms.get(name), value.x, value.y, value.z, value.w);
 	}
 
-	public void compileVertex(String code) throws Exception {
+	public void compileVertex(String code) {
 		this.vertex = this.compile(code, GL_VERTEX_SHADER);
 	}
 
-	public void compileFragment(String code) throws Exception {
+	public void compileFragment(String code) {
 		this.fragment = this.compile(code, GL_FRAGMENT_SHADER);
 	}
 
-	protected int compile(String code, int type) throws Exception {
+	protected int compile(String code, int type) {
 		int id = glCreateShader(type);
 		if (id == 0)
-			throw new Exception("Error creating shader. Type: " + type);
+			throw new RuntimeException("Error creating shader. Type: " + type);
 
 		glShaderSource(id, code);
 		glCompileShader(id);
 
 		if (glGetShaderi(id, GL_COMPILE_STATUS) == 0)
-			throw new Exception("Error compiling Shader code: " + glGetShaderInfoLog(id, 1024));
+			throw new RuntimeException("Error compiling Shader code: " + glGetShaderInfoLog(id, 1024));
 		glAttachShader(this.program, id);
 
 		return id;
 	}
 
-	public void link() throws Exception {
+	public void link() {
 		glLinkProgram(this.program);
 		if (glGetProgrami(this.program, GL_LINK_STATUS) == 0)
-			throw new Exception("Error linking Shader code: " + glGetProgramInfoLog(this.program, 1024));
+			throw new RuntimeException("Error linking Shader code: " + glGetProgramInfoLog(this.program, 1024));
 
 		if (this.vertex != 0)
 			glDetachShader(this.program, this.vertex);

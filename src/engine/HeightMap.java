@@ -21,7 +21,7 @@ public class HeightMap implements AutoCloseable {
 		this.length = length;
 	}
 
-	public static HeightMap loadFromImage(String fileName) throws Exception {
+	public static HeightMap loadFromImage(String fileName) {
 		int width[] = {0}, length[] = {0};
 		ByteBuffer buffer = Utils.loadImage(fileName, width, length);
 		return new HeightMap(buffer, width[0], length[0]);

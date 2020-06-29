@@ -46,7 +46,7 @@ public class Game extends Scene {
 	}
 
 	@Override
-	public void init(Window window) throws Exception {
+	public void init(Window window) {
 		System.out.println("LWJGL version: " + Version.getVersion());
 		System.out.println("OpenGL version: " + GL11.glGetString(GL11.GL_VERSION));
 

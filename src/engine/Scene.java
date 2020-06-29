@@ -63,7 +63,7 @@ public class Scene implements Loopable {
 	}
 
 	@Override
-	public void init(Window window) throws Exception {
+	public void init(Window window) {
 		for (Initializable init : this.getInits())
 			init.init(window);
 	}

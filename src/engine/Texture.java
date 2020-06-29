@@ -14,7 +14,7 @@ public class Texture {
 	private final int width;
 	private final int length;
 
-	public Texture(String fileName) throws Exception {
+	public Texture(String fileName) {
 		int widthArray[] = {0};
 		int lengthArray[] = {0};
 		ByteBuffer image = Utils.loadImage(fileName, widthArray, lengthArray);

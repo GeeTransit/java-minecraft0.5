@@ -19,7 +19,7 @@ public class Background implements Loopable {
 	}
 
 	@Override
-	public void init(Window window) throws Exception {
+	public void init(Window window) {
 		// blank background for first frame
 		window.clearColor(1f, 1f, 1f, 0f);
 	}

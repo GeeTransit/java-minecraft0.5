@@ -39,7 +39,7 @@ public class Hud implements Loopable {
 	}
 
 	@Override
-	public void init(Window window) throws Exception {
+	public void init(Window window) {
 		this.shader = new Shader();
 		this.shader.compileVertex(Utils.loadResource("/res/vertex-2d.vs"));
 		this.shader.compileFragment(Utils.loadResource("/res/fragment-2d.fs"));
@@ -73,7 +73,7 @@ public class Hud implements Loopable {
 		this.text.setText(String.format(
 			"vsync=%s mode=%s mouse=%s\nchange=%s wait=%s\ncamera=%s\nmouse=%s",
 			this.window.isVSync(), this.window.getMode(), this.window.getInputMode(GLFW_CURSOR) == GLFW_CURSOR_NORMAL,
-			this.world.getChange(), this.world.getWait(),
+			this.world.getChange(), Math.max(0, this.world.getWait()),
 			this.camera, this.mouse
 		));
 

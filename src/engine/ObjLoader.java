@@ -9,7 +9,7 @@ import java.util.*;
 import org.joml.*;
 
 public class ObjLoader {
-	public static Mesh loadMesh(String file) throws Exception {
+	public static Mesh loadMesh(String file) {
 		List<Vector3f> vertices = new ArrayList<>();
 		List<Vector2f> textures = new ArrayList<>();
 		List<Face> faces = new ArrayList<>();

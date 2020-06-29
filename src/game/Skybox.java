@@ -29,7 +29,7 @@ public class Skybox implements Loopable {
 	}
 
 	@Override
-	public void init(Window window) throws Exception {
+	public void init(Window window) {
 		this.shader = new Shader();
 		this.shader.compileVertex(Utils.loadResource("/res/vertex-3d.vs"));
 		this.shader.compileFragment(Utils.loadResource("/res/fragment-3d.fs"));

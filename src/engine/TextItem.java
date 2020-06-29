@@ -13,7 +13,7 @@ public class TextItem extends Item {
 	private String text;
 	private final FontTexture fontTexture;
 
-	public TextItem(String text, FontTexture fontTexture) throws Exception {
+	public TextItem(String text, FontTexture fontTexture) {
 		super(fontTexture.buildMesh(text));
 		this.text = text;
 		this.fontTexture = fontTexture;

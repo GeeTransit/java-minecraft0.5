@@ -18,15 +18,15 @@ import org.lwjgl.stb.*;
 
 public class Utils {
 
-	public static InputStream loadInputStream(String file) throws Exception {
+	public static InputStream loadInputStream(String file) {
 		InputStream in = Utils.class.getResourceAsStream(file);
 		if (in == null)
-			throw new Exception("file [" + file + "] does not exist");
+			throw new RuntimeException("file [" + file + "] does not exist");
 		return in;
 	}
 
 	// source # https://stackoverflow.com/a/17861016
-	public static byte[] loadByteArray(String file) throws Exception {
+	public static byte[] loadByteArray(String file) {
 		try (
 			InputStream in = loadInputStream(file);
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -36,26 +36,34 @@ public class Utils {
 			while ((len = in.read(buffer)) != -1)
 				out.write(buffer, 0, len);
 			return out.toByteArray();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
-	public static String loadResource(String file) throws Exception {
+	public static String loadResource(String file) {
 		try (
 			InputStream in = loadInputStream(file);
 			Scanner scanner = new Scanner(in, StandardCharsets.UTF_8.name());
 		) {
 			return scanner.useDelimiter("\\A").next();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
-	public static Stream<String> loadLinesStream(String file) throws Exception {
-		// source # https://stackoverflow.com/a/30336423
-		InputStream in = loadInputStream(file);
-		InputStreamReader isr = new InputStreamReader(in, StandardCharsets.UTF_8.name());
-		return new BufferedReader(isr).lines();
+	public static Stream<String> loadLinesStream(String file) {
+		try {
+			// source # https://stackoverflow.com/a/30336423
+			InputStream in = loadInputStream(file);
+			InputStreamReader isr = new InputStreamReader(in, StandardCharsets.UTF_8.name());
+			return new BufferedReader(isr).lines();
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
-	public static ByteBuffer loadImage(String fileName, BiConsumer<Integer, Integer> consumer) throws Exception {
+	public static ByteBuffer loadImage(String fileName, BiConsumer<Integer, Integer> consumer) {
 		ByteBuffer imageBuffer;
 		ByteBuffer rawBuffer;
 
@@ -71,7 +79,7 @@ public class Utils {
 
 			imageBuffer = STBImage.stbi_load_from_memory(rawBuffer, widthBuffer, heightBuffer, channelsBuffer, 4);
 			if (imageBuffer == null)
-				throw new Exception("Image file [" + fileName + "] not loaded: " + STBImage.stbi_failure_reason());
+				throw new RuntimeException("Image file [" + fileName + "] not loaded: " + STBImage.stbi_failure_reason());
 
 			// Get width and height of image
 			consumer.accept(widthBuffer.get(), heightBuffer.get());
@@ -79,7 +87,7 @@ public class Utils {
 
 		return imageBuffer;
 	}
-	public static ByteBuffer loadImage(String fileName, int[] widthArray, int[] heightArray) throws Exception {
+	public static ByteBuffer loadImage(String fileName, int[] widthArray, int[] heightArray) {
 		return loadImage(fileName, (width, height) -> { widthArray[0] = width; heightArray[0] = height; });
 	}
 	public static void freeImage(ByteBuffer imageBuffer) {

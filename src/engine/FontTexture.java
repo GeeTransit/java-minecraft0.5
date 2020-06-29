@@ -15,7 +15,7 @@ public class FontTexture extends Texture {
 	private final int cols;
 	private final int rows;
 
-	public FontTexture(String fileName, int cols, int rows) throws Exception {
+	public FontTexture(String fileName, int cols, int rows) {
 		super(fileName);
 		this.cols = cols;
 		this.rows = rows;

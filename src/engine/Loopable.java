@@ -7,7 +7,7 @@ package geetransit.minecraft05.engine;
 
 public interface Loopable extends Initializable, Inputtable, Updateable, Renderable {
 	@Override
-	default void init(Window window) throws Exception {}
+	default void init(Window window) {}
 
 	@Override
 	default void input(Window window) {}

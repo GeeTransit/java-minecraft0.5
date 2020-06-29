@@ -53,7 +53,7 @@ public class World implements Loopable {
 	public float getWait() { return this.countdown.getWait(); }
 
 	@Override
-	public void init(Window window) throws Exception {
+	public void init(Window window) {
 		this.shader = new Shader();
 		this.shader.compileVertex(Utils.loadResource("/res/vertex-3d.vs"));
 		this.shader.compileFragment(Utils.loadResource("/res/fragment-3d-block.fs"));
@@ -204,7 +204,7 @@ public class World implements Loopable {
 	}
 
 	// block helpers
-	private static Mesh loadMesh(String objFileName, String textureFileName) throws Exception {
+	private static Mesh loadMesh(String objFileName, String textureFileName) {
 		Mesh mesh = ObjLoader.loadMesh(objFileName);
 		mesh.setTexture(new Texture(textureFileName));
 		return mesh;
