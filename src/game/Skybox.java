@@ -8,11 +8,16 @@ package geetransit.minecraft05.game;
 import geetransit.minecraft05.engine.*;
 
 import java.util.*;
-import org.joml.*;
+import org.joml.Vector3f;
+import org.joml.Matrix4f;
 
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Skybox implements Loopable {
+	public static final float RENDER_STEP = 3.0f;  // render changed in 1 second
+	public static final float RENDER_DELAY = 0.5f;  // time between skybox toggling
+	public static final float SKYBOX_SCALE = 0.5f;  // skybox scale (multiplied with camera far)
+
 	private Camera camera;
 	private Countdown countdown;
 
@@ -21,10 +26,11 @@ public class Skybox implements Loopable {
 
 	private boolean toggle;
 	private boolean visible;
+	private int render;
 
 	public Skybox(Camera camera) {
 		this.camera = camera;
-		this.countdown = new Countdown(0.5f);
+		this.countdown = new Countdown(RENDER_DELAY);
 		this.visible = true;
 	}
 
@@ -49,6 +55,13 @@ public class Skybox implements Loopable {
 
 	@Override
 	public void input(Window window) {
+		// render distance (camera)
+		this.render = 0;
+		if (window.isKeyDown(GLFW_KEY_L)) this.camera.setFar(Camera.FAR);
+		if (window.isKeyDown(GLFW_KEY_RIGHT_BRACKET)) this.render++;
+		if (window.isKeyDown(GLFW_KEY_LEFT_BRACKET)) this.render--;
+
+		// toggle skybox
 		this.toggle = window.isKeyDown(GLFW_KEY_T);
 		if (!this.toggle)
 			this.countdown.reset();
@@ -56,7 +69,9 @@ public class Skybox implements Loopable {
 
 	@Override
 	public void update(float interval) {
-		this.skybox.setScale(this.camera.getFar() * 0.5f);
+		// render distance
+		this.camera.setFar(Math.max(Camera.NEAR+0.01f, this.camera.getFar() + this.render * interval*RENDER_STEP));
+		this.skybox.setScale(this.camera.getFar() * SKYBOX_SCALE);
 
 		// toggle skybox
 		this.countdown.add(interval);

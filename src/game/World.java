@@ -17,7 +17,6 @@ import static org.lwjgl.opengl.GL11.*;
 public class World implements Loopable {
 	public static final float CHANGE_DELAY = 0.2f;  // time between block change (place / remove)
 	public static final float MOVEMENT_STEP = 3.0f;  // distance moved in 1 second
-	public static final float RENDER_STEP = 3.0f;  // render changed in 1 second
 	public static final float SPRINT_MULTIPLIER = 1.5f;  // sprinting change
 	public static final float BLOCK_SCALE = 0.5f;  // block scaling (mesh is 2x2x2)
 	public static final float BLOCK_RADIUS = 2f;  // radius around block (for frustum culling)
@@ -33,7 +32,6 @@ public class World implements Loopable {
 
 	private final ClosestItem<BlockItem> closestItem;
 	private final Vector3f movement;
-	private int render;
 	private String change;  // ""=air
 
 	public World(Mouse mouse, Camera camera) {
@@ -109,12 +107,6 @@ public class World implements Loopable {
 		if (this.movement.length() > 1f) this.movement.div(this.movement.length());
 		if (SPRINTING && this.movement.z < 0) this.movement.mul(SPRINT_MULTIPLIER);
 
-		// render distance (camera)
-		this.render = 0;
-		if (window.isKeyDown(GLFW_KEY_L)) this.camera.setFar(Camera.FAR);
-		if (window.isKeyDown(GLFW_KEY_RIGHT_BRACKET)) this.render++;
-		if (window.isKeyDown(GLFW_KEY_LEFT_BRACKET)) this.render--;
-
 		// placing / removing
 		this.change = null;
 		if (window.isKeyDown(GLFW_KEY_0)) this.change = "";
@@ -127,9 +119,6 @@ public class World implements Loopable {
 	public void update(float interval) {
 		// movement
 		this.camera.movePosition(this.movement, interval*MOVEMENT_STEP);
-
-		// render distance
-		this.camera.setFar(Math.max(Camera.NEAR+0.01f, this.camera.getFar() + this.render * interval*RENDER_STEP));
 
 		// placing / removing
 		this.countdown.add(interval);
