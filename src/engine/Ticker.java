@@ -14,6 +14,7 @@ public class Ticker {
 		this.accumulated = 0f;
 	}
 
+	public float getAccumulated() { return this.accumulated; }
 	public float getInterval() { return this.interval; }
 	public Ticker setInterval(float interval) { this.interval = interval; return this; }
 

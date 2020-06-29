@@ -14,6 +14,7 @@ public class Countdown {
 		this.wait = 0f;
 	}
 
+	public float getWait() { return this.wait; }
 	public float getInterval() { return this.interval; }
 	public Countdown setInterval(float interval) { this.interval = interval; return this; }
 
