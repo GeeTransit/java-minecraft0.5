@@ -66,8 +66,8 @@ public class World implements Loopable {
 
 		// Create the blocks' mesh
 		this
-			.putMesh("grassblock", this.loadMesh("/res/cube.obj", "/res/grassblock.png"))
-			.putMesh("cobbleblock", this.loadMesh("/res/cube.obj", "/res/cobbleblock.png"));
+			.putMesh("grassblock", this.loadMesh("/res/cube-fblr,u,d.obj", "/res/grassblock.png"))
+			.putMesh("cobbleblock", this.loadMesh("/res/cube-fblrud.obj", "/res/cobbleblock.png"))
 
 		// get heightmap
 		try (HeightMap map = HeightMap.loadFromImage("/res/heightmap.png")) {
