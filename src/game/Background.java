@@ -10,6 +10,8 @@ import geetransit.minecraft05.engine.*;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Background implements Loopable {
+	public static final float COLOR_STEP = 0.3f;  // how much colour changed in 1 second
+
 	private int direction;
 	private float color;
 
@@ -35,7 +37,7 @@ public class Background implements Loopable {
 
 	@Override
 	public void update(float interval) {
-		this.color = Math.max(0f, Math.min(1f, this.color+30*interval*0.01f*this.direction));
+		this.color = Math.max(0f, Math.min(1f, this.color + this.direction * interval*COLOR_STEP));
 	}
 
 	@Override
