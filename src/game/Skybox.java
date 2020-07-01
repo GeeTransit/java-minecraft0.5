@@ -99,9 +99,9 @@ public class Skybox implements Loopable {
 
 		// draw skybox
 		Matrix4f temp = new Matrix4f();
-		this.skybox.getMesh().render(this.shader, this.skybox, ($, $$) -> {
-			this.skybox.buildModelViewMatrix(viewMatrix, temp);
-			this.shader.set("modelViewMatrix", temp);
+		this.skybox.getMesh().render(this.shader, this.skybox, (shader, item) -> {
+			item.buildModelViewMatrix(viewMatrix, temp);
+			shader.set("modelViewMatrix", temp);
 		});
 
 		// undo view translation removal

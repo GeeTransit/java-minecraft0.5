@@ -99,10 +99,9 @@ public class Hud implements Loopable {
 		// draw items
 		Matrix4f temp = new Matrix4f();
 		for (Item item : this.items)
-			// ($, $$) are ignored paramenters
-			item.getMesh().render(this.shader, item, ($, $$) -> {
-				item.buildOrthoProjModelMatrix(orthoMatrix, temp);
-				this.shader.set("projModelMatrix", temp);
+			item.getMesh().render(this.shader, item, (shader, item2) -> {
+				item2.buildOrthoProjModelMatrix(orthoMatrix, temp);
+				shader.set("projModelMatrix", temp);
 			});
 
 		glDepthMask(true);
