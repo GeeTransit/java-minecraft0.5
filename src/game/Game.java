@@ -20,7 +20,7 @@ public class Game extends Scene {
 
 	private Background background;
 	private Skybox skybox;
-	private World world;
+	private View view;
 	private Hud hud;
 
 	public Game() {
@@ -36,12 +36,12 @@ public class Game extends Scene {
 		// child scenes
 		this.background = new Background();
 		this.skybox = new Skybox(this.camera);
-		this.world = new World(this.mouse, this.camera);
-		this.hud = new Hud(this.mouse, this.camera, this.world);
+		this.view = new View(this.mouse, this.camera);
+		this.hud = new Hud(this.mouse, this.camera, this.view);
 		this
 			.addFrom(this.background)
 			.addFrom(this.skybox)
-			.addFrom(this.world)
+			.addFrom(this.view)
 			.addFrom(this.hud);
 	}
 

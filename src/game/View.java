@@ -1,6 +1,6 @@
 /*
 George Zhang
-World scene implementation.
+World view class.
 */
 
 package geetransit.minecraft05.game;
@@ -14,7 +14,7 @@ import org.joml.Matrix4f;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 
-public class World implements Loopable {
+public class View implements Loopable {
 	public static final float CHANGE_DELAY = 0.2f;  // time between block change (place / remove)
 	public static final float MOVEMENT_STEP = 3.0f;  // distance moved in 1 second
 	public static final float SPRINT_MULTIPLIER = 1.5f;  // sprinting change
@@ -36,7 +36,7 @@ public class World implements Loopable {
 	private final Vector3f movement;
 	private String change;  // ""=air
 
-	public World(Mouse mouse, Camera camera) {
+	public View(Mouse mouse, Camera camera) {
 		this.mouse = mouse;
 		this.camera = camera;
 		this.countdown = new Countdown(CHANGE_DELAY);
