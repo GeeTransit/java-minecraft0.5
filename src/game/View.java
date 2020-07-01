@@ -237,11 +237,6 @@ public class View implements Loopable {
 		this.blockMap.put(group, new ArrayList<>());
 	}
 
-	private BlockItem newBlock(String name) {
-		Mesh mesh = this.meshMap.get(name);
-		return new BlockItem(mesh).setScale(BLOCK_SCALE);
-	}
-
 	private void renderBlock(String group, Matrix4f viewMatrix, Matrix4f temp) {
 		List<BlockItem> blocks = this.blockMap.get(group);
 		if (this.groupMap.get(group).size() == 1) {
