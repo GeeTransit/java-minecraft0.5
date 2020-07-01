@@ -12,6 +12,7 @@ import org.joml.Vector3f;
 import org.joml.Matrix4f;
 
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.*;
 
 public class Skybox implements Loopable {
 	public static final float RENDER_STEP = 3.0f;  // render changed in 1 second
@@ -71,7 +72,6 @@ public class Skybox implements Loopable {
 	public void update(float interval) {
 		// render distance
 		this.camera.setFar(Math.max(Camera.NEAR+0.01f, this.camera.getFar() + this.render * interval*RENDER_STEP));
-		this.skybox.setScale(this.camera.getFar() * SKYBOX_SCALE);
 
 		// toggle skybox
 		this.countdown.add(interval);
@@ -88,6 +88,10 @@ public class Skybox implements Loopable {
 		this.shader.set("texture_sampler", 0);
 		this.shader.set("projectionMatrix", window.getProjectionMatrix());
 
+		// disable depth testing (very back)
+		glDepthMask(false);
+		glDisable(GL_DEPTH_TEST);
+
 		// remove view translation
 		Matrix4f viewMatrix = this.camera.getViewMatrix();
 		Vector3f oldTanslation = viewMatrix.getTranslation(new Vector3f());
@@ -103,6 +107,8 @@ public class Skybox implements Loopable {
 		// undo view translation removal
 		viewMatrix.setTranslation(oldTanslation);
 
+		glDepthMask(true);
+		glEnable(GL_DEPTH_TEST);
 		this.shader.unbind();
 	}
 
