@@ -13,7 +13,7 @@ import org.joml.*;
 import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
-public class Mesh {
+public class Mesh implements AutoCloseable {
 	private static final Vector3f DEFAULT_COLOUR = new Vector3f(0.0f, 0.0f, 0.0f);
 
 	private final int vaoId;
@@ -37,7 +37,6 @@ public class Mesh {
 			// Create the VAO
 			this.vaoId = glGenVertexArrays();
 			glBindVertexArray(this.vaoId);
-
 
 			// Position VBO
 			vboId = glGenBuffers();
@@ -113,28 +112,16 @@ public class Mesh {
 	}
 
 	protected void with(Shader shader, Runnable runnable) {
-		this.prepare();
+		this.bind();
 		this.setup(shader);
 		runnable.run();
-		this.restore();
-	}
-
-	public void cleanup() { this.cleanup(true); }
-	public void cleanup(boolean cleanupTexture) {
-		this.disableVao();
-		this.deleteVbos();
-		if (cleanupTexture && this.isTextured())
-			this.texture.cleanup();
-		this.deleteVao();
+		this.unbind();
 	}
 
 	// prepare mesh
-	protected void prepare() { this.prepare(null); }
-	protected void prepare(Mesh lastMesh) {
-		if (this == lastMesh)
-			return;
+	protected void bind() {
 		if (this.isTextured())
-			this.texture.prepare();
+			this.texture.bind();
 		glBindVertexArray(this.vaoId);
 	}
 
@@ -149,27 +136,28 @@ public class Mesh {
 		glDrawElements(GL_TRIANGLES, this.vertexCount, GL_UNSIGNED_INT, 0);
 	}
 
-	// Restore state
-	protected void restore() { this.restore(null); }
-	protected void restore(Mesh nextMesh) {
-		if (this == nextMesh)
-			return;
+	// restore state
+	protected void unbind() {
+		if (this.isTextured())
+			this.texture.unbind();
 		glBindVertexArray(0);
 	}
 
-	protected void deleteVbos() {
-		// Delete the VBO
+	@Override
+	public void close() { this.cleanup(true); }
+	public void cleanup(boolean closeTexture) {
+		glDisableVertexAttribArray(0);
+
+		// delete VBO
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		for (int id : this.vboIdList)
 			glDeleteBuffers(id);
-	}
 
-	protected void disableVao() {
-		glDisableVertexAttribArray(0);
-	}
+		// delete texture
+		if (closeTexture && this.texture != null)
+			this.texture.close();
 
-	protected void deleteVao() {
-		// Delete the VAO
+		// delete VAO
 		glBindVertexArray(0);
 		glDeleteVertexArrays(this.vaoId);
 	}
