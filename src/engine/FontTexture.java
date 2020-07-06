@@ -54,30 +54,30 @@ public class FontTexture extends Texture {
 			int fontRow = currentChar / fontCols;
 
 			// Left Top vertex
-			posList.add((currentCol + 0)*charWidth);  // x
-			posList.add((currentRow + 0)*charLength);  // y
+			posList.add((currentCol + 0) * charWidth);  // x
+			posList.add((currentRow + 0) * charLength);  // y
 			posList.add(ZPOS);  // z
 			coordList.add((float) (fontCol + 0) / fontCols);
 			coordList.add((float) (fontRow + 0) / fontRows);
 
 			// Left Bottom vertex
-			posList.add((currentCol + 0)*charWidth);  // x
-			posList.add((currentRow + 1)*charLength);  // y
-			posList.add(ZPOS);  // z
+			posList.add((currentCol + 0) * charWidth);
+			posList.add((currentRow + 1) * charLength);
+			posList.add(ZPOS);
 			coordList.add((float) (fontCol + 0) / fontCols);
 			coordList.add((float) (fontRow + 1) / fontRows);
 
 			// Right Top vertex
-			posList.add((currentCol + 1)*charWidth);  // x
-			posList.add((currentRow + 0)*charLength);  // y
-			posList.add(ZPOS);  // z
+			posList.add((currentCol + 1) * charWidth);
+			posList.add((currentRow + 0) * charLength);
+			posList.add(ZPOS);
 			coordList.add((float) (fontCol + 1) / fontCols);
 			coordList.add((float) (fontRow + 0) / fontRows);
 
 			// Right Bottom vertex
-			posList.add((currentCol + 1)*charWidth);  // x
-			posList.add((currentRow + 1)*charLength);  // y
-			posList.add(ZPOS);  // z
+			posList.add((currentCol + 1) * charWidth);
+			posList.add((currentRow + 1) * charLength);
+			posList.add(ZPOS);
 			coordList.add((float) (fontCol + 1) / fontCols);
 			coordList.add((float) (fontRow + 1) / fontRows);
 
@@ -98,6 +98,9 @@ public class FontTexture extends Texture {
 		float[] posArray = Utils.floatListToArray(posList);
 		float[] coordArray = Utils.floatListToArray(coordList);
 		int[] indexArray = Utils.intListToArray(indexList);
-		return new Mesh(posArray, indexArray, coordArray).setTexture(this);
+
+		Mesh mesh = new Mesh(posArray, indexArray, coordArray);
+		mesh.setTexture(this);
+		return mesh;
 	}
 }
