@@ -20,9 +20,8 @@ public class Game extends Scene {
 
 	private Background background;
 	private Skybox skybox;
-	private Player player;  // player actions
+	private Player player;  // player actions and hud
 	private World world;  // world loading and rendering
-	private Hud hud;
 
 	public Game() {
 		super();
@@ -36,16 +35,14 @@ public class Game extends Scene {
 		this.skybox = new Skybox(this.camera);
 		this.world = new World(this.camera);
 		this.player = new Player(this.mouse, this.camera, this.world);
-		this.hud = new Hud(this.mouse, this.camera, this.player);
 
 		// scene ordering
 		this.addFrom(this.mouse);
 		this.addFrom(this.camera);
 		this.addFrom(this.background);
 		this.addFrom(this.skybox);
-		this.addFrom(this.player);
 		this.addFrom(this.world);
-		this.addFrom(this.hud);
+		this.addFrom(this.player);
 	}
 
 	@Override
