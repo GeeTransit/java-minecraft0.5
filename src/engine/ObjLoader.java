@@ -9,6 +9,12 @@ import java.util.*;
 import org.joml.*;
 
 public class ObjLoader {
+	public static Mesh loadMesh(String obj, String texture) {
+		Mesh mesh = loadMesh(obj);
+		mesh.setTexture(new Texture(texture));
+		return mesh;
+	}
+
 	public static Mesh loadMesh(String file) {
 		List<Vector3f> posList = new ArrayList<>();
 		List<Integer> indexList = new ArrayList<>();
