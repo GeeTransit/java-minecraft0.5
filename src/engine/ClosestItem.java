@@ -29,7 +29,7 @@ public class ClosestItem<T extends Item> {
 		this.max = new Vector3f();
 		this.nearFar = new Vector2f();
 	}
-	public ClosestItem(List<? extends T> items, Camera camera) {
+	public ClosestItem(Iterable<? extends T> items, Camera camera) {
 		this();
 		this.update(items, camera);
 	}
@@ -40,11 +40,11 @@ public class ClosestItem<T extends Item> {
 		return this;
 	}
 
-	public void update(List<? extends T> items, Camera camera) {
+	public void update(Iterable<? extends T> items, Camera camera) {
 		this.reset().extend(items, camera);
 	}
 
-	public ClosestItem<T> extend(List<? extends T> items, Camera camera) {
+	public ClosestItem<T> extend(Iterable<? extends T> items, Camera camera) {
 		// get camera direction
 		camera.getViewMatrix().positiveZ(this.direction);
 		this.direction.negate().normalize();
