@@ -16,6 +16,7 @@ import static org.lwjgl.opengl.GL11.*;
 
 public class Skybox implements Loopable {
 	public static final float RENDER_STEP = 3.0f;  // render changed in 1 second
+	public static final float RENDER_MIN = Math.min(Camera.NEAR, 5f);  // render changed in 1 second
 	public static final float RENDER_DELAY = 0.5f;  // time between skybox toggling
 	public static final float SKYBOX_SCALE = 0.5f;  // skybox scale (multiplied with camera far)
 
@@ -71,7 +72,7 @@ public class Skybox implements Loopable {
 	@Override
 	public void update(float interval) {
 		// render distance
-		this.camera.setFar(Math.max(Camera.NEAR+0.01f, this.camera.getFar() + this.render * interval*RENDER_STEP));
+		this.camera.setFar(Math.max(RENDER_MIN, this.camera.getFar() + this.render * interval*RENDER_STEP));
 
 		// toggle skybox
 		this.countdown.add(interval);
