@@ -107,9 +107,4 @@ public class Shader implements AutoCloseable {
 		if (this.program != 0)
 			glDeleteProgram(this.program);
 	}
-
-	@Deprecated
-	public void cleanup() {
-		this.close();
-	}
 }

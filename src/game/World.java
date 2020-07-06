@@ -131,7 +131,7 @@ public class World implements Loopable {
 
 	@Override
 	public void cleanup() {
-		this.shader.cleanup();
+		this.shader.close();
 		for (Mesh mesh : this.meshes.values())
 			mesh.close();
 	}

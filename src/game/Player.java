@@ -169,7 +169,7 @@ public class Player implements Loopable {
 
 	@Override
 	public void cleanup() {
-		this.shader.cleanup();
+		this.shader.close();
 		for (Item item : this.items)
 			item.getMesh().close();
 	}
