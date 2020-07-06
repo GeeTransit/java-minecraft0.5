@@ -11,7 +11,7 @@ import org.lwjgl.system.*;
 
 import static org.lwjgl.opengl.GL20.*;
 
-public class Shader {
+public class Shader implements AutoCloseable {
 	private final int program;
 	private final Map<String, Integer> uniforms;
 
@@ -101,9 +101,15 @@ public class Shader {
 		glUseProgram(0);
 	}
 
-	public void cleanup() {
+	@Override
+	public void close() {
 		this.unbind();
 		if (this.program != 0)
 			glDeleteProgram(this.program);
+	}
+
+	@Deprecated
+	public void cleanup() {
+		this.close();
 	}
 }
