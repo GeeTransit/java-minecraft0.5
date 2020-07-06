@@ -62,7 +62,11 @@ public class Utils {
 	}
 
 	public static int[] intListToArray(List<Integer> intList) {
-		return intList.stream().mapToInt(i -> i).toArray();
+		int[] intArray = new int[intList.size()];
+		int i = 0;
+		for (int j : intList)
+			intArray[i++] = j;
+		return intArray;
 	}
 	public static float[] floatListToArray(List<Float> floatList) {
 		float[] floatArray = new float[floatList.size()];
