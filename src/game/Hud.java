@@ -20,7 +20,7 @@ public class Hud implements Loopable {
 
 	private Mouse mouse;
 	private Camera camera;
-	private View view;
+	private Player player;
 	private Window window;
 
 	private Shader shader;
@@ -30,10 +30,10 @@ public class Hud implements Loopable {
 	private Item compass;
 	private Item crosshair;
 
-	public Hud(Mouse mouse, Camera camera, View view) {
+	public Hud(Mouse mouse, Camera camera, Player player) {
 		this.mouse = mouse;
 		this.camera = camera;
-		this.view = view;
+		this.player = player;
 
 		this.items = new ArrayList<>();
 	}
@@ -73,7 +73,7 @@ public class Hud implements Loopable {
 		this.text.setText(String.format(
 			"vsync=%s mode=%s mouse=%s\nchange=%s wait=%s\ncamera=%s\nmouse=%s",
 			this.window.isVSync(), this.window.getMode(), this.window.getInputMode(GLFW_CURSOR) == GLFW_CURSOR_NORMAL,
-			this.view.getChange(), Math.max(0, this.view.getWait()),
+			this.player.getChange(), Math.max(0, this.player.getWait()),
 			this.camera, this.mouse
 		));
 
@@ -113,6 +113,6 @@ public class Hud implements Loopable {
 	public void cleanup() {
 		this.shader.cleanup();
 		for (Item item : this.items)
-			item.getMesh().cleanup();
+			item.getMesh().close();
 	}
 }

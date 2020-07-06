@@ -115,6 +115,6 @@ public class Skybox implements Loopable {
 	@Override
 	public void cleanup() {
 		this.shader.cleanup();
-		this.skybox.getMesh().cleanup();
+		this.skybox.getMesh().close();
 	}
 }

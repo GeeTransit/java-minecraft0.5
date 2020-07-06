@@ -20,7 +20,8 @@ public class Game extends Scene {
 
 	private Background background;
 	private Skybox skybox;
-	private View view;
+	private Player player;  // player actions
+	private World world;  // world loading and rendering
 	private Hud hud;
 
 	public Game() {
@@ -29,20 +30,22 @@ public class Game extends Scene {
 		// inputs
 		this.mouse = new Mouse();
 		this.camera = new Camera(this.mouse);
-		this
-			.addFrom(this.mouse)
-			.addFrom(this.camera);
 
 		// child scenes
 		this.background = new Background();
 		this.skybox = new Skybox(this.camera);
-		this.view = new View(this.mouse, this.camera);
-		this.hud = new Hud(this.mouse, this.camera, this.view);
-		this
-			.addFrom(this.background)
-			.addFrom(this.skybox)
-			.addFrom(this.view)
-			.addFrom(this.hud);
+		this.world = new World(this.camera);
+		this.player = new Player(this.mouse, this.camera, this.world);
+		this.hud = new Hud(this.mouse, this.camera, this.player);
+
+		// scene ordering
+		this.addFrom(this.mouse);
+		this.addFrom(this.camera);
+		this.addFrom(this.background);
+		this.addFrom(this.skybox);
+		this.addFrom(this.player);
+		this.addFrom(this.world);
+		this.addFrom(this.hud);
 	}
 
 	@Override
