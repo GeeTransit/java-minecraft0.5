@@ -190,12 +190,11 @@ public class World implements Loopable {
 	}
 
 	private void removeBlock(float x, float y, float z) {
-		for (List<BlockItem> blocks : this.blocks.values())
-			for (BlockItem block : blocks)
-				if (block.getPosition().equals(x, y, z)) {
-					this.removeBlock(block);
-					return;
-				}
+		for (BlockItem block : this.iterBlocks())
+			if (block.getPosition().equals(x, y, z)) {
+				this.removeBlock(block);
+				return;
+			}
 	}
 
 	private void removeBlock(BlockItem block) {
