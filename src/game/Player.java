@@ -8,6 +8,7 @@ package geetransit.minecraft05.game;
 import geetransit.minecraft05.engine.*;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 import org.joml.Vector3f;
 import org.joml.Matrix4f;
 
@@ -151,14 +152,15 @@ public class Player implements Loopable {
 		glDisable(GL_DEPTH_TEST);  // disable depth-testing
 
 		Matrix4f orthoMatrix = window.getOrthoProjectionMatrix();
+		Matrix4f temp = new Matrix4f();
+		BiConsumer<Shader, Item> setup = (shader, item) -> {
+			item.buildOrthoProjModelMatrix(orthoMatrix, temp);
+			shader.set("projModelMatrix", temp);
+		};
 
 		// draw items
-		Matrix4f temp = new Matrix4f();
 		for (Item item : this.items)
-			item.getMesh().render(this.shader, item, (shader, item2) -> {
-				item2.buildOrthoProjModelMatrix(orthoMatrix, temp);
-				shader.set("projModelMatrix", temp);
-			});
+			item.getMesh().render(this.shader, item, setup);
 
 		glDepthMask(true);
 		glEnable(GL_DEPTH_TEST);
