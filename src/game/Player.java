@@ -15,7 +15,7 @@ import org.joml.Matrix4f;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 
-public class Player implements Loopable {
+public class Player implements Loopable, AutoCloseable {
 	public static final float CHANGE_DELAY = 0.2f;  // time between block change (place / remove)
 	public static final float MOVEMENT_STEP = 3.0f;  // distance moved in 1 second
 	public static final float SPRINT_MULTIPLIER = 1.5f;  // sprinting change
@@ -52,6 +52,12 @@ public class Player implements Loopable {
 
 	@Override
 	public void init(Window window) {
+		this.window = window;
+		this.createShader();
+		this.createHud();
+	}
+
+	public void createShader() {
 		this.shader = new Shader();
 		this.shader.compileVertex(Utils.loadResource("/res/vertex-2d.vs"));
 		this.shader.compileFragment(Utils.loadResource("/res/fragment-2d.fs"));
@@ -61,7 +67,9 @@ public class Player implements Loopable {
 		this.shader.create("texture_sampler");
 		this.shader.create("color");
 		this.shader.create("isTextured");
+	}
 
+	public void createHud() {
 		this.text = new TextItem("", new FontTexture(FONT_FILE, FONT_COLS, FONT_ROWS));
 		this.text.getMesh().setColor(1, 1, 1);
 
@@ -74,12 +82,15 @@ public class Player implements Loopable {
 		this.items.add(this.text);
 		this.items.add(this.compass);
 		this.items.add(this.crosshair);
-
-		this.window = window;
 	}
 
 	@Override
 	public void input(Window window) {
+		this.inputMovement(window);
+		this.inputPlace(window);
+	}
+
+	public void inputMovement(Window window) {
 		// movement
 		this.movement.zero();
 		boolean SPRINTING = !window.isKeyDown(GLFW_KEY_LEFT_SHIFT) && window.isKeyDown(GLFW_KEY_LEFT_CONTROL);
@@ -94,7 +105,9 @@ public class Player implements Loopable {
 
 		if (this.movement.length() > 1f) this.movement.div(this.movement.length());
 		if (SPRINTING && this.movement.z < 0) this.movement.mul(SPRINT_MULTIPLIER);
+	}
 
+	public void inputPlace(Window window) {
 		// placing / removing
 		this.change = null;
 		if (window.isKeyDown(GLFW_KEY_0)) this.change = "";
@@ -106,9 +119,17 @@ public class Player implements Loopable {
 
 	@Override
 	public void update(float interval) {
+		this.updateMovement(interval);
+		this.updatePlace(interval);
+		this.updateHud(this.window);
+	}
+
+	public void updateMovement(float interval) {
 		// movement
 		this.camera.movePosition(this.movement, interval*MOVEMENT_STEP);
+	}
 
+	public void updatePlace(float interval) {
 		// placing / removing
 		this.countdown.add(interval);
 		if (this.change != null && this.countdown.nextOnce()) {
@@ -124,26 +145,32 @@ public class Player implements Loopable {
 				this.world.setBlock(this.change, position);
 			}
 		}
+	}
 
-		this.text.setPosition(10f, this.window.getHeight() * 0.85f, 0f);
-		this.text.setScale(this.window.getWidth() * (1/3500f));
+	public void updateHud(Window window) {
+		this.text.setPosition(10f, window.getHeight() * 0.85f, 0f);
+		this.text.setScale(window.getWidth() * (1/3500f));
 		this.text.setText(String.format(
 			"vsync=%s mode=%s mouse=%s\nchange=%s wait=%s\ncamera=%s\nmouse=%s",
-			this.window.isVSync(), this.window.getMode(), this.window.getInputMode(GLFW_CURSOR) == GLFW_CURSOR_NORMAL,
+			window.isVSync(), window.getMode(), window.getInputMode(GLFW_CURSOR) == GLFW_CURSOR_NORMAL,
 			this.change, Math.max(0, this.countdown.getWait()),
 			this.camera, this.mouse
 		));
 
-		this.compass.setPosition(this.window.getWidth() * 0.95f, this.window.getWidth() * 0.05f, 0f);
+		this.compass.setPosition(window.getWidth() * 0.95f, window.getWidth() * 0.05f, 0f);
 		this.compass.setRotation(0f, 0f, 180f - this.camera.getRotation().y);
-		this.compass.setScale(this.window.getWidth() * (1/20f));
+		this.compass.setScale(window.getWidth() * (1/20f));
 
-		this.crosshair.setPosition(this.window.getWidth() * 0.5f, this.window.getHeight() * 0.5f, 0f);
-		this.crosshair.setScale(this.window.getWidth() * (1/50f));
+		this.crosshair.setPosition(window.getWidth() * 0.5f, window.getHeight() * 0.5f, 0f);
+		this.crosshair.setScale(window.getWidth() * (1/50f));
 	}
 
 	@Override
 	public void render(Window window) {
+		this.renderHud(window);
+	}
+
+	public void renderHud(Window window) {
 		this.shader.bind();
 		this.shader.set("texture_sampler", 0);
 
@@ -169,6 +196,11 @@ public class Player implements Loopable {
 
 	@Override
 	public void cleanup() {
+		this.close();
+	}
+
+	@Override
+	public void close() {
 		this.shader.close();
 		for (Item item : this.items)
 			item.getMesh().close();
