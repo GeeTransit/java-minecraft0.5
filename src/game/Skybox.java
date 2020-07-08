@@ -14,7 +14,7 @@ import org.joml.Matrix4f;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 
-public class Skybox implements Loopable {
+public class Skybox implements Loopable, AutoCloseable {
 	public static final float RENDER_STEP = 3.0f;  // render changed in 1 second
 	public static final float RENDER_MIN = Math.min(Camera.NEAR, 5f);  // render changed in 1 second
 	public static final float RENDER_DELAY = 0.5f;  // time between skybox toggling
@@ -38,6 +38,11 @@ public class Skybox implements Loopable {
 
 	@Override
 	public void init(Window window) {
+		this.createShader();
+		this.createSkybox("/res/skybox.obj", "/res/skybox.png");
+	}
+
+	public void createShader() {
 		this.shader = new Shader();
 		this.shader.compileVertex(Utils.loadResource("/res/vertex-3d.vs"));
 		this.shader.compileFragment(Utils.loadResource("/res/fragment-3d.fs"));
@@ -48,15 +53,19 @@ public class Skybox implements Loopable {
 		this.shader.create("texture_sampler");
 		this.shader.create("color");
 		this.shader.create("isTextured");
+	}
 
-		Mesh mesh = ObjLoader.loadMesh("/res/skybox.obj");
-		mesh.setTexture(new Texture("/res/skybox.png"));
-		this.skybox = new Item(mesh);
+	public void createSkybox(String obj, String texture) {
+		this.skybox = new Item(ObjLoader.loadMesh(obj, texture));
 		this.skybox.setPosition(0, 0, 0);
 	}
 
 	@Override
 	public void input(Window window) {
+		this.inputSkybox(window);
+	}
+
+	public void inputSkybox(Window window) {
 		// render distance (camera)
 		this.render = 0;
 		if (window.isKeyDown(GLFW_KEY_L)) this.camera.setFar(Camera.FAR);
@@ -71,6 +80,10 @@ public class Skybox implements Loopable {
 
 	@Override
 	public void update(float interval) {
+		this.updateSkybox(interval);
+	}
+
+	public void updateSkybox(float interval) {
 		// render distance
 		this.camera.setFar(Math.max(RENDER_MIN, this.camera.getFar() + this.render * interval*RENDER_STEP));
 
@@ -83,6 +96,12 @@ public class Skybox implements Loopable {
 	@Override
 	public void render(Window window) {
 		if (!this.visible)
+			return;
+		this.renderSkybox(window);
+	}
+
+	public void renderSkybox(Window window) {
+		if (this.skybox == null)
 			return;
 
 		this.shader.bind();
@@ -115,6 +134,11 @@ public class Skybox implements Loopable {
 
 	@Override
 	public void cleanup() {
+		this.close();
+	}
+
+	@Override
+	public void close() {
 		this.shader.close();
 		this.skybox.getMesh().close();
 	}
