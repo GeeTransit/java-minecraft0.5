@@ -22,12 +22,14 @@ public class Background implements Loopable {
 
 	@Override
 	public void init(Window window) {
-		// blank background for first frame
-		window.clearColor(1f, 1f, 1f, 0f);
 	}
 
 	@Override
 	public void input(Window window) {
+		this.inputColor(window);
+	}
+
+	public void inputColor(Window window) {
 		if (window.isKeyDown(GLFW_KEY_L)) this.color = 0f;
 
 		this.direction = 0;
@@ -37,11 +39,19 @@ public class Background implements Loopable {
 
 	@Override
 	public void update(float interval) {
+		this.updateColor(interval);
+	}
+
+	public void updateColor(float interval) {
 		this.color = Math.max(0f, Math.min(1f, this.color + this.direction * interval*COLOR_STEP));
 	}
 
 	@Override
 	public void render(Window window) {
+		this.updateBackground(window);
+	}
+
+	public void updateBackground(Window window) {
 		// Different color based on vSync or not (colorful = vSync on)
 		if (window.isVSync())
 			window.clearColor(1-this.color, this.color/2+0.5f, this.color, 0.0f);
