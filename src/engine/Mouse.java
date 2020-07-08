@@ -29,21 +29,27 @@ public class Mouse implements Initializable, Inputtable {
 	public boolean isLeft() { return this.left; }
 	public boolean isRight() { return this.right; }
 
+	@Override
 	public void init(Window window) {
-		glfwSetCursorPosCallback(window.getHandle(), (handle, x, y) -> {
-			this.current.x = (float) x;
-			this.current.y = (float) y;
-		});
-		glfwSetCursorEnterCallback(window.getHandle(), (handle, entered) -> {
-			this.inside = entered;
-		});
+		glfwSetCursorPosCallback(window.getHandle(), (handle, x, y) -> { this.setCurrent((float) x, (float) y); });
+		glfwSetCursorEnterCallback(window.getHandle(), (handle, inside) -> { this.setInside(inside); });
 		glfwSetMouseButtonCallback(window.getHandle(), (handle, button, action, mode) -> {
-			if (button == GLFW_MOUSE_BUTTON_1) this.left = (action == GLFW_PRESS);
-			if (button == GLFW_MOUSE_BUTTON_2) this.right = (action == GLFW_PRESS);
+			if (button == GLFW_MOUSE_BUTTON_1) this.setLeft(action == GLFW_PRESS);
+			if (button == GLFW_MOUSE_BUTTON_2) this.setRight(action == GLFW_PRESS);
 		});
 	}
 
+	public void setCurrent(float x, float y) { this.current.set(x, y); }
+	public void setInside(boolean inside) { this.inside = inside; }
+	public void setLeft(boolean left) { this.left = left; }
+	public void setRight(boolean right) { this.right = right; }
+
+	@Override
 	public void input(Window window) {
+		this.flush();
+	}
+
+	public void flush() {
 		this.current.sub(this.previous, this.movement);
 		this.previous.set(this.current);
 	}
