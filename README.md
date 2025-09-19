@@ -4,6 +4,8 @@
 
 Double click `run.bat` to start the game.
 
+Only tested on Windows.
+
 Source # https://github.com/GeeTransit/java-minecraft0.5
 
 Book # https://ahbejarano.gitbook.io/lwjglgamedev
