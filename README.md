@@ -1,3 +1,5 @@
+![Game screenshot with blocks forming "JAVA MINECRAFT 0.5" text](screenshot.png)
+
 # Java Minecraft 0.5
 
 Double click `run.bat` to start the game.
